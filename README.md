@@ -16,6 +16,8 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 - Adds related move descriptions to compact Grid tooltips and scales the Grid to make better use of the viewport.
 - Places Sync Grid before Stats and remembers a separate Grid configuration for each Sync Pair.
 
+![Enhanced Sync Grid with responsive labels and move details](docs/images/sync-grid.png)
+
 ### A faster Sync Pair picker
 
 - Uses a roomy two-column layout: Sync Pair results on the left and searchable filters on the right.
@@ -24,7 +26,7 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 - Sorts by latest update by default, with release date, Sync Pair number, Pokédex number, trainer name, type and rarity also available.
 - Keeps result count and reset controls visible while browsing long filter lists.
 
-![Sync Pair filter panel](docs/images/sync-pair-filters.png)
+![Two-column Sync Pair picker with icon results and structured filters](docs/images/sync-pair-picker.png)
 
 ### Structured filters, not just keywords
 
