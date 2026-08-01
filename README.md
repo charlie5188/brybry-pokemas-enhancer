@@ -1,23 +1,54 @@
 # Brybry Pokemas Enhancer
 
-English | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
-
 A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybry.ch`. Development happens in small, responsibility-based files under `src/`; users still install one generated file from the repository root.
 
 [Install Brybry Pokemas Enhancer](https://raw.githubusercontent.com/charlie5188/brybry-pokemas-enhancer/main/brybry-enhancer.user.js)
 
 > `brybry-enhancer.user.js` is generated. Do not edit it directly. Change `src/`, then run `npm run build`.
 
+## Features
+
+### Readable, responsive Sync Grids
+
+- Shows useful labels directly inside each tile, with up to four lines and responsive 9–16px text.
+- Uses localized PomaTools abbreviations only when the full label does not fit. Tooltips always keep the complete name and details.
+- Displays compact, consistent labels for Sync Move power nodes, while leaving regular move and stat nodes unchanged.
+- Adds related move descriptions to compact Grid tooltips and scales the Grid to make better use of the viewport.
+- Places Sync Grid before Stats and remembers a separate Grid configuration for each Sync Pair.
+
+### A faster Sync Pair picker
+
+- Uses a roomy two-column layout: Sync Pair results on the left and searchable filters on the right.
+- Supports compact icon view and detailed list view, using Brybry's original pair artwork with graceful image fallbacks.
+- Searches pair names and full move, passive-skill and description text, with multi-select skill tags.
+- Sorts by latest update by default, with release date, Sync Pair number, Pokédex number, trainer name, type and rarity also available.
+- Keeps result count and reset controls visible while browsing long filter lists.
+
+![Sync Pair filter panel](docs/images/sync-pair-filters.png)
+
+### Structured filters, not just keywords
+
+- Pair identity: Type, Weakness, damaging-move Type, Role, EX Role, Role Combination, initial stars and Superawakening.
+- Availability: acquisition method, scout type and region.
+- Trainer tags: trainer group, fashion and other team-skill tags.
+- Battle effects: Weather, Terrain, Zone and their EX variants; Circle; stat changes; status and interference effects; type resistance reduction; and Master Passive categories.
+- Every filter cycles through include, exclude and off states. Expensive result updates are delayed so several choices can be made smoothly.
+
+### Preferences and spoiler protection
+
+- Optional spoiler protection hides unreleased pairs, redirects direct unreleased-pair links, and hides Brybry's Last update section. It is off by default.
+- Remembers picker view, sorting, spoiler setting, Accordion state and per-pair Sync Grid configurations locally.
+- Keeps the floating Sync Pair launcher available while scrolling.
+
+Pair names and filter metadata continue to come from Brybry's current data files. No separate Sync Pair catalog is maintained.
+
+Brybry's structured ability, move, passive-skill and localized message data are resolved into complete searchable text. New Sync Pairs and supported skill templates therefore become available without maintaining a manual pair-ID list.
+
+The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, French, German, Spanish, Italian, Japanese, Korean and Traditional Chinese. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
+
+The current abbreviation snapshot is generated from PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`.
+
 ## Install
-
-### Safari
-
-1. Install Userscripts for Safari from the App Store.
-2. Enable it in Safari Extensions and allow it on `pokemon.brybry.ch`.
-3. Open the install link above and add the userscript to Userscripts for Safari.
-4. Open or reload the Brybry Pokemas Sync Pair page.
-
-### Tampermonkey
 
 1. Install Tampermonkey in a supported browser.
 2. Open the install link above and confirm installation.
@@ -80,21 +111,6 @@ scripts/
 ```
 
 The JavaScript files are plain source modules combined in the fixed order declared by `scripts/build.js`. They intentionally share the userscript's single runtime scope, which preserves the current behavior without introducing a framework or runtime module loader. Put changes in the narrowest relevant source file; keep large static datasets in `src/data/`.
-
-## Current features
-
-- Up to four responsive text lines per Sync Grid tile, capped at 16px with PomaTools abbreviations when useful.
-- Related move descriptions in Grid tooltips, responsive Grid sizing and locally remembered Grid builds.
-- A two-column Sync Pair picker with icon/list views, localized search, skill search, filters and sorting.
-- Type, Role, EX Role, Role Combination, Weakness, stars, acquisition, scout type, region, team-skill and Superawakening filters.
-- Optional spoiler protection for unreleased pairs and Grid updates.
-- Sync Grid section placement before Stats.
-- Persistent picker preferences and per-pair Sync Grid configurations using the existing storage keys.
-
-Pair names and filter metadata continue to come from Brybry's current data files. No separate Sync Pair catalog is maintained.
-
-The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, French, German, Spanish, Italian, Japanese, Korean and Traditional Chinese. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
-The current abbreviation snapshot is generated from PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`.
 
 ## License and attribution
 
