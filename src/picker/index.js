@@ -1238,10 +1238,14 @@ function ensurePicker() {
   const body = document.querySelector('#pairSearchModal .modal-body');
   const input = document.getElementById('pairSearchInput');
   const resultList = document.getElementById('pairSearchResults');
+  const modalTitle = document.querySelector('#pairSearchModal .modal-header h1, #pairSearchModal .modal-header h2, #pairSearchModal .modal-title');
   const locale = language();
   const existingTools = document.querySelector('.be-picker-tools');
   const existingResultsToolbar = document.querySelector('.be-results-toolbar');
   if (!body || !input || !resultList) return;
+  if (locale === 'en' && modalTitle && /^change sync pair$/i.test(modalTitle.textContent.trim())) {
+    modalTitle.textContent = 'Change sync pair';
+  }
   if (!currentPairs(true).length) return;
   const dynamicFiltersReady = Boolean(document.querySelector('.be-filter-section[data-be-group="rarity"] .be-chip'));
   if (existingTools?.dataset.beLocale === locale && existingResultsToolbar && dynamicFiltersReady) return;

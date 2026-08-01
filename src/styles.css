@@ -492,7 +492,7 @@ color: #24586a;
 font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 letter-spacing: .04em;
 margin: 0 0 7px;
-text-transform: uppercase;
+text-transform: none;
     }
 
     #pairSearchModal details.be-filter-section {

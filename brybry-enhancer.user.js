@@ -509,7 +509,7 @@ color: #24586a;
 font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 letter-spacing: .04em;
 margin: 0 0 7px;
-text-transform: uppercase;
+text-transform: none;
     }
 
     #pairSearchModal details.be-filter-section {
@@ -1514,7 +1514,7 @@ text-align: center;
       acquisition: "Acquisition",
       exclusivity: "Scout type",
       region: "Region",
-      exRole: "EX Role",
+      exRole: "EX role",
       roleCombination: "Role combination",
       trainerGroup: "Trainer group",
       fashion: "Fashion",
@@ -1523,7 +1523,7 @@ text-align: center;
       sort: "Sort",
       sortUpdated: "Last updated",
       sortRelease: "Release date",
-      sortSyncDex: "Sync Pair Dex #",
+      sortSyncDex: "Sync pair Dex #",
       sortPokemonDex: "Pokémon #",
       sortName: "Name",
       sortRarity: "Initial stars",
@@ -1533,10 +1533,10 @@ text-align: center;
       iconView: "Icon view",
       settings: "Settings",
       spoilerProtection: "Spoiler protection",
-      spoilerDescription: "Hide Sync Pairs that are not released yet.",
-      spoilerBanner: "Spoiler protection redirected you from an unreleased Sync Pair.",
-      results: (count) => `${count} Sync Pairs`,
-      empty: "No Sync Pairs match these filters."
+      spoilerDescription: "Hide sync pairs that are not released yet.",
+      spoilerBanner: "Spoiler protection redirected you from an unreleased sync pair.",
+      results: (count) => `${count} sync pairs`,
+      empty: "No sync pairs match these filters."
     },
     fr: {
       filter: "Filtrer",
@@ -4223,10 +4223,14 @@ text-align: center;
     const body = document.querySelector("#pairSearchModal .modal-body");
     const input = document.getElementById("pairSearchInput");
     const resultList = document.getElementById("pairSearchResults");
+    const modalTitle = document.querySelector("#pairSearchModal .modal-header h1, #pairSearchModal .modal-header h2, #pairSearchModal .modal-title");
     const locale = language();
     const existingTools = document.querySelector(".be-picker-tools");
     const existingResultsToolbar = document.querySelector(".be-results-toolbar");
     if (!body || !input || !resultList) return;
+    if (locale === "en" && modalTitle && /^change sync pair$/i.test(modalTitle.textContent.trim())) {
+      modalTitle.textContent = "Change sync pair";
+    }
     if (!currentPairs(true).length) return;
     const dynamicFiltersReady = Boolean(document.querySelector('.be-filter-section[data-be-group="rarity"] .be-chip'));
     if (existingTools?.dataset.beLocale === locale && existingResultsToolbar && dynamicFiltersReady) return;
