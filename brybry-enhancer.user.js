@@ -79,6 +79,16 @@ margin-bottom: 2px;
 
     .tooltip .be-related-move span { display: block; }
 
+    .tooltip .be-power-multiplier {
+background: rgba(105, 190, 218, .14);
+border: 1px solid rgba(145, 214, 235, .28);
+border-radius: 6px;
+color: rgba(255, 255, 255, .9);
+font: 750 11.5px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin: 8px 0 0;
+padding: 6px 8px;
+    }
+
     #pairSearchModal .be-picker-tools {
 display: flex;
 gap: 8px;
@@ -1505,6 +1515,8 @@ text-align: center;
       skillSpecialAbilities: "Special abilities",
       damagingMoveType: "Damaging move type",
       loading: "Updating results…",
+      multiplier: "Multiplier: +{value}%",
+      multiplierCap: "Multiplier cap: +{value}%",
       skillNoResults: "No matching skills",
       removeSkill: "Remove",
       type: "Type",
@@ -1556,6 +1568,8 @@ text-align: center;
       skillSpecialAbilities: "Capacités spéciales",
       damagingMoveType: "Type des capacités offensives",
       loading: "Mise à jour des résultats…",
+      multiplier: "Multiplicateur : +{value} %",
+      multiplierCap: "Multiplicateur maximal : +{value} %",
       skillNoResults: "Aucun talent correspondant",
       removeSkill: "Retirer",
       type: "Type",
@@ -1607,6 +1621,8 @@ text-align: center;
       skillSpecialAbilities: "Spezialfähigkeiten",
       damagingMoveType: "Typ der Schadensattacken",
       loading: "Ergebnisse werden aktualisiert…",
+      multiplier: "Multiplikator: +{value} %",
+      multiplierCap: "Maximaler Multiplikator: +{value} %",
       skillNoResults: "Keine passenden Fähigkeiten",
       removeSkill: "Entfernen",
       type: "Typ",
@@ -1658,6 +1674,8 @@ text-align: center;
       skillSpecialAbilities: "Habilidades especiales",
       damagingMoveType: "Tipo de movimientos de ataque",
       loading: "Actualizando resultados…",
+      multiplier: "Multiplicador: +{value} %",
+      multiplierCap: "Multiplicador máximo: +{value} %",
       skillNoResults: "No hay habilidades coincidentes",
       removeSkill: "Quitar",
       type: "Tipo",
@@ -1709,6 +1727,8 @@ text-align: center;
       skillSpecialAbilities: "Abilità speciali",
       damagingMoveType: "Tipo delle mosse d’attacco",
       loading: "Aggiornamento dei risultati…",
+      multiplier: "Moltiplicatore: +{value}%",
+      multiplierCap: "Moltiplicatore massimo: +{value}%",
       skillNoResults: "Nessuna abilità corrispondente",
       removeSkill: "Rimuovi",
       type: "Tipo",
@@ -1760,6 +1780,8 @@ text-align: center;
       skillSpecialAbilities: "特殊能力",
       damagingMoveType: "攻撃技タイプ",
       loading: "結果を更新中…",
+      multiplier: "倍率: +{value}%",
+      multiplierCap: "倍率上限: +{value}%",
       skillNoResults: "一致するスキルがありません",
       removeSkill: "削除",
       type: "タイプ",
@@ -1811,6 +1833,8 @@ text-align: center;
       skillSpecialAbilities: "특수 능력",
       damagingMoveType: "공격 기술 타입",
       loading: "결과 업데이트 중…",
+      multiplier: "배율: +{value}%",
+      multiplierCap: "최대 배율: +{value}%",
       skillNoResults: "일치하는 스킬이 없습니다",
       removeSkill: "삭제",
       type: "타입",
@@ -1862,6 +1886,8 @@ text-align: center;
       skillSpecialAbilities: "特殊能力",
       damagingMoveType: "攻击招式属性",
       loading: "正在更新结果…",
+      multiplier: "倍率：+{value}%",
+      multiplierCap: "倍率上限：+{value}%",
       skillNoResults: "没有匹配的技能",
       removeSkill: "移除",
       type: "属性",
@@ -2442,10 +2468,20 @@ text-align: center;
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
   }
-  function appendRelatedMoveDescription(tile, moveInfo) {
-    if (!moveInfo || moveInfo.abilityType === 11) return;
-    const tooltip = [...document.querySelectorAll("body > .tooltip")].reverse().find((candidate) => getComputedStyle(candidate).display !== "none");
-    if (!tooltip || tooltip.querySelector(".be-related-move")) return;
+  function visibleGridTooltip() {
+    return [...document.querySelectorAll("body > .tooltip")].reverse().find((candidate) => getComputedStyle(candidate).display !== "none");
+  }
+  function appendPowerMultiplier(tooltip, multiplier) {
+    if (!tooltip || !multiplier || tooltip.querySelector(".be-power-multiplier")) return;
+    const template = multiplier.kind === "cap" ? text().multiplierCap : text().multiplier;
+    if (!template) return;
+    const line = document.createElement("p");
+    line.className = "be-power-multiplier";
+    line.textContent = template.replace("{value}", String(multiplier.value));
+    tooltip.append(line);
+  }
+  function appendRelatedMoveDescription(tooltip, moveInfo) {
+    if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11 || tooltip.querySelector(".be-related-move")) return;
     const moveDescriptionResolver = typeof window.getMoveDescr === "function" ? window.getMoveDescr : typeof getMoveDescr === "function" ? getMoveDescr : null;
     const description = moveDescriptionResolver?.(Number(moveInfo.moveId));
     if (!description || description === "undefined") return;
@@ -2457,6 +2493,12 @@ text-align: center;
     detail.textContent = description;
     block.append(name, detail);
     tooltip.append(block);
+  }
+  function appendGridTooltipDetails(tile, moveInfo) {
+    const tooltip = visibleGridTooltip();
+    if (!tooltip) return;
+    appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+    appendRelatedMoveDescription(tooltip, moveInfo);
     repositionGridTooltip(tooltip, tile);
   }
   function setupMoveTooltips() {
@@ -2470,7 +2512,7 @@ text-align: center;
       const polygon = polygons.find((candidate) => candidate.parentElement?.getAttribute("transform") === transform);
       if (!polygon || polygon.dataset.beMoveTooltipBound === "true") return;
       polygon.dataset.beMoveTooltipBound = "true";
-      polygon.addEventListener("mouseenter", () => appendRelatedMoveDescription(tile, moveInfo));
+      polygon.addEventListener("mouseenter", () => appendGridTooltipDetails(tile, moveInfo));
     });
   }
   function resizeGrid() {
@@ -2672,6 +2714,82 @@ text-align: center;
       return resolvePlaceholders(key, expanded);
     }
     return { resolveMoveDescription, resolvePassiveDescription, resolvePassiveName, resolvePlaceholders };
+  }
+  const FIXED_POWER_MULTIPLIER_FAMILIES = /* @__PURE__ */ new Set([
+    130101,
+    130102,
+    130103,
+    130104,
+    130106,
+    130107,
+    130109,
+    130111,
+    130112,
+    130113,
+    130114,
+    130115,
+    130116,
+    130117,
+    130121,
+    130125,
+    130126,
+    130143,
+    130144,
+    130151,
+    130154,
+    160103,
+    160108,
+    160112,
+    160126
+  ]);
+  const SINGLE_STAT_SYNC_MULTIPLIERS = /* @__PURE__ */ new Set([
+    16010501,
+    16010601,
+    16010701,
+    16011301,
+    16011501,
+    16011601,
+    16012201,
+    16012501,
+    16012801,
+    16013601,
+    16013801,
+    16013901,
+    16014401
+  ]);
+  const MULTI_STAT_SYNC_MULTIPLIERS = /* @__PURE__ */ new Set([16012401, 16014201]);
+  const SINGLE_STAT_MOVE_MULTIPLIERS = /* @__PURE__ */ new Set([
+    13011901,
+    13012301,
+    13012401,
+    13013001,
+    13013101,
+    13013201,
+    13013301,
+    13013401,
+    13013501,
+    13013801,
+    13013901,
+    13014001,
+    13014101,
+    13014901
+  ]);
+  const TWO_STAT_MOVE_MULTIPLIERS = /* @__PURE__ */ new Set([13016701]);
+  const MULTI_STAT_MOVE_MULTIPLIERS = /* @__PURE__ */ new Set([13014201, 13015701]);
+  function powerMultiplierForPassiveId(passiveId) {
+    const id = Number(passiveId);
+    if (!Number.isFinite(id) || id <= 0) return null;
+    const family = Math.floor(id / 100);
+    if (FIXED_POWER_MULTIPLIER_FAMILIES.has(family)) {
+      const level = id % 10;
+      return level > 0 ? { kind: "fixed", value: level * 10 } : null;
+    }
+    if (SINGLE_STAT_SYNC_MULTIPLIERS.has(id)) return { kind: "cap", value: 100 };
+    if (MULTI_STAT_SYNC_MULTIPLIERS.has(id)) return { kind: "cap", value: 120 };
+    if (SINGLE_STAT_MOVE_MULTIPLIERS.has(id)) return { kind: "cap", value: 30 };
+    if (TWO_STAT_MOVE_MULTIPLIERS.has(id)) return { kind: "cap", value: 60 };
+    if (MULTI_STAT_MOVE_MULTIPLIERS.has(id)) return { kind: "cap", value: 110 };
+    return null;
   }
   async function loadCoreData() {
     if (trainerById.size) return;
@@ -2935,12 +3053,15 @@ text-align: center;
       const ability = abilityById.get(String(panel.abilityId));
       const moveId = String(ability?.moveId || "");
       const move = moveById.get(moveId);
-      return Number(moveId) > 0 ? [[String(panel.cellId), {
+      if (!ability) return [];
+      return [[String(panel.cellId), {
         moveId,
+        passiveId: Number(ability.passiveId),
         abilityType: Number(ability.type),
         abilityValue: Number(ability.value),
-        isSyncPowerBoost: Number(ability.type) === 9 && move?.group === "Sync"
-      }]] : [];
+        isSyncPowerBoost: Number(ability.type) === 9 && move?.group === "Sync",
+        powerMultiplier: powerMultiplierForPassiveId(ability.passiveId)
+      }]];
     }));
     gridUpdateDatesByTrainerId = /* @__PURE__ */ new Map();
     (abilityPanels.entries || []).forEach((panel) => {

@@ -297,6 +297,26 @@ assert.equal(parserContext.masterPassiveKindForCheck('18021001', 'Sand Fortress'
 assert.equal(parserContext.masterPassiveKindForCheck('99023201', 'The Competitive Heir'), '', 'Ortega must not match Master Passive.');
 
 const gridSource = await readFile(path.join(projectRoot, 'src/grid/index.js'), 'utf8');
+const multiplierSource = await readFile(path.join(projectRoot, 'src/data/power-multipliers.js'), 'utf8');
+const multiplierContext = {};
+vm.createContext(multiplierContext);
+vm.runInContext(`${multiplierSource}\nthis.powerMultiplierForCheck = powerMultiplierForPassiveId;`, multiplierContext);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(16010601) },
+  { kind: 'cap', value: 100 },
+  'Attack-raised Sync Move power must expose its verified +100% cap.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(16012401) },
+  { kind: 'cap', value: 120 },
+  'Multi-stat Sync Move power must expose its verified +120% cap.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13010603) },
+  { kind: 'fixed', value: 30 },
+  'Numbered conditional power boosts must derive a dynamic 10% per level.',
+);
+assert.equal(multiplierContext.powerMultiplierForCheck(99999999), null, 'Unknown effects must not guess a multiplier.');
 const gridContext = {
   SYNC_POWER_TILE_LABELS: {
     en: 'Sync: Power +{value}',

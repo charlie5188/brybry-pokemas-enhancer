@@ -13,7 +13,7 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 - Shows useful labels directly inside each tile, with up to four lines and responsive 9–16px text.
 - Uses localized PomaTools abbreviations only when the full label does not fit. Tooltips always keep the complete name and details.
 - Displays compact, consistent labels for Sync Move power nodes, while leaving regular move and stat nodes unchanged.
-- Adds related move descriptions to compact Grid tooltips and scales the Grid to make better use of the viewport.
+- Adds related move descriptions and community-verified power multipliers to compact Grid tooltips, and scales the Grid to make better use of the viewport.
 - Places Sync Grid before Stats and remembers a separate Grid configuration for each Sync Pair.
 
 ![Enhanced Sync Grid with responsive labels and move details](docs/images/sync-grid.png)
@@ -48,7 +48,7 @@ Brybry's structured ability, move, passive-skill and localized message data are 
 
 The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, français, Deutsch, español, italiano, 日本語, 한국어 and 繁體中文. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
 
-The current abbreviation snapshot is generated from PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`.
+The current abbreviation snapshot and supported power-multiplier formulas are based on PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`. PomaTools' calculator combines datamined structures with community damage testing; the enhancer only displays multipliers covered by its verified calculation model and does not guess unknown bespoke effects.
 
 ## Install
 

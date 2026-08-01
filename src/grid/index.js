@@ -163,12 +163,25 @@ function repositionGridTooltip(tooltip, tile) {
   tooltip.style.top = `${top}px`;
 }
 
-function appendRelatedMoveDescription(tile, moveInfo) {
-  if (!moveInfo || moveInfo.abilityType === 11) return;
-  const tooltip = [...document.querySelectorAll('body > .tooltip')]
+function visibleGridTooltip() {
+  return [...document.querySelectorAll('body > .tooltip')]
     .reverse()
     .find((candidate) => getComputedStyle(candidate).display !== 'none');
-  if (!tooltip || tooltip.querySelector('.be-related-move')) return;
+}
+
+function appendPowerMultiplier(tooltip, multiplier) {
+  if (!tooltip || !multiplier || tooltip.querySelector('.be-power-multiplier')) return;
+  const template = multiplier.kind === 'cap' ? text().multiplierCap : text().multiplier;
+  if (!template) return;
+  const line = document.createElement('p');
+  line.className = 'be-power-multiplier';
+  line.textContent = template.replace('{value}', String(multiplier.value));
+  tooltip.append(line);
+}
+
+function appendRelatedMoveDescription(tooltip, moveInfo) {
+  if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11
+    || tooltip.querySelector('.be-related-move')) return;
 
   const moveDescriptionResolver = typeof window.getMoveDescr === 'function'
     ? window.getMoveDescr
@@ -184,6 +197,13 @@ function appendRelatedMoveDescription(tile, moveInfo) {
   detail.textContent = description;
   block.append(name, detail);
   tooltip.append(block);
+}
+
+function appendGridTooltipDetails(tile, moveInfo) {
+  const tooltip = visibleGridTooltip();
+  if (!tooltip) return;
+  appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+  appendRelatedMoveDescription(tooltip, moveInfo);
   repositionGridTooltip(tooltip, tile);
 }
 
@@ -198,7 +218,7 @@ function setupMoveTooltips() {
     const polygon = polygons.find((candidate) => candidate.parentElement?.getAttribute('transform') === transform);
     if (!polygon || polygon.dataset.beMoveTooltipBound === 'true') return;
     polygon.dataset.beMoveTooltipBound = 'true';
-    polygon.addEventListener('mouseenter', () => appendRelatedMoveDescription(tile, moveInfo));
+    polygon.addEventListener('mouseenter', () => appendGridTooltipDetails(tile, moveInfo));
   });
 }
 

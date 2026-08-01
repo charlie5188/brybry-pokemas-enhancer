@@ -17,6 +17,7 @@ const sourceFiles = [
   'styles.js',
   'grid/index.js',
   'data/template-parser.js',
+  'data/power-multipliers.js',
   'data/index.js',
   'picker/index.js',
   'index.js',

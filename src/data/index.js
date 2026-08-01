@@ -258,14 +258,15 @@ async function loadTrainerData() {
     const ability = abilityById.get(String(panel.abilityId));
     const moveId = String(ability?.moveId || '');
     const move = moveById.get(moveId);
-    return Number(moveId) > 0
-      ? [[String(panel.cellId), {
-        moveId,
-        abilityType: Number(ability.type),
-        abilityValue: Number(ability.value),
-        isSyncPowerBoost: Number(ability.type) === 9 && move?.group === 'Sync',
-      }]]
-      : [];
+    if (!ability) return [];
+    return [[String(panel.cellId), {
+      moveId,
+      passiveId: Number(ability.passiveId),
+      abilityType: Number(ability.type),
+      abilityValue: Number(ability.value),
+      isSyncPowerBoost: Number(ability.type) === 9 && move?.group === 'Sync',
+      powerMultiplier: powerMultiplierForPassiveId(ability.passiveId),
+    }]];
   }));
   gridUpdateDatesByTrainerId = new Map();
   (abilityPanels.entries || []).forEach((panel) => {
