@@ -18,6 +18,8 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 
 ![Enhanced Sync Grid with responsive labels and move details](docs/images/sync-grid.png)
 
+![Sync Grid tooltip showing a resolved effect and verified power multiplier](docs/images/grid-power-multiplier-tooltip.png)
+
 ### A faster Sync Pair picker
 
 - Uses a roomy two-column layout: Sync Pair results on the left and searchable filters on the right.
@@ -27,6 +29,8 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 - Keeps result count and reset controls visible while browsing long filter lists.
 
 ![Two-column Sync Pair picker with icon results and structured filters](docs/images/sync-pair-picker.png)
+
+![Passive-skill search with verified multi-select suggestions](docs/images/passive-skill-search.png)
 
 ### Structured filters, not just keywords
 

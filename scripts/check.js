@@ -321,6 +321,36 @@ assert.deepEqual(
   { kind: 'fixed', value: 30 },
   'Super-effective Max Move power boosts must use their numbered multiplier.',
 );
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13011805) },
+  { kind: 'fixed', value: 50 },
+  'Grid conditional power-up families must expose their numbered multiplier.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13011005) },
+  { kind: 'cap', value: 50 },
+  'Full-HP power boosts must expose their verified maximum.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13013604) },
+  { kind: 'cap', value: 20 },
+  'Low-HP power boosts must expose their verified maximum.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13010503) },
+  { kind: 'cap', value: 18 },
+  'Move-gauge power boosts must use six gauge slots for their maximum.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(16013701) },
+  { kind: 'cap', value: 100 },
+  'Move-gauge Sync Move power must expose its verified +100% maximum.',
+);
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13085301) },
+  { kind: 'fixed', value: 100 },
+  'Explicit two-times power effects must not derive +10% from the ID suffix.',
+);
 assert.equal(multiplierContext.powerMultiplierForCheck(99999999), null, 'Unknown effects must not guess a multiplier.');
 const gridContext = {
   SYNC_POWER_TILE_LABELS: {

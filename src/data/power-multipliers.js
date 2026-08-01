@@ -6,7 +6,39 @@ const FIXED_POWER_MULTIPLIER_FAMILIES = new Set([
   130111, 130112, 130113, 130114, 130115, 130116, 130117,
   130121, 130125, 130126, 130143, 130144, 130151, 130154,
   130171,
-  160103, 160108, 160112, 160126, 160146,
+  130118, 130122, 130127, 130128, 130137, 130148, 130158,
+  130160, 130161, 130162, 130163, 130164, 130165, 130168,
+  130169, 130170, 130173, 130174, 130175, 130177, 130178,
+  130180, 130181, 130182, 130183, 130184, 130185, 130188,
+  130194, 130197, 130198, 130199,
+  130801, 130802, 130803, 130804, 130806, 130807, 130808,
+  130809, 130810, 130814, 130815, 130819, 130820, 130822,
+  130824, 130828, 130835, 130837, 130842, 130843, 130845,
+  130848, 130849, 130852, 130856,
+  160103, 160104, 160108, 160109, 160110, 160111, 160112,
+  160117, 160118, 160120, 160121, 160123, 160126, 160129,
+  160130, 160131, 160132, 160133, 160134, 160135, 160140,
+  160141, 160143, 160145, 160146, 160147, 160148, 160149,
+  160150, 160152, 160154, 160155, 160156, 160157, 160158,
+  160159, 160160, 160161, 160162, 160163, 160164, 160165,
+  160167, 160168, 160169, 160170, 160171, 160173, 160174,
+  160175, 160176, 160177, 160178, 160179, 160180, 160181,
+  160182, 160183, 160186, 160187, 160193, 160194, 160197,
+  160198, 160199, 160302, 160305, 160307, 160308, 160313,
+  160315, 160316, 160318,
+]);
+
+// These use an HP percentage rather than a conventional stat rank. Their
+// maximums are 10% per level at full HP and 5% per level at minimum HP.
+const HIGH_HP_POWER_MULTIPLIER_FAMILIES = new Set([130110]);
+const LOW_HP_POWER_MULTIPLIER_FAMILIES = new Set([130136]);
+const MOVE_GAUGE_POWER_MULTIPLIER_FAMILIES = new Set([130105]);
+
+// The localized name says "2×"; its passive ID level is not the multiplier.
+const EXACT_POWER_MULTIPLIERS = new Map([
+  [13085301, { kind: 'fixed', value: 100 }],
+  [13085001, { kind: 'cap', value: 30 }],
+  [16013701, { kind: 'cap', value: 100 }],
 ]);
 
 const SINGLE_STAT_SYNC_MULTIPLIERS = new Set([
@@ -30,10 +62,25 @@ function powerMultiplierForPassiveId(passiveId) {
   const id = Number(passiveId);
   if (!Number.isFinite(id) || id <= 0) return null;
 
+  const exact = EXACT_POWER_MULTIPLIERS.get(id);
+  if (exact) return { ...exact };
+
   const family = Math.floor(id / 100);
   if (FIXED_POWER_MULTIPLIER_FAMILIES.has(family)) {
     const level = id % 10;
     return level > 0 ? { kind: 'fixed', value: level * 10 } : null;
+  }
+  if (HIGH_HP_POWER_MULTIPLIER_FAMILIES.has(family)) {
+    const level = id % 10;
+    return level > 0 ? { kind: 'cap', value: level * 10 } : null;
+  }
+  if (LOW_HP_POWER_MULTIPLIER_FAMILIES.has(family)) {
+    const level = id % 10;
+    return level > 0 ? { kind: 'cap', value: level * 5 } : null;
+  }
+  if (MOVE_GAUGE_POWER_MULTIPLIER_FAMILIES.has(family)) {
+    const level = id % 10;
+    return level > 0 ? { kind: 'cap', value: level * 6 } : null;
   }
   if (SINGLE_STAT_SYNC_MULTIPLIERS.has(id)) return { kind: 'cap', value: 100 };
   if (MULTI_STAT_SYNC_MULTIPLIERS.has(id)) return { kind: 'cap', value: 120 };
