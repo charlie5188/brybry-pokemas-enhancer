@@ -1,5 +1,7 @@
 # Brybry Pokemas Enhancer
 
+English | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybry.ch`. Development happens in small, responsibility-based files under `src/`; users still install one generated file from the repository root.
 
 [Install Brybry Pokemas Enhancer](https://raw.githubusercontent.com/charlie5188/brybry-pokemas-enhancer/main/brybry-enhancer.user.js)
