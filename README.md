@@ -46,7 +46,7 @@ Pair names and filter metadata continue to come from Brybry's current data files
 
 Brybry's structured ability, move, passive-skill and localized message data are resolved into complete searchable text. New Sync Pairs and supported skill templates therefore become available without maintaining a manual pair-ID list.
 
-The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, French, German, Spanish, Italian, Japanese, Korean and Traditional Chinese. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
+The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, français, Deutsch, español, italiano, 日本語, 한국어 and 繁體中文. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
 
 The current abbreviation snapshot is generated from PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`.
 
