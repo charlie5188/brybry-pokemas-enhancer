@@ -1,0 +1,1068 @@
+html[data-be-spoiler-protection] #lastReleasedPairs {
+display: none !important;
+    }
+
+/* Brybry adds .hidden while scrolling down. Keep the pair picker available as
+   a stable page action instead of making users reverse-scroll to recover it. */
+#openPairSearchBtn.fab-btn,
+#openPairSearchBtn.fab-btn.hidden {
+bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
+opacity: 1 !important;
+pointer-events: auto !important;
+right: max(20px, calc(env(safe-area-inset-right) + 12px));
+transform: none !important;
+visibility: visible !important;
+    }
+
+#openPairSearchBtn.fab-btn:hover,
+#openPairSearchBtn.fab-btn.hidden:hover {
+transform: translateY(-2px) !important;
+    }
+
+.brybry-tile-label {
+pointer-events: none;
+fill: #fff;
+font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+font-weight: 800;
+letter-spacing: -0.2px;
+paint-order: stroke fill;
+stroke: rgba(0, 0, 0, .78);
+stroke-width: 2.1px;
+stroke-linejoin: round;
+    }
+
+    body > .tooltip {
+box-sizing: border-box;
+font-size: 13px;
+line-height: 1.35;
+padding: 8px 9px;
+width: min(300px, calc(100vw - 16px));
+    }
+
+    .tooltip .be-related-move {
+background: rgba(105, 190, 218, .14);
+border: 1px solid rgba(145, 214, 235, .28);
+border-left: 3px solid rgba(145, 214, 235, .82);
+border-radius: 6px;
+color: rgba(255, 255, 255, .86);
+font-size: 11px;
+line-height: 1.4;
+margin: 8px 0 0;
+padding: 6px 8px;
+white-space: pre-line;
+    }
+
+    .tooltip .be-related-move strong {
+color: #fff;
+display: block;
+font-size: 11.5px;
+line-height: 1.3;
+margin-bottom: 2px;
+    }
+
+    .tooltip .be-related-move span { display: block; }
+
+    #pairSearchModal .be-picker-tools {
+display: flex;
+gap: 8px;
+align-items: center;
+margin: 0 0 10px;
+    }
+
+    #pairSearchModal .be-filter-button,
+    #pairSearchModal .be-clear-button {
+appearance: none;
+border: 1px solid #6aafc0;
+border-radius: 999px;
+background: rgba(255, 255, 255, .94);
+color: #226478;
+cursor: pointer;
+font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+padding: 8px 12px;
+    }
+
+    #pairSearchModal .be-filter-button[aria-expanded="true"] {
+color: #fff;
+background: #27758b;
+border-color: #27758b;
+    }
+
+    #pairSearchModal :is(
+      .be-filter-button,
+      .be-clear-button,
+      .be-sort-direction,
+      .be-view-button,
+      .be-chip,
+      .be-skill-category-chip,
+      .be-skill-token,
+      .be-pair-result
+    ):focus-visible,
+    .be-settings-button:focus-visible,
+    .be-spoiler-banner button:focus-visible {
+outline: 3px solid rgba(54, 126, 201, .45);
+outline-offset: 2px;
+    }
+
+    #pairSearchModal .be-filter-count {
+margin-left: auto;
+color: #51727c;
+font: 700 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+font-variant-numeric: tabular-nums;
+white-space: nowrap;
+    }
+
+    #pairSearchModal .be-results-toolbar {
+align-items: center;
+display: flex;
+flex: 0 0 auto;
+gap: 10px;
+justify-content: space-between;
+margin-bottom: 8px;
+min-height: 40px;
+    }
+
+    #pairSearchModal .be-sort-control {
+align-items: center;
+display: flex;
+gap: 7px;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-sort-label {
+color: #51727c;
+font: 700 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+white-space: nowrap;
+    }
+
+    #pairSearchModal .be-sort-select {
+appearance: auto;
+background: #fff;
+border: 1px solid #9bc8d2;
+border-radius: 8px;
+color: #24586a;
+font: 700 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+height: 40px;
+max-width: 230px;
+min-width: 0;
+padding: 0 10px;
+    }
+
+    #pairSearchModal .be-sort-direction {
+align-items: center;
+appearance: none;
+background: #fff;
+border: 1px solid #9bc8d2;
+border-radius: 8px;
+color: #226478;
+cursor: pointer;
+display: inline-flex;
+flex: 0 0 40px;
+height: 40px;
+justify-content: center;
+padding: 0;
+    }
+
+    #pairSearchModal .be-sort-direction svg {
+fill: none;
+height: 20px;
+stroke: currentColor;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-width: 2;
+transition: transform 140ms ease;
+width: 20px;
+    }
+
+    #pairSearchModal .be-sort-direction[data-direction="asc"] svg { transform: rotate(180deg); }
+    #pairSearchModal .be-sort-direction:active { transform: scale(.96); }
+
+    #pairSearchModal .be-view-toggle {
+background: #edf7f9;
+border-radius: 10px;
+box-shadow: inset 0 0 0 1px rgba(39, 117, 139, .25);
+display: inline-flex;
+flex: 0 0 auto;
+padding: 3px;
+    }
+
+    #pairSearchModal .be-view-button {
+appearance: none;
+align-items: center;
+background: transparent;
+border: 0;
+border-radius: 7px;
+color: #51727c;
+cursor: pointer;
+display: inline-flex;
+height: 40px;
+justify-content: center;
+padding: 0;
+transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease, transform 80ms ease;
+width: 40px;
+    }
+
+    #pairSearchModal .be-view-button[aria-pressed="true"] {
+background: #fff;
+box-shadow: 0 1px 3px rgba(24, 73, 86, .18);
+color: #226478;
+    }
+
+    #pairSearchModal .be-view-button:active { transform: scale(.96); }
+    #pairSearchModal .be-view-button svg {
+fill: none;
+height: 20px;
+stroke: currentColor;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-width: 2;
+width: 20px;
+    }
+
+    #pairSearchModal .be-filter-panel {
+display: none;
+padding: 12px 0 14px;
+border-bottom: 1px solid rgba(44, 104, 120, .18);
+margin-bottom: 10px;
+    }
+
+    #pairSearchModal .be-filter-panel[data-open="true"] { display: block; }
+
+    #pairSearchModal .be-skill-search-section {
+margin: 12px 0 2px;
+    }
+
+    #pairSearchModal .be-name-search-section { margin: 2px 0 0; }
+
+    #pairSearchModal .be-name-search-section > #pairSearchInput {
+background: #fff;
+border: 1px solid rgba(44, 104, 120, .34);
+border-radius: 8px;
+box-shadow: none;
+box-sizing: border-box;
+color: #234d59;
+font: 500 14px/1.3 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+height: 40px;
+margin: 0;
+outline: 0;
+padding: 0 10px;
+width: 100%;
+    }
+
+    #pairSearchModal .be-name-search-section > #pairSearchInput:focus {
+border-color: #27758b;
+box-shadow: 0 0 0 3px rgba(39, 117, 139, .14);
+    }
+
+    #pairSearchModal .be-skill-combobox {
+position: relative;
+z-index: 6;
+    }
+
+    #pairSearchModal .be-skill-token-field {
+align-items: center;
+border: 1px solid rgba(44, 104, 120, .34);
+border-radius: 8px;
+box-sizing: border-box;
+display: flex;
+flex-wrap: wrap;
+gap: 5px;
+min-height: 40px;
+padding: 5px 7px;
+width: 100%;
+    }
+
+    #pairSearchModal label.be-filter-title { display: block; }
+
+    #pairSearchModal .be-skill-token-field:focus-within {
+border-color: #27758b;
+box-shadow: 0 0 0 3px rgba(39, 117, 139, .14);
+    }
+
+    #pairSearchModal .be-skill-search-input {
+background: transparent;
+border: 0;
+box-shadow: none;
+box-sizing: border-box;
+color: #234d59;
+flex: 1 1 150px;
+font: 500 14px/1.3 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+height: 28px;
+min-width: 96px;
+outline: 0;
+padding: 3px;
+    }
+
+    #pairSearchModal .be-skill-token {
+align-items: center;
+background: #e4f4f7;
+border: 1px solid #8bc2cf;
+border-radius: 999px;
+color: #215e70;
+display: inline-flex;
+font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 5px;
+max-width: 100%;
+padding: 5px 7px 5px 9px;
+    }
+
+    #pairSearchModal .be-skill-token > span:first-child {
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+    }
+
+    #pairSearchModal .be-skill-token > span:last-child { font-size: 15px; line-height: 10px; }
+
+    #pairSearchModal .be-skill-suggestions {
+background: #fff;
+border: 1px solid rgba(44, 104, 120, .3);
+border-radius: 8px;
+box-shadow: 0 8px 24px rgba(20, 52, 61, .22);
+left: 0;
+list-style: none;
+margin: 5px 0 0;
+max-height: 280px;
+overflow-y: auto;
+padding: 4px;
+position: absolute;
+right: 0;
+top: 100%;
+    }
+
+    #pairSearchModal .be-skill-suggestions[hidden] { display: none; }
+
+    #pairSearchModal .be-skill-suggestion {
+border-radius: 6px;
+cursor: pointer;
+display: grid;
+gap: 3px;
+padding: 8px 9px;
+    }
+
+    #pairSearchModal .be-skill-suggestion:hover,
+    #pairSearchModal .be-skill-suggestion.is-active { background: #e9f5f7; }
+
+    #pairSearchModal .be-skill-suggestion strong {
+color: #1e5667;
+font: 750 13px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    #pairSearchModal .be-skill-suggestion span {
+-webkit-box-orient: vertical;
+-webkit-line-clamp: 2;
+color: #647d84;
+display: -webkit-box;
+font: 500 11px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+overflow: hidden;
+    }
+
+    #pairSearchModal .be-skill-suggestion-empty {
+color: #6c8187;
+font: 600 12px/1.3 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+padding: 10px;
+    }
+
+    #pairSearchModal .be-skill-category-groups { margin-top: 12px; }
+
+    #pairSearchModal .be-skill-battle-grid { display: grid; gap: 0; }
+
+    #pairSearchModal .be-skill-category-row {
+display: flex;
+flex-wrap: wrap;
+gap: 5px;
+    }
+
+    #pairSearchModal .be-skill-category-row--grouped {
+display: grid;
+gap: 5px;
+    }
+
+    #pairSearchModal .be-skill-category-cluster {
+align-items: center;
+display: flex;
+flex-wrap: wrap;
+gap: 5px;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-skill-category-chip {
+align-items: center;
+background: #fff;
+border: 1px solid #9ac7d1;
+border-radius: 8px;
+color: #286577;
+display: inline-flex;
+font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 6px;
+min-height: 34px;
+padding: 6px 9px;
+position: relative;
+    }
+
+    #pairSearchModal .be-skill-category-chip:hover { background: #eff8fa; }
+
+    #pairSearchModal .be-skill-category-chip--detail {
+background: #f7fafb;
+font-size: 12px;
+min-height: 28px;
+padding: 5px 7px;
+    }
+
+    #pairSearchModal .be-skill-category-chip--icon-only {
+border-style: solid;
+justify-content: center;
+padding: 4px;
+width: 34px;
+    }
+
+    #pairSearchModal .be-skill-category-chip--icon-only .be-skill-category-label {
+clip: rect(0 0 0 0);
+clip-path: inset(50%);
+height: 1px;
+overflow: hidden;
+position: absolute;
+white-space: nowrap;
+width: 1px;
+    }
+
+    #pairSearchModal .be-skill-category-chip--icon-only > img {
+height: 22px;
+object-fit: contain;
+width: 22px;
+    }
+
+    #pairSearchModal .be-skill-category-chip--ex-detail { overflow: visible; }
+
+    #pairSearchModal .be-skill-category-ex-badge {
+align-items: center;
+background: #6b46c1;
+border: 1px solid #fff;
+border-radius: 5px;
+color: #fff;
+display: inline-flex;
+font: 850 7px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+height: 11px;
+justify-content: center;
+letter-spacing: -.02em;
+min-width: 14px;
+padding: 0 2px;
+position: absolute;
+left: -3px;
+top: -4px;
+z-index: 1;
+    }
+
+    #pairSearchModal .be-skill-category-chip--stat-direction {
+gap: 1px;
+width: 44px;
+    }
+
+    #pairSearchModal .be-stat-direction {
+color: #3f7180;
+font: 900 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-left: -1px;
+    }
+
+    #pairSearchModal .be-skill-category-chip--stat-direction[data-be-filter-state="include"] .be-stat-direction,
+    #pairSearchModal .be-skill-category-chip--stat-direction[data-be-filter-state="exclude"] .be-stat-direction {
+color: currentColor;
+    }
+
+    #pairSearchModal .be-skill-category-chip img,
+    #pairSearchModal .be-skill-category-icon,
+    #pairSearchModal .be-skill-category-icon svg {
+height: 17px;
+width: 17px;
+    }
+
+    #pairSearchModal .be-skill-category-icon {
+display: inline-flex;
+    }
+
+    #pairSearchModal .be-skill-category-icon svg {
+fill: none;
+stroke: currentColor;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-width: 2;
+    }
+
+    #pairSearchModal label.be-filter-title {
+color: #24586a;
+font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+letter-spacing: .04em;
+margin: 0 0 7px;
+text-transform: uppercase;
+    }
+
+    #pairSearchModal details.be-filter-section {
+border-bottom: 1px solid rgba(44, 104, 120, .16);
+margin: 0;
+    }
+
+    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger {
+align-items: center;
+border-radius: 6px;
+color: #285b6a;
+cursor: pointer;
+display: flex;
+font: 750 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+justify-content: space-between;
+letter-spacing: 0;
+list-style: none;
+margin: 0;
+min-height: 40px;
+padding: 8px 2px;
+text-transform: none;
+    }
+
+    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger::-webkit-details-marker { display: none; }
+    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:hover { background: rgba(44, 104, 120, .055); }
+    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:focus-visible {
+box-shadow: inset 0 0 0 2px rgba(39, 117, 139, .55);
+outline: 0;
+    }
+
+    #pairSearchModal .be-accordion-chevron {
+fill: none;
+flex: 0 0 auto;
+height: 16px;
+stroke: #5c7d86;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-width: 2;
+transition: transform 180ms ease;
+width: 16px;
+    }
+
+    #pairSearchModal details.be-filter-section[open] > summary .be-accordion-chevron { transform: rotate(180deg); }
+
+    #pairSearchModal .be-accordion-content {
+animation: be-accordion-in 160ms ease-out;
+padding: 0 2px 12px;
+    }
+
+    @keyframes be-accordion-in {
+from { opacity: 0; transform: translateY(-3px); }
+to { opacity: 1; transform: translateY(0); }
+    }
+
+    #pairSearchModal .be-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    #pairSearchModal .be-chip {
+appearance: none;
+align-items: center;
+background: #fff;
+border: 1px solid #9bc8d2;
+border-radius: 8px;
+color: #2d6272;
+cursor: pointer;
+display: inline-flex;
+font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 6px;
+min-height: 34px;
+min-width: 0;
+padding: 6px 9px;
+position: relative;
+width: auto;
+    }
+
+    #pairSearchModal .be-chip[data-be-filter-state="include"],
+    #pairSearchModal .be-skill-category-chip[data-be-filter-state="include"] {
+background: #d9f1e3;
+border-color: #2d8a58;
+box-shadow: inset 0 0 0 1px #2d8a58;
+color: #17583a;
+    }
+
+    #pairSearchModal .be-chip[data-be-filter-state="exclude"],
+    #pairSearchModal .be-skill-category-chip[data-be-filter-state="exclude"] {
+background: #fae2e5;
+border-color: #c64856;
+box-shadow: inset 0 0 0 1px #c64856;
+color: #852d38;
+    }
+
+    #pairSearchModal .be-filter-state-mark {
+align-items: center;
+border: 2px solid #fff;
+border-radius: 50%;
+box-shadow: 0 1px 3px rgba(24, 51, 59, .25);
+color: #fff;
+display: none;
+font: 900 10px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+height: 17px;
+justify-content: center;
+pointer-events: none;
+position: absolute;
+right: -5px;
+top: -5px;
+width: 17px;
+z-index: 3;
+    }
+
+    #pairSearchModal [data-be-filter-state="include"] > .be-filter-state-mark {
+background: #218351;
+display: flex;
+    }
+
+    #pairSearchModal [data-be-filter-state="exclude"] > .be-filter-state-mark {
+background: #c33f4d;
+display: flex;
+    }
+
+    #pairSearchModal .be-chip-icon {
+display: block;
+flex: 0 0 auto;
+height: 19px;
+object-fit: contain;
+pointer-events: none;
+width: 19px;
+    }
+
+    #pairSearchModal .be-chip[data-be-group="role"]:has(.be-role-variant-icon) {
+padding-inline: 5px;
+width: 42px;
+    }
+
+    #pairSearchModal .be-chip .be-role-variant-icon {
+height: 22px;
+max-width: 32px;
+width: auto;
+    }
+
+    #pairSearchModal .be-origin-mark-icon {
+filter: grayscale(1) brightness(0);
+height: 21px;
+width: 21px;
+    }
+
+    #pairSearchModal .be-chip-symbol {
+color: #111;
+font: 900 21px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+width: 21px;
+    }
+
+    #pairSearchModal .be-chip:has(.be-chip-icon + .be-chip-icon) {
+gap: 3px;
+    }
+
+    #pairSearchModal .be-chip:has(.be-chip-icon + .be-chip-icon) .be-chip-icon {
+height: 18px;
+width: 18px;
+    }
+
+    #pairSearchModal .be-chip-text {
+font: inherit;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-chip--icon-only {
+justify-content: center;
+padding: 6px;
+width: 34px;
+    }
+
+    #pairSearchModal .be-chip--icon-only .be-chip-text {
+clip: rect(0 0 0 0);
+clip-path: inset(50%);
+height: 1px;
+overflow: hidden;
+position: absolute;
+white-space: nowrap;
+width: 1px;
+    }
+
+    #pairSearchModal .be-chip--icon-only:has(.be-chip-icon + .be-chip-icon) {
+width: auto;
+    }
+
+    #pairSearchModal .be-chip[data-be-group="trainerGroup"],
+    #pairSearchModal .be-chip[data-be-group="fashion"],
+    #pairSearchModal .be-chip[data-be-group="other"],
+    #pairSearchModal .be-chip[data-be-group="region"] {
+max-width: 100%;
+    }
+
+    #pairSearchModal .be-chip[data-be-group="region"] { min-width: 0; }
+
+    #pairSearchModal .be-chip[data-be-group="trainerGroup"] .be-chip-text,
+    #pairSearchModal .be-chip[data-be-group="fashion"] .be-chip-text,
+    #pairSearchModal .be-chip[data-be-group="other"] .be-chip-text,
+    #pairSearchModal .be-chip[data-be-group="region"] .be-chip-text {
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+    }
+
+    .be-floating-filter-tooltip {
+background: rgba(20, 31, 35, .96);
+border-radius: 6px;
+color: #fff;
+font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+padding: 6px 8px;
+pointer-events: none;
+position: fixed;
+white-space: normal;
+width: max-content;
+max-width: 220px;
+z-index: 100000;
+    }
+
+    .be-floating-filter-tooltip[hidden] { display: none; }
+
+    .be-floating-pair-tooltip {
+background: rgba(20, 31, 35, .97);
+border-radius: 8px;
+box-shadow: 0 6px 20px rgba(0, 0, 0, .22);
+color: #fff;
+display: grid;
+gap: 3px;
+max-width: 260px;
+padding: 9px 11px;
+pointer-events: none;
+position: fixed;
+width: max-content;
+z-index: 100000;
+    }
+
+    .be-floating-pair-tooltip[hidden] { display: none; }
+    .be-floating-pair-tooltip .pair-stars { color: #ffd85a; font: 800 12px/1 system-ui, sans-serif; }
+    .be-floating-pair-tooltip .pair-name { font: 800 13px/1.25 system-ui, sans-serif; }
+    .be-floating-pair-tooltip .be-pair-meta { color: #b9d5dc; font: 700 11px/1.25 system-ui, sans-serif; }
+
+    #pairSearchModal .be-chip[data-be-group="rarity"] { width: 48px; }
+    #pairSearchModal .be-chip[data-be-group="rarity"] .be-chip-icon {
+height: 18px;
+width: 36px;
+    }
+
+    #pairSearchModal #pairSearchResults .be-pair-meta {
+color: #5b7c85;
+display: block;
+font: 700 12px/1.3 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-top: 3px;
+    }
+
+    #pairSearchModal #pairSearchResults .be-result-type {
+align-items: center;
+border-radius: 50%;
+display: flex;
+height: 42px;
+margin: 16px;
+width: 42px;
+    }
+
+    #pairSearchModal #pairSearchResults .be-pair-avatar {
+display: block;
+width: 75px;
+height: 75px;
+margin: 0;
+border-radius: 0;
+object-fit: contain;
+outline: 1px solid rgba(0, 0, 0, .1);
+outline-offset: -1px;
+    }
+
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] {
+align-content: start;
+display: grid;
+gap: 6px;
+grid-template-columns: repeat(auto-fill, 79px);
+padding: 8px 0 12px;
+    }
+
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] > .be-pair-result {
+align-items: center;
+border: 0;
+border-radius: 10px;
+cursor: pointer;
+display: flex;
+flex-direction: column;
+min-width: 0;
+padding: 2px;
+text-align: center;
+    }
+
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] > .be-pair-result:hover,
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] > .be-pair-result:focus-visible {
+background: #edf7f9;
+box-shadow: inset 0 0 0 1px rgba(39, 117, 139, .18);
+    }
+
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] .pair-images {
+flex: 0 0 auto;
+margin: 0;
+    }
+
+    #pairSearchModal #pairSearchResults[data-be-view="icons"] .pair-info {
+display: none;
+    }
+
+    .be-grid-wrapper { min-width: 0; }
+    .be-grid-wrapper > #gridDiv { margin-inline: auto; }
+
+    #pairSearchModal .be-modal-layout {
+display: flex;
+flex-direction: column;
+min-height: 0;
+    }
+
+    #pairSearchModal .be-results-column {
+display: flex;
+flex-direction: column;
+min-height: 0;
+position: relative;
+-webkit-font-smoothing: antialiased;
+    }
+
+    #pairSearchModal .be-results-column.is-loading #pairSearchResults {
+opacity: .42;
+pointer-events: none;
+transition: opacity 100ms ease;
+    }
+
+    #pairSearchModal .be-results-loading {
+align-items: center;
+background: rgba(255, 255, 255, .94);
+border: 1px solid rgba(44, 104, 120, .16);
+border-radius: 9px;
+box-shadow: 0 8px 24px rgba(20, 45, 52, .14);
+color: #315f6c;
+display: flex;
+font: 750 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 9px;
+left: 50%;
+padding: 10px 13px;
+pointer-events: none;
+position: absolute;
+top: 50%;
+transform: translate(-50%, -50%);
+z-index: 20;
+    }
+
+    #pairSearchModal .be-results-loading[hidden] { display: none; }
+
+    #pairSearchModal .be-loading-spinner {
+animation: be-spin 700ms linear infinite;
+border: 2px solid #b9d8df;
+border-radius: 50%;
+border-top-color: #27758b;
+height: 17px;
+width: 17px;
+    }
+
+    @keyframes be-spin { to { transform: rotate(360deg); } }
+
+    #pairSearchModal .be-filter-sidebar { order: -1; }
+
+    #headerBody.navbar { z-index: 100; }
+
+    .be-settings {
+float: right;
+overflow: visible;
+position: relative;
+    }
+
+    .be-settings-button {
+align-items: center;
+appearance: none;
+background: transparent;
+border: 0;
+color: #fff;
+cursor: pointer;
+display: flex;
+height: 61px;
+justify-content: center;
+padding: 0;
+width: 58px;
+    }
+
+    .be-settings-button:hover,
+    .be-settings-button[aria-expanded="true"] { background: #1f5c9b; }
+    .be-settings-button:active svg { transform: scale(.96); }
+    .be-settings-button svg {
+fill: none;
+height: 23px;
+stroke: currentColor;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-width: 2;
+width: 23px;
+    }
+
+    .be-settings-popover {
+background: #fff;
+border-radius: 12px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 0 1px rgba(0, 0, 0, .08);
+color: #234d59;
+padding: 16px;
+position: absolute;
+right: 8px;
+top: calc(100% + 8px);
+width: min(300px, calc(100vw - 24px));
+z-index: 110;
+    }
+
+    .be-settings-popover[hidden] { display: none; }
+    .be-settings-heading {
+font: 800 15px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin: 0 0 12px;
+    }
+
+    .be-toggle-row {
+align-items: center;
+cursor: pointer;
+display: flex;
+gap: 12px;
+justify-content: space-between;
+    }
+
+    .be-toggle-copy { display: grid; gap: 4px; }
+    .be-toggle-copy strong { font: 750 14px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+    .be-toggle-copy small { color: #607b83; font: 500 12px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+    .be-toggle-row input { opacity: 0; position: absolute; pointer-events: none; }
+    .be-switch {
+background: #aab9bd;
+border-radius: 999px;
+flex: 0 0 44px;
+height: 24px;
+position: relative;
+transition: background-color 140ms ease;
+    }
+
+    .be-switch::after {
+background: #fff;
+border-radius: 50%;
+box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+content: '';
+height: 20px;
+left: 2px;
+position: absolute;
+top: 2px;
+transition: transform 140ms ease;
+width: 20px;
+    }
+
+    .be-toggle-row input:checked + .be-switch { background: #27758b; }
+    .be-toggle-row input:checked + .be-switch::after { transform: translateX(20px); }
+    .be-toggle-row input:focus-visible + .be-switch { outline: 3px solid rgba(54, 126, 201, .35); outline-offset: 2px; }
+
+    .be-spoiler-banner {
+align-items: center;
+background: #173f4b;
+border-radius: 10px;
+box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+color: #fff;
+display: flex;
+font: 700 14px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 14px;
+left: 50%;
+max-width: min(620px, calc(100vw - 24px));
+padding: 12px 12px 12px 16px;
+position: fixed;
+top: 76px;
+transform: translateX(-50%);
+z-index: 1100;
+    }
+
+    .be-spoiler-banner button {
+align-items: center;
+appearance: none;
+background: transparent;
+border: 0;
+color: #fff;
+cursor: pointer;
+display: flex;
+flex: 0 0 40px;
+font: 400 25px/1 system-ui, sans-serif;
+height: 40px;
+justify-content: center;
+padding: 0;
+width: 40px;
+    }
+
+    @media (min-width: 960px) {
+.be-grid-picker { flex-wrap: nowrap !important; width: 100%; }
+.be-grid-wrapper { flex: 1 1 0 !important; max-width: none !important; }
+    }
+
+    @media (min-width: 860px) {
+#pairSearchModal .modal-content {
+  max-width: 1240px;
+  width: min(96%, 1240px);
+}
+
+#pairSearchModal .modal-body { overflow: hidden; }
+
+#pairSearchModal .be-modal-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) clamp(360px, 36vw, 440px);
+  height: min(80vh, 820px);
+}
+
+#pairSearchModal .be-results-column { grid-column: 1; }
+
+#pairSearchModal .be-filter-button { display: none; }
+
+#pairSearchModal .be-filter-sidebar {
+  border-left: 1px solid rgba(44, 104, 120, .18);
+  grid-column: 2;
+  min-width: 0;
+  order: initial;
+  overflow-y: auto;
+  padding-left: 18px;
+}
+
+#pairSearchModal .be-filter-sidebar > .be-picker-tools {
+  background: #fff;
+  border-bottom: 1px solid rgba(44, 104, 120, .18);
+  box-shadow: 0 5px 10px -10px rgba(20, 52, 61, .45);
+  margin: 0;
+  min-height: 44px;
+  padding: 4px 0 9px;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+}
+
+#pairSearchModal #pairSearchResults {
+  flex: 1;
+  max-height: none;
+}
+
+#pairSearchModal .be-filter-panel {
+  border-bottom: 0;
+  display: block !important;
+  margin-bottom: 0;
+  padding: 10px 0 18px;
+}
+    }
+
+    #pairSearchModal #pairSearchResults .be-result-type {
+background: var(--be-type-color, #6aafc0);
+box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .28), 0 1px 3px rgba(0, 0, 0, .18);
+color: #fff;
+font: 800 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+justify-content: center;
+    }
+
+    #pairSearchModal #pairSearchResults .be-empty {
+color: #58747c;
+cursor: default;
+display: block;
+font: 600 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+padding: 26px 10px;
+text-align: center;
+    }
+
+    @media (max-width: 600px) {
+#pairSearchModal .be-picker-tools { align-items: stretch; flex-wrap: wrap; }
+#pairSearchModal .be-filter-count { align-self: center; margin-left: 0; }
+#pairSearchModal .be-chip { min-height: 36px; }
+#pairSearchModal .be-results-toolbar { gap: 8px; }
+#pairSearchModal .be-sort-label { display: none; }
+#pairSearchModal .be-sort-select { max-width: min(43vw, 190px); }
+.be-settings-popover { position: fixed; right: 12px; top: 69px; }
+    }

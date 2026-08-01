@@ -1,0 +1,16 @@
+{
+  "name": "brybry-sync-pair-enhancer",
+  "version": "1.11.32",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "dev": "node scripts/build.js --watch",
+    "check": "node scripts/check.js",
+    "test": "npm run check",
+    "update:pomatools": "node scripts/update-pomatools-data.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.8"
+  }
+}
