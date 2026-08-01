@@ -173,10 +173,12 @@ function appendPowerMultiplier(tooltip, multiplier) {
   if (!tooltip || !multiplier || tooltip.querySelector('.be-power-multiplier')) return;
   const template = multiplier.kind === 'cap' ? text().multiplierCap : text().multiplier;
   if (!template) return;
-  const line = document.createElement('p');
+  const line = document.createElement('span');
   line.className = 'be-power-multiplier';
   line.textContent = template.replace('{value}', String(multiplier.value));
-  tooltip.append(line);
+  const effect = tooltip.children[1];
+  if (effect) effect.append(line);
+  else tooltip.append(line);
 }
 
 function appendRelatedMoveDescription(tooltip, moveInfo) {

@@ -316,6 +316,11 @@ assert.deepEqual(
   { kind: 'fixed', value: 30 },
   'Numbered conditional power boosts must derive a dynamic 10% per level.',
 );
+assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(16014603) },
+  { kind: 'fixed', value: 30 },
+  'Super-effective Max Move power boosts must use their numbered multiplier.',
+);
 assert.equal(multiplierContext.powerMultiplierForCheck(99999999), null, 'Unknown effects must not guess a multiplier.');
 const gridContext = {
   SYNC_POWER_TILE_LABELS: {

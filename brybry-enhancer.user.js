@@ -84,6 +84,7 @@ background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);
 border-radius: 6px;
 color: rgba(255, 255, 255, .9);
+display: block;
 font: 750 11.5px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 margin: 8px 0 0;
 padding: 6px 8px;
@@ -2475,10 +2476,12 @@ text-align: center;
     if (!tooltip || !multiplier || tooltip.querySelector(".be-power-multiplier")) return;
     const template = multiplier.kind === "cap" ? text().multiplierCap : text().multiplier;
     if (!template) return;
-    const line = document.createElement("p");
+    const line = document.createElement("span");
     line.className = "be-power-multiplier";
     line.textContent = template.replace("{value}", String(multiplier.value));
-    tooltip.append(line);
+    const effect = tooltip.children[1];
+    if (effect) effect.append(line);
+    else tooltip.append(line);
   }
   function appendRelatedMoveDescription(tooltip, moveInfo) {
     if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11 || tooltip.querySelector(".be-related-move")) return;
@@ -2737,10 +2740,12 @@ text-align: center;
     130144,
     130151,
     130154,
+    130171,
     160103,
     160108,
     160112,
-    160126
+    160126,
+    160146
   ]);
   const SINGLE_STAT_SYNC_MULTIPLIERS = /* @__PURE__ */ new Set([
     16010501,

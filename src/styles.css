@@ -67,6 +67,7 @@ background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);
 border-radius: 6px;
 color: rgba(255, 255, 255, .9);
+display: block;
 font: 750 11.5px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 margin: 8px 0 0;
 padding: 6px 8px;
