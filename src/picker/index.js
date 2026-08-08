@@ -725,7 +725,7 @@ function createSkillCategoryChip(category, locale) {
   if (category.rebuffDirection) button.classList.add('be-skill-category-chip--directional-icon');
   if (category.iconOnly) button.classList.add('be-skill-category-chip--icon-only');
   if (category.exVariant) button.classList.add('be-skill-category-chip--ex-detail');
-  if (category.detailOf === 'statUp' || category.detailOf === 'statDown') {
+  if (!category.suppressStatDirection && (category.detailOf === 'statUp' || category.detailOf === 'statDown')) {
     button.classList.add('be-skill-category-chip--stat-direction');
   }
   button.type = 'button';
@@ -766,7 +766,7 @@ function createSkillCategoryChip(category, locale) {
     exBadge.textContent = 'EX';
     button.append(exBadge);
   }
-  if (category.detailOf === 'statUp' || category.detailOf === 'statDown') {
+  if (!category.suppressStatDirection && (category.detailOf === 'statUp' || category.detailOf === 'statDown')) {
     const direction = document.createElement('span');
     direction.className = 'be-stat-direction';
     direction.setAttribute('aria-hidden', 'true');

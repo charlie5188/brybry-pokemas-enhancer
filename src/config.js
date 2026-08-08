@@ -166,6 +166,10 @@ const INTERFERENCE_INFLICT_PATTERNS = {
   confusion: [['leaves', 'target', 'confused'], ['leaving', 'target', 'confused'], ['leaves', 'opposing', 'confused']],
   trap: [['leaves', 'target', 'trapped'], ['leaving', 'target', 'trapped'], ['leaves', 'opposing', 'trapped']],
 };
+const OPPONENT_STAT_INCREASE_REMOVAL_PATTERNS = [
+  ['returns', 'target', 'raised stats', 'to normal'],
+  ['returns', 'raised stats', 'opposing sync pairs', 'to normal'],
+];
 const IMMUNITY_FILTER_PATTERNS = {
   statusImmunity: [
     ['prevents', 'getting', 'status condition'],
@@ -175,7 +179,7 @@ const IMMUNITY_FILTER_PATTERNS = {
   statReductionImmunity: [
     ['prevents', 'stats', 'being lowered'],
     ['stats cannot be lowered'],
-    ['stats would be lowered', 'raises that stat', 'same amount instead'],
+    ['stats would be lowered', 'same amount instead'],
   ],
   interferenceImmunity: [
     ['prevents', 'flinching', 'confused', 'trapped'],
@@ -332,6 +336,7 @@ const SKILL_FILTER_TRANSLATIONS = {
   opponentField: { en: 'Opponent Field', fr: 'Terrain adverse', de: 'Gegner-Feld', es: 'Campo rival', it: 'Campo avversario', ja: '相手の場', ko: '상대 필드', zh: '對手場地' },
   statUp: { en: 'Stat ↑', fr: 'Stats ↑', de: 'Werte ↑', es: 'Características ↑', it: 'Statistiche ↑', ja: '能力↑', ko: '능력↑', zh: '能力↑' },
   statDown: { en: 'Opponent Stat ↓', fr: 'Stats adverses ↓', de: 'Gegner-Werte ↓', es: 'Características del rival ↓', it: 'Statistiche avversarie ↓', ja: '相手能力↓', ko: '상대 능력↓', zh: '對手能力↓' },
+  opponentStatIncreaseRemoval: { en: 'Opponent Stat ↑ Removal', fr: 'Bonus de stats adverses annulés', de: 'Gegner-Werte ↑ entfernen', es: 'Eliminar mejoras del rival', it: 'Rimozione aumenti avversari', ja: '能力↑解除', ko: '능력↑ 해제', zh: '能力↑解除' },
   status: { en: 'Inflict Status', fr: 'Infliger une altération', de: 'Statusproblem zufügen', es: 'Causar problema de estado', it: 'Infliggi stato alterato', ja: '異常付与', ko: '상태 이상 부여', zh: '賦予異常狀態' },
   interference: { en: 'Inflict Interference', fr: 'Infliger une entrave', de: 'Störung zufügen', es: 'Causar interferencia', it: 'Infliggi interferenza', ja: '妨害付与', ko: '방해 상태 부여', zh: '賦予妨害狀態' },
   immunity: { en: 'Immunity', fr: 'Immunité', de: 'Immunität', es: 'Inmunidad', it: 'Immunità', ja: '無効', ko: '무효', zh: '免疫' },
@@ -436,6 +441,17 @@ const STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES = {
   zh: '也包含将能力下降转为等量提升的效果。',
 };
 
+const STAT_REDUCTION_REVERSAL_TOOLTIP_NOTES = {
+  en: 'Also includes all-stat effects that turn stat reductions into equal stat increases.',
+  fr: 'Inclut aussi les effets pour toutes les stats qui transforment les baisses en hausses équivalentes.',
+  de: 'Enthält auch Effekte für alle Werte, die Senkungen in gleich hohe Erhöhungen umkehren.',
+  es: 'También incluye efectos para todas las características que convierten reducciones en aumentos equivalentes.',
+  it: 'Include anche gli effetti per tutte le statistiche che trasformano le riduzioni in aumenti equivalenti.',
+  ja: '能力がさがる代わりに同じ分だけあがる、全能力対象の効果も含みます。',
+  ko: '모든 능력치 하락을 같은 수치의 상승으로 바꾸는 효과도 포함합니다.',
+  zh: '也包含将任意能力下降转为等量提升的全能力效果。',
+};
+
 const SURE_HIT_TOOLTIP_NOTES = {
   en: 'Includes Sure Hit Next, moves that never miss, and unconditional or conditional effects that make moves never miss.',
   fr: 'Inclut Prochaine capacité immanquable, les capacités qui n’échouent jamais et les effets conditionnels ou non qui les rendent immanquables.',
@@ -462,6 +478,17 @@ const CIRCLE_REGION_ANCHOR_TRANSLATIONS = {
   ja: { label: '→ 地方', tooltip: '地方でサークルを絞り込む' },
   ko: { label: '→ 지방', tooltip: '지방으로 서클을 더 필터링' },
   zh: { label: '→ 地區', tooltip: '按地區進一步篩選圓環' },
+};
+
+const OPPONENT_STAT_INCREASE_REMOVAL_TOOLTIP_NOTES = {
+  en: 'Includes effects that reset, reverse, or steal the opponent’s raised stats.',
+  fr: 'Inclut les effets qui annulent, inversent ou volent les hausses de stats adverses.',
+  de: 'Enthält Effekte, die erhöhte gegnerische Werte zurücksetzen, umkehren oder stehlen.',
+  es: 'Incluye efectos que restablecen, invierten o roban las mejoras de características del rival.',
+  it: 'Include effetti che azzerano, invertono o sottraggono gli aumenti delle statistiche avversarie.',
+  ja: '相手のあがった能力をもとに戻す・反転する・奪う効果を含みます。',
+  ko: '상대의 상승한 능력치를 되돌리거나 반전하거나 빼앗는 효과를 포함합니다.',
+  zh: '包含重置、反转或夺取对手能力提升的效果。',
 };
 
 function skillFilterLabels(value) {
@@ -572,7 +599,7 @@ const SKILL_FILTER_CATEGORIES = [
   {
     value: 'statDown', group: 'utility',
     labels: skillFilterLabels('statDown'),
-    patterns: { en: [['lowers', 'stat rank']], ja: [['段階さげる'], ['段階下げる']], zh: [['降低', '階'], ['降低', '级']] },
+    patterns: { en: [['lowers', 'stat rank'], ...OPPONENT_STAT_INCREASE_REMOVAL_PATTERNS], ja: [['段階さげる'], ['段階下げる']], zh: [['降低', '階'], ['降低', '级']] },
   },
   {
     value: 'status', group: 'utility',
@@ -683,6 +710,7 @@ const SKILL_FILTER_DETAILS = [
   ['speedDown', 'statDown', [['lowers', 'speed', 'stat rank']]],
   ['accuracyDown', 'statDown', [['lowers', 'accuracy', 'stat rank']]],
   ['evasionDown', 'statDown', [['lowers', 'evasiveness', 'stat rank']]],
+  ['opponentStatIncreaseRemoval', 'statDown', OPPONENT_STAT_INCREASE_REMOVAL_PATTERNS],
   ['poison', 'status', STATUS_INFLICT_PATTERNS.poison],
   ['burn', 'status', STATUS_INFLICT_PATTERNS.burn],
   ['paralysis', 'status', STATUS_INFLICT_PATTERNS.paralysis],
@@ -707,6 +735,13 @@ const SKILL_FILTER_DETAILS = [
   ...(CIRCLE_DETAIL_TOOLTIP_LABELS[value] ? { tooltipLabels: CIRCLE_DETAIL_TOOLTIP_LABELS[value] } : {}),
   patterns: { en: patterns },
   ...(value === 'allStatReductionImmunity' ? { tooltipNotes: STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES } : {}),
+  ...(['attackReductionImmunity', 'spAttackReductionImmunity', 'defenseReductionImmunity', 'spDefenseReductionImmunity', 'speedReductionImmunity', 'accuracyReductionImmunity', 'evasionReductionImmunity'].includes(value)
+    ? { tooltipNotes: STAT_REDUCTION_REVERSAL_TOOLTIP_NOTES }
+    : {}),
+  ...(value === 'opponentStatIncreaseRemoval' ? {
+    tooltipNotes: OPPONENT_STAT_INCREASE_REMOVAL_TOOLTIP_NOTES,
+    suppressStatDirection: true,
+  } : {}),
   ...(() => {
     const baseValue = value.startsWith('ex') ? `${value[2].toLowerCase()}${value.slice(3)}` : value;
     const icon = FIELD_DETAIL_ICON_CONFIG[baseValue];

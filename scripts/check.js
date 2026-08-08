@@ -257,10 +257,31 @@ for (const value of ['statReductionImmunity', 'allStatReductionImmunity']) {
     `${value} must disclose the stat-reversal inclusion rule in its tooltip.`,
   );
 }
+for (const value of [
+  'attackReductionImmunity', 'spAttackReductionImmunity', 'defenseReductionImmunity',
+  'spDefenseReductionImmunity', 'speedReductionImmunity', 'accuracyReductionImmunity',
+  'evasionReductionImmunity',
+]) {
+  assert.equal(
+    configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === value)?.tooltipNotes?.zh,
+    '也包含将任意能力下降转为等量提升的全能力效果。',
+    `${value} must disclose the inherited all-stat reversal effect.`,
+  );
+}
 assert.equal(
   configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === 'sureHitNext')?.tooltipNotes?.zh,
   '包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。',
   'Guaranteed Hit must disclose every included hit-guarantee mechanism in its tooltip.',
+);
+assert.equal(
+  configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === 'opponentStatIncreaseRemoval')?.tooltipNotes?.ja,
+  '相手のあがった能力をもとに戻す・反転する・奪う効果を含みます。',
+  'Opponent Stat Increase Removal must explain its included mechanisms.',
+);
+assert.equal(
+  configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === 'opponentStatIncreaseRemoval')?.suppressStatDirection,
+  true,
+  'Opponent Stat Increase Removal must suppress the inherited stat-direction arrow.',
 );
 for (const [value, japaneseTooltip] of [
   ['circlePhysical', '物理サークル'],
@@ -357,6 +378,7 @@ assert.match(
 );
 assert.match(pickerSource, /category\.tooltipNotes\?\.\[locale\]/, 'Filter tooltip notes must follow the active UI language.');
 assert.match(pickerSource, /category\.tooltipLabels\?\.\[locale\]/, 'Filter tooltip label overrides must follow the active UI language.');
+assert.match(pickerSource, /!category\.suppressStatDirection && \(category\.detailOf === 'statUp' \|\| category\.detailOf === 'statDown'\)/, 'Directionless stat children must not receive a direction arrow.');
 assert.match(pickerSource, /category\.value === 'circle'\) categoryRow\.append\(createCircleRegionAnchor\(locale\)\)/, 'Circle filters must link to the Region section.');
 assert.match(pickerSource, /details\.be-filter-section\[data-be-group="region"\]/, 'The Circle region anchor must target the Region accordion.');
 assert.match(pickerSource, /regionSection\.open = true/, 'The Circle region anchor must expand the Region accordion.');
@@ -381,7 +403,7 @@ assert.match(
 );
 assert.match(
   configSource,
-  /\['stats would be lowered', 'raises that stat', 'same amount instead'\]/,
+  /\['stats would be lowered', 'same amount instead'\]/,
   'Stat-reduction reversal must count as Stat Reduction Immunity.',
 );
 assert.match(configSource, /allStatusImmunity: IMMUNITY_FILTER_PATTERNS\.statusImmunity/, 'All Status Immunity must remain an exact child of Status Immunity.');
@@ -516,6 +538,22 @@ assert.equal(
   true,
   'Sentence segmentation must preserve abbreviated stat names.',
 );
+const opponentStatIncreaseRemovalPatterns = [
+  ['returns', 'target', 'raised stats', 'to normal'],
+  ['returns', 'raised stats', 'opposing sync pairs', 'to normal'],
+];
+for (const [move, description] of [
+  ['Haze', 'Returns the target’s raised stats to normal.'],
+  ['Snatch', 'Returns the target’s raised stats to normal, then raises the user’s same stats by the same amount.'],
+  ['Topsy-Turvy', 'Returns the target’s raised stats to normal (except critical-hit rate), then lowers the target’s same stats by the same amount.'],
+  ['all-opponent Haze', 'Returns the raised stats of all opposing sync pairs to normal.'],
+]) {
+  assert.equal(
+    parserContext.matchDocumentsForCheck([description], opponentStatIncreaseRemovalPatterns),
+    true,
+    `${move} must match Opponent Stat Increase Removal.`,
+  );
+}
 const sureHitNextPatterns = [['sure hit next effect'], ['never miss']];
 assert.equal(
   parserContext.matchDocumentsForCheck(['Applies the Sure Hit Next effect to all allied sync pairs.'], sureHitNextPatterns),
@@ -555,7 +593,8 @@ for (const [name, patterns, document] of fieldDetailPatternChecks) {
 const immunityPatternChecks = [
   ['Status Immunity', [['prevents', 'getting', 'status condition']], 'Prevents the user from getting a status condition.'],
   ['Stat Reduction Immunity', [['prevents', 'stats', 'being lowered']], 'Prevents the user’s stats from being lowered.'],
-  ['Stat Reduction Reversal', [['stats would be lowered', 'raises that stat', 'same amount instead']], 'When any of the user’s stats would be lowered, raises that stat by the same amount instead.'],
+  ['Stat Reduction Reversal (Sygna Suit Steven & Deoxys)', [['stats would be lowered', 'same amount instead']], 'When the user’s stats would be lowered, raises the user’s stats by the same amount instead.'],
+  ['Stat Reduction Reversal with an additional effect (Arc Suit Steven & Metagross)', [['stats would be lowered', 'same amount instead']], 'When the user’s stats would be lowered, raises its stats by the same amount instead and increases its Physical Moves ↑ Next effect by one rank.'],
   ['Interference Immunity', [['prevents', 'flinching', 'becoming confused', 'trapped']], 'Prevents the user from flinching, becoming confused, or becoming trapped.'],
   ['Critical-Hit Immunity', [['protects', 'against critical hits']], 'Protects the user against critical hits.'],
 ];
