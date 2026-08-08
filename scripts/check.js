@@ -221,6 +221,7 @@ assert.match(
 assert.match(pickerSource, /parentValues\[0\] === 'weather'/, 'Field effects must render one parent category per row.');
 assert.match(pickerSource, /parentValues\[0\] === 'statUp'/, 'Stat changes must render one parent category per row.');
 const configSource = await readFile(path.join(projectRoot, 'src/config.js'), 'utf8');
+const i18nSource = await readFile(path.join(projectRoot, 'src/i18n.js'), 'utf8');
 assert.match(configSource, /FILTER_RENDER_DELAY_MS = 500/, 'Filter rendering must wait through a normal double-click window.');
 assert.match(configSource, /\['exFairyZone', 'zoneEx'/, 'EX Zone child filters must be declared.');
 assert.match(configSource, /value: 'circle', group: 'field',\s*\n\s*labels:/, 'Circle parent filter must remain text-only.');
@@ -291,6 +292,37 @@ assert.match(
   'Only icon-only filter buttons should receive custom tooltips.',
 );
 assert.match(pickerSource, /else delete button\.dataset\.beTooltip/, 'Fully labeled filter buttons must not retain redundant tooltips.');
+for (const immunityFilter of ['statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity']) {
+  assert.match(configSource, new RegExp(`\\['${immunityFilter}', 'immunity'`), `${immunityFilter} must remain an immunity child filter.`);
+}
+assert.match(configSource, /labels: skillFilterLabels\(value\)/, 'Every skill detail filter must read labels from the unified translation table.');
+assert.match(
+  configSource,
+  /\.map\(\(\[value, detailOf, patterns, masterPassiveType\]\)/,
+  'Skill detail definitions must only contain behavior data, not embedded translations.',
+);
+const detailTranslationBlock = configSource.match(/const SKILL_FILTER_TRANSLATIONS = \{([\s\S]*?)\n\};/)?.[1] || '';
+const detailTranslationEntries = [...detailTranslationBlock.matchAll(/^\s{2}\w+: \{ ([^}]+) \},$/gm)];
+assert.ok(detailTranslationEntries.length > 0, 'The unified skill-detail translation table must not be empty.');
+for (const [, labels] of detailTranslationEntries) {
+  for (const locale of ['en', 'fr', 'de', 'es', 'it', 'ja', 'ko', 'zh']) {
+    assert.match(labels, new RegExp(`(?:^|, )${locale}:`), `Every skill-detail translation must include ${locale}.`);
+  }
+}
+for (const parentFilter of ['weather', 'terrain', 'zone', 'circle', 'alliedField', 'opponentField', 'statUp', 'statDown', 'status', 'interference', 'immunity', 'rebuff', 'masterPassive']) {
+  assert.match(configSource, new RegExp(`labels: skillFilterLabels\\('${parentFilter}'\\)`), `${parentFilter} must use the unified filter translation table.`);
+}
+for (const localizedOptions of ['ROLE_FAMILIES', 'REGION_OPTIONS', 'ACQUISITION_OPTIONS', 'EXCLUSIVITY_OPTIONS']) {
+  assert.match(i18nSource, new RegExp(`const ${localizedOptions} = \\[[\\s\\S]*?labels: \\{ en:`), `${localizedOptions} must keep translations under labels.`);
+}
+assert.match(pickerSource, /family\.labels\[locale\]/, 'Role-family filters must read the unified labels shape.');
+assert.match(pickerSource, /region\.labels\[locale\]/, 'Region filters must read the unified labels shape.');
+assert.match(pickerSource, /option\.labels\[locale\]/, 'Acquisition filters must read the unified labels shape.');
+assert.match(
+  pickerSource,
+  /\[copy\.skillConditions, \['status', 'interference', 'immunity'\]\]/,
+  'Immunity filters must remain grouped under Status effects.',
+);
 assert.match(pickerSource, /directionButton\.dataset\.beTooltip = label/, 'Sort direction control must use the custom tooltip.');
 assert.match(pickerSource, /button\.dataset\.beTooltip = label;\s*\n\s*button\.removeAttribute\('title'\)/, 'View controls must use custom tooltips without native title hints.');
 assert.match(pickerSource, /bindFilterTooltips\(toolbar\)/, 'The left results toolbar must bind custom tooltip interactions.');
@@ -365,6 +397,15 @@ const fieldDetailPatternChecks = [
 ];
 for (const [name, patterns, document] of fieldDetailPatternChecks) {
   assert.equal(parserContext.matchDocumentsForCheck([document], patterns), true, `${name}: concrete field effect must match.`);
+}
+const immunityPatternChecks = [
+  ['Status Immunity', [['prevents', 'getting', 'status condition']], 'Prevents the user from getting a status condition.'],
+  ['Stat Reduction Immunity', [['prevents', 'stats', 'being lowered']], 'Prevents the user’s stats from being lowered.'],
+  ['Interference Immunity', [['prevents', 'flinching', 'becoming confused', 'trapped']], 'Prevents the user from flinching, becoming confused, or becoming trapped.'],
+  ['Critical-Hit Immunity', [['protects', 'against critical hits']], 'Protects the user against critical hits.'],
+];
+for (const [name, patterns, document] of immunityPatternChecks) {
+  assert.equal(parserContext.matchDocumentsForCheck([document], patterns), true, `${name}: explicit immunity must match.`);
 }
 assert.equal(
   parserContext.matchDocumentsForCheck(['Makes the weather EX sunny.'], [['makes the weather sunny']]),
