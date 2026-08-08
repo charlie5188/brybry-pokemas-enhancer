@@ -282,6 +282,7 @@ assert.match(
 assert.match(configSource, /masterPhysical'[\s\S]{0,100}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.physical\]/, 'Physical Master Passive must use its category icon.');
 assert.match(configSource, /masterSpecial'[\s\S]{0,100}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.special\]/, 'Special Master Passive must use its category icon.');
 assert.match(configSource, /masterGeneral'[\s\S]{0,140}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.physical, MASTER_PASSIVE_ICON_URLS\.special\]/, 'General Master Passive must use both category icons.');
+assert.match(configSource, /MASTER_PASSIVE_ICON_URLS = \{[\s\S]{0,180}physical: '[^']*\/STAT_002R\.png',[\s\S]{0,100}special: '[^']*\/STAT_008R\.png'/, 'Master Passive filters must reuse the yellow stat-increase icons.');
 assert.doesNotMatch(
   configSource,
   /value === 'master(?:Physical|Special|General)'[\s\S]{0,180}iconOnly/,
@@ -301,13 +302,56 @@ assert.match(pickerSource, /button\.removeAttribute\('title'\)/, 'Filter buttons
 assert.doesNotMatch(pickerSource, /button\.title = tooltip/, 'Filter buttons must rely on the custom tooltip only.');
 assert.match(
   pickerSource,
-  /button\.matches\('\.be-chip--icon-only, \.be-skill-category-chip--icon-only'\)/,
-  'Only icon-only filter buttons should receive custom tooltips.',
+  /button\.matches\('\.be-chip--icon-only, \.be-skill-category-chip--icon-only, \.be-skill-category-chip--compact-label'\)/,
+  'Icon-only and compact-label filter buttons should receive custom tooltips.',
 );
 assert.match(pickerSource, /else delete button\.dataset\.beTooltip/, 'Fully labeled filter buttons must not retain redundant tooltips.');
-for (const immunityFilter of ['statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity']) {
-  assert.match(configSource, new RegExp(`\\['${immunityFilter}', 'immunity'`), `${immunityFilter} must remain an immunity child filter.`);
+for (const immunityParent of ['statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity']) {
+  assert.match(configSource, new RegExp(`value: '${immunityParent}', group: 'utility'`), `${immunityParent} must remain a top-level capability filter.`);
 }
+for (const [detailMap, parent] of [
+  ['STATUS_IMMUNITY_DETAIL_PATTERNS', 'statusImmunity'],
+  ['INTERFERENCE_IMMUNITY_DETAIL_PATTERNS', 'interferenceImmunity'],
+  ['STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS', 'statReductionImmunity'],
+]) {
+  assert.match(configSource, new RegExp(`Object\\.entries\\(${detailMap}\\)[\\s\\S]{0,100}\\[value, '${parent}', patterns\\]`), `${parent} must render its individual immunity children.`);
+  assert.match(configSource, new RegExp(`value: '${parent}'[\\s\\S]{0,180}Object\\.values\\(${detailMap}\\)\\.flat\\(\\)`), `${parent} must match every individual immunity child.`);
+}
+assert.match(
+  configSource,
+  /allStatReductionImmunity: IMMUNITY_FILTER_PATTERNS\.statReductionImmunity/,
+  'All Stat Reduction Immunity must remain an exact child of Stat Reduction Immunity.',
+);
+assert.match(configSource, /allStatusImmunity: IMMUNITY_FILTER_PATTERNS\.statusImmunity/, 'All Status Immunity must remain an exact child of Status Immunity.');
+assert.match(configSource, /allInterferenceImmunity: IMMUNITY_FILTER_PATTERNS\.interferenceImmunity/, 'All Interference Immunity must remain an exact child of Interference Immunity.');
+assert.match(configSource, /ja: '全↓無効'/, 'All Stat Reduction Immunity must use an arrow in its Japanese label.');
+assert.match(configSource, /ja: '全状態異常無効'/, 'All Status Immunity must have a distinct Japanese child label.');
+assert.match(configSource, /ja: '全妨害無効'/, 'All Interference Immunity must have a distinct Japanese child label.');
+assert.match(configSource, /const IMMUNITY_DETAIL_ICON_KEYS = \{/, 'Individual immunity filters must map their attribute to an icon.');
+assert.match(configSource, /immunitySymbol: \{ en: '🚫',[^}]*zh: '🚫' \}/, 'The immunity symbol must remain consistent in every locale.');
+assert.match(configSource, /ja: '異常付与'/, 'The Japanese status-infliction parent label must remain compact.');
+assert.match(configSource, /ja: '妨害付与'/, 'The Japanese interference-infliction parent label must remain compact.');
+assert.match(configSource, /ja: '異常無効'/, 'The Japanese status-immunity parent label must remain compact.');
+assert.match(configSource, /compactLabels: skillFilterLabels\('immunitySymbol'\)/, 'Individual immunity filters must use the compact immunity symbol.');
+assert.match(pickerSource, /button\.setAttribute\('aria-label', categoryLabel\)/, 'Compact filter buttons must retain their full accessible label.');
+assert.match(configSource, /const REBUFF_DETAIL_CONFIG = Object\.fromEntries/, 'Type Rebuff filters must declare their individual icon configuration.');
+assert.match(configSource, /Special:Redirect\/file\/\$\{iconFile \|\| `\$\{type\[0\]\.toUpperCase\(\)\}.*_Rebuff_down_icon_Masters\.png`\}/, 'Type Rebuff filters must use the Bulbagarden battle icons.');
+assert.match(configSource, /Object\.entries\(REBUFF_DETAIL_CONFIG\).*\[value, 'rebuff'/, 'Every Type Rebuff icon must render as a child filter.');
+assert.match(configSource, /rebuffDetailPatterns\('lowers', detail\)/, 'Type Rebuff child filters must require an explicit decrease.');
+assert.match(configSource, /\['stellarRebuffDown', 'stellar', 'stellarType', 'StellarIC_Masters\.png'\]/, 'Stellar Type Rebuff must use the available Stellar battle icon.');
+assert.match(configSource, /rebuffDirection: iconFile \? '↓' : ''/, 'A fallback Type Rebuff Down icon must receive an explicit down arrow.');
+assert.match(configSource, /const REBUFF_UP_DETAIL_CONFIG = Object\.fromEntries/, 'Type Rebuff Up filters must derive all supported type children.');
+assert.match(configSource, /value\.replace\(\/Down\$\/, 'Up'\)/, 'Every Type Rebuff Down child must have a corresponding Type Rebuff Up child.');
+assert.match(configSource, /rebuffDetailPatterns\('raises', detail\)/, 'Type Rebuff Up child filters must require an explicit increase.');
+assert.match(configSource, /\[direction, 'following type rebuffs', detail\.type\]/, 'Type Rebuff filters must support multi-type list descriptions.');
+assert.match(pickerSource, /direction\.textContent = category\.rebuffDirection/, 'Type Rebuff Up icons must render their direction marker.');
+assert.match(pickerSource, /expandedDirectionLabel\(categoryLabel, locale\)/, 'Directional filter tooltips must spell out their direction instead of using arrows.');
+assert.match(pickerSource, /category\.rebuffDirection\) button\.classList\.add\('be-skill-category-chip--directional-icon'\)/, 'Type Rebuff Up buttons must use content-aware directional sizing.');
+for (const increaseIcon of ['002', '004', '008', '016', '032', '064', '128', '256']) {
+  assert.match(configSource, new RegExp(`STAT_${increaseIcon}R\\.png`), `Stat increase icon STAT_${increaseIcon}R must remain configured.`);
+}
+assert.match(configSource, /value\.endsWith\('Up'\) \? STAT_INCREASE_ICON_URLS : STAT_DECREASE_ICON_URLS/, 'Stat increases must use yellow increase icons while decreases use blue icons.');
+assert.match(configSource, /attributeDirection: STAT_DECREASE_ICON_URLS\[iconKey\] \? '↓' : ''/, 'Stat reduction immunity icons must display a down arrow.');
 assert.match(configSource, /labels: skillFilterLabels\(value\)/, 'Every skill detail filter must read labels from the unified translation table.');
 assert.match(
   configSource,
@@ -327,7 +371,7 @@ for (const [, labels] of detailTranslationEntries) {
     assert.match(labels, new RegExp(`(?:^|, )${locale}:`), `Every skill-detail translation must include ${locale}.`);
   }
 }
-for (const parentFilter of ['weather', 'terrain', 'zone', 'circle', 'alliedField', 'opponentField', 'statUp', 'statDown', 'status', 'interference', 'immunity', 'rebuff', 'masterPassive']) {
+for (const parentFilter of ['weather', 'terrain', 'zone', 'circle', 'alliedField', 'opponentField', 'statUp', 'statDown', 'status', 'interference', 'statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity', 'rebuffUp', 'rebuff', 'masterPassive']) {
   assert.match(configSource, new RegExp(`labels: skillFilterLabels\\('${parentFilter}'\\)`), `${parentFilter} must use the unified filter translation table.`);
 }
 for (const localizedOptions of ['ROLE_FAMILIES', 'REGION_OPTIONS', 'ACQUISITION_OPTIONS', 'EXCLUSIVITY_OPTIONS']) {
@@ -338,8 +382,13 @@ assert.match(pickerSource, /region\.labels\[locale\]/, 'Region filters must read
 assert.match(pickerSource, /option\.labels\[locale\]/, 'Acquisition filters must read the unified labels shape.');
 assert.match(
   pickerSource,
-  /\[copy\.skillConditions, \['status', 'interference', 'immunity'\]\]/,
-  'Immunity filters must remain grouped under Status effects.',
+  /\[copy\.skillConditions, \['status', 'interference', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'\]\]/,
+  'Status and interference immunity filters must remain grouped under Status effects.',
+);
+assert.match(
+  pickerSource,
+  /\[copy\.skillStatChanges, \['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff'\]\]/,
+  'Stat Reduction Immunity must remain grouped under Stat changes.',
 );
 assert.match(pickerSource, /directionButton\.dataset\.beTooltip = label/, 'Sort direction control must use the custom tooltip.');
 assert.match(pickerSource, /button\.dataset\.beTooltip = label;\s*\n\s*button\.removeAttribute\('title'\)/, 'View controls must use custom tooltips without native title hints.');
@@ -380,6 +429,13 @@ assert.match(stylesSource, /summary\.be-accordion-trigger:focus-visible/, 'Accor
 assert.match(stylesSource, /\.be-accordion-chevron/, 'Accordion triggers must use a consistent chevron affordance.');
 assert.match(stylesSource, /\.be-accordion-heading-icon/, 'Accordion heading icons must have dedicated sizing.');
 assert.match(stylesSource, /\.be-active-filter-tag/, 'Active filter tags must have dedicated styling.');
+assert.match(
+  stylesSource,
+  /\.be-skill-category-chip--directional-icon\s*\{[^}]*min-width:\s*44px;[^}]*padding:\s*4px 6px;[^}]*width:\s*auto;/s,
+  'Directional icon buttons must hug their icon and arrow with sufficient padding.',
+);
+assert.match(stylesSource, /\.be-stat-direction\s*\{[^}]*font:\s*700 15px\/1/s, 'Direction arrows must use one consistent visual weight.');
+assert.match(stylesSource, /\.be-skill-category-chip--compact-label \.be-skill-category-label\s*\{[^}]*font-size:\s*16px/s, 'Compact immunity emoji must remain legible.');
 assert.match(
   stylesSource,
   /\.be-filter-sidebar > \.be-picker-tools\s*\{[^}]*position:\s*sticky/s,
@@ -425,6 +481,44 @@ const immunityPatternChecks = [
 for (const [name, patterns, document] of immunityPatternChecks) {
   assert.equal(parserContext.matchDocumentsForCheck([document], patterns), true, `${name}: explicit immunity must match.`);
 }
+const fireRebuffDownPatterns = [['lowers', 'fire type rebuff']];
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Lowers the target’s Fire Type Rebuff by one rank.'], fireRebuffDownPatterns),
+  true,
+  'A Fire Type Rebuff decrease must match the Fire Rebuff Down filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Raises the Fire Type Rebuff of all allied sync pairs by one rank.'], fireRebuffDownPatterns),
+  false,
+  'An allied Fire Type Rebuff increase must not match the Fire Rebuff Down filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Lowers the target’s Stellar Type Rebuff by three ranks.'], [['lowers', 'stellar type rebuff']]),
+  true,
+  'A Stellar Type Rebuff decrease must match the Stellar Rebuff Down filter.',
+);
+const fireRebuffUpPatterns = [['raises', 'fire type rebuff']];
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Raises the Fire Type Rebuff of all allied sync pairs by one rank.'], fireRebuffUpPatterns),
+  true,
+  'An allied Fire Type Rebuff increase must match the Fire Rebuff Up filter.',
+);
+const chaseMultiRebuffDocument = 'Lowers all of the following Type Rebuffs of all opposing sync pairs by one rank: Normal, Fire, Water, Electric, Grass, Ice, Psychic, Dark, Fairy.';
+assert.equal(
+  parserContext.matchDocumentsForCheck([chaseMultiRebuffDocument], [['lowers', 'following type rebuffs', 'fire']]),
+  true,
+  'A listed type in a multi-Type Rebuff decrease must match its child filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck([chaseMultiRebuffDocument], [['lowers', 'following type rebuffs', 'fighting']]),
+  false,
+  'An unlisted type in a multi-Type Rebuff decrease must not match its child filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Lowers the target’s Fire Type Rebuff by one rank.'], fireRebuffUpPatterns),
+  false,
+  'A Fire Type Rebuff decrease must not match the Fire Rebuff Up filter.',
+);
 assert.equal(
   parserContext.matchDocumentsForCheck(['Makes the weather EX sunny.'], [['makes the weather sunny']]),
   false,
