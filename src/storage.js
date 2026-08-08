@@ -56,12 +56,13 @@ function currentPairId() {
 }
 
 function normalizedGridBuild(value) {
-  if (Array.isArray(value)) return { selectedCellIds: value.map(String) };
-  if (!value || typeof value !== 'object') return { selectedCellIds: [] };
+  const defaults = { moveLevel: 5, maxEnergyCap: 60 };
+  if (Array.isArray(value)) return { selectedCellIds: value.map(String), ...defaults };
+  if (!value || typeof value !== 'object') return { selectedCellIds: [], ...defaults };
   return {
     selectedCellIds: Array.isArray(value.selectedCellIds) ? value.selectedCellIds.map(String) : [],
-    moveLevel: Number(value.moveLevel) || 0,
-    maxEnergyCap: Number(value.maxEnergyCap) || 0,
+    moveLevel: Number(value.moveLevel) || defaults.moveLevel,
+    maxEnergyCap: Number(value.maxEnergyCap) || defaults.maxEnergyCap,
   };
 }
 

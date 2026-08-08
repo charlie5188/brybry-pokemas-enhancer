@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.34
+// @version      1.11.35
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -2176,12 +2176,13 @@ text-align: center;
     return String(document.getElementById("syncPairSelect")?.value || new URL(location.href).searchParams.get("pair") || "");
   }
   function normalizedGridBuild(value) {
-    if (Array.isArray(value)) return { selectedCellIds: value.map(String) };
-    if (!value || typeof value !== "object") return { selectedCellIds: [] };
+    const defaults = { moveLevel: 5, maxEnergyCap: 60 };
+    if (Array.isArray(value)) return { selectedCellIds: value.map(String), ...defaults };
+    if (!value || typeof value !== "object") return { selectedCellIds: [], ...defaults };
     return {
       selectedCellIds: Array.isArray(value.selectedCellIds) ? value.selectedCellIds.map(String) : [],
-      moveLevel: Number(value.moveLevel) || 0,
-      maxEnergyCap: Number(value.maxEnergyCap) || 0
+      moveLevel: Number(value.moveLevel) || defaults.moveLevel,
+      maxEnergyCap: Number(value.maxEnergyCap) || defaults.maxEnergyCap
     };
   }
   function currentMaxEnergyCap() {
