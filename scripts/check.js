@@ -657,7 +657,7 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel;`, gridContext);
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 25 }, 'ja'), 'B技: 威力+25');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 40 }, 'en'), 'Sync: Power +40');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: false, abilityValue: 25 }, 'ja'), '');
@@ -671,6 +671,26 @@ assert.equal(gridContext.displayTileNameForCheck(regularTile, regularTile.datase
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: { level: '4' } }), 4);
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: {} }), 1, 'Tiles without data-level must default to move level 1.');
 assert.equal(gridContext.moveLevelIconUrlForCheck(5), 'https://pomasters.github.io/SyncPairsTracker/images/5.png');
+assert.deepEqual(
+  [1, 2, 3, 4, 5].map(gridContext.maxEnergyCapForMoveLevelForCheck),
+  [62, 64, 66, 68, 70],
+  'Each Move Level must expose only the corresponding maximum energy cap.',
+);
+assert.match(
+  gridSource,
+  /control\.disabled = Number\.isFinite\(cap\) && cap > maximum/,
+  'Energy caps above the current Move Level maximum must be disabled.',
+);
+assert.match(
+  gridSource,
+  /document\.getElementById\(`energy-\$\{maximum\}`\)/,
+  'Lowering Move Level must fall back to its highest allowed energy cap.',
+);
+assert.match(
+  stylesSource,
+  /input\[name="energy-radio"\]:disabled \+ \.radio-tile/,
+  'Disabled energy-cap options must be visibly dimmed.',
+);
 assert.match(gridSource, /icon\.alt = accessibleLabel/, 'Move-level icons must retain localized fallback text.');
 assert.match(stylesSource, /\.be-required-move-level-icon/, 'Move-level icons must have dedicated tooltip sizing.');
 assert.match(

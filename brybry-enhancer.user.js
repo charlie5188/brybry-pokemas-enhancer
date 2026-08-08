@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.82
+// @version      1.11.84
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -61,6 +61,15 @@ opacity: .45;
 
 #grid g[data-cell-id].be-move-level-disabled.be-move-level-hovered .be-move-level-shade {
 opacity: .28;
+    }
+
+input[name="energy-radio"]:disabled + .radio-tile {
+filter: grayscale(.8) brightness(.72);
+opacity: .48;
+    }
+
+input[name="energy-radio"]:disabled + .radio-tile .radio-tile-label {
+cursor: not-allowed;
     }
 
     body > .tooltip {
@@ -3152,8 +3161,25 @@ text-align: center;
     const activeLevels = [...document.querySelectorAll("[data-sync-level]")].filter((control) => !getComputedStyle(control).backgroundImage.includes("level-off")).map((control) => Number(control.dataset.syncLevel)).filter(Number.isFinite);
     return activeLevels.length ? Math.max(...activeLevels) : 1;
   }
+  function maxEnergyCapForMoveLevel(level) {
+    return 60 + Math.min(5, Math.max(1, Number(level) || 1)) * 2;
+  }
+  function updateMaxEnergyCapAvailability(level = currentMoveLevel()) {
+    const maximum = maxEnergyCapForMoveLevel(level);
+    const energyControls = [...document.querySelectorAll('input[name="energy-radio"]')];
+    energyControls.forEach((control) => {
+      const cap = Number(control.id.match(/^energy-(\d+)$/)?.[1]);
+      control.disabled = Number.isFinite(cap) && cap > maximum;
+    });
+    const selected = energyControls.find((control) => control.checked);
+    const selectedCap = Number(selected?.id.match(/^energy-(\d+)$/)?.[1]);
+    if (selected && Number.isFinite(selectedCap) && selectedCap <= maximum) return;
+    const fallback = document.getElementById(`energy-${maximum}`);
+    if (fallback && !fallback.disabled && !fallback.checked) fallback.click();
+  }
   function updateMoveLevelAvailability() {
     const level = currentMoveLevel();
+    updateMaxEnergyCapAvailability(level);
     document.querySelectorAll("#grid g[data-cell-id]").forEach((tile) => {
       let shade = tile.querySelector(".be-move-level-shade");
       if (!shade) {

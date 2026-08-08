@@ -46,6 +46,15 @@ opacity: .45;
 opacity: .28;
     }
 
+input[name="energy-radio"]:disabled + .radio-tile {
+filter: grayscale(.8) brightness(.72);
+opacity: .48;
+    }
+
+input[name="energy-radio"]:disabled + .radio-tile .radio-tile-label {
+cursor: not-allowed;
+    }
+
     body > .tooltip {
 box-sizing: border-box;
 font-size: 13px;

@@ -299,8 +299,29 @@ function currentMoveLevel() {
   return activeLevels.length ? Math.max(...activeLevels) : 1;
 }
 
+function maxEnergyCapForMoveLevel(level) {
+  return 60 + Math.min(5, Math.max(1, Number(level) || 1)) * 2;
+}
+
+function updateMaxEnergyCapAvailability(level = currentMoveLevel()) {
+  const maximum = maxEnergyCapForMoveLevel(level);
+  const energyControls = [...document.querySelectorAll('input[name="energy-radio"]')];
+  energyControls.forEach((control) => {
+    const cap = Number(control.id.match(/^energy-(\d+)$/)?.[1]);
+    control.disabled = Number.isFinite(cap) && cap > maximum;
+  });
+
+  const selected = energyControls.find((control) => control.checked);
+  const selectedCap = Number(selected?.id.match(/^energy-(\d+)$/)?.[1]);
+  if (selected && Number.isFinite(selectedCap) && selectedCap <= maximum) return;
+
+  const fallback = document.getElementById(`energy-${maximum}`);
+  if (fallback && !fallback.disabled && !fallback.checked) fallback.click();
+}
+
 function updateMoveLevelAvailability() {
   const level = currentMoveLevel();
+  updateMaxEnergyCapAvailability(level);
   document.querySelectorAll('#grid g[data-cell-id]').forEach((tile) => {
     let shade = tile.querySelector('.be-move-level-shade');
     if (!shade) {
