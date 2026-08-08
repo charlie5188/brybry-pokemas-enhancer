@@ -304,8 +304,7 @@ function pairSortMetadata(pair, locale) {
   if (sortCriterion === 'release') return `${copy.sortRelease}: ${dateValue(pair.releaseDate)}`;
   if (sortCriterion === 'sync-dex') return `${copy.sortSyncDex}: ${pair.syncDexNumber || '—'}`;
   if (sortCriterion === 'pokemon-dex') return `${copy.sortPokemonDex}: ${pair.pokemonNumber || '—'}`;
-  if (sortCriterion === 'rarity') return `${copy.sortRarity}: ${pair.trainer.rarity || 0}★`;
-  return `${copy.sortName}: ${pair.name}`;
+  return '';
 }
 
 function showPairTooltip(row) {
@@ -1385,11 +1384,15 @@ function renderPairs() {
     const meta = document.createElement('span');
     meta.className = 'be-pair-meta';
     meta.textContent = `${TYPE_NAMES[locale][pair.trainer.type - 1] || '—'} · ${ROLE_NAMES[locale][pair.trainer.role] || '—'}`;
-    const sortMetadata = document.createElement('span');
-    sortMetadata.className = 'be-pair-sort-meta';
-    sortMetadata.hidden = true;
-    sortMetadata.textContent = pairSortMetadata(pair, locale);
-    info.append(stars, name, meta, sortMetadata);
+    const sortMetadataText = pairSortMetadata(pair, locale);
+    info.append(stars, name, meta);
+    if (sortMetadataText) {
+      const sortMetadata = document.createElement('span');
+      sortMetadata.className = 'be-pair-sort-meta';
+      sortMetadata.hidden = true;
+      sortMetadata.textContent = sortMetadataText;
+      info.append(sortMetadata);
+    }
     row.append(images, info);
 
     const selectPair = () => {

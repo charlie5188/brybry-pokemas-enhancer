@@ -357,9 +357,10 @@ assert.doesNotMatch(pickerSource, /battleTitle/, 'The redundant Battle Features 
 assert.doesNotMatch(pickerSource, /clickTo(?:Include|Exclude|Clear)/, 'Filter tooltips must not contain click instructions.');
 assert.match(pickerSource, /function renderActiveFilterTags\(\)/, 'Active filters must render as removable header tags.');
 assert.match(pickerSource, /function pairSortMetadata\(pair, locale\)/, 'Icon-view pair tooltips must describe the active sort value.');
-for (const criterion of ['updated', 'release', 'sync-dex', 'pokemon-dex', 'rarity']) {
+for (const criterion of ['updated', 'release', 'sync-dex', 'pokemon-dex']) {
   assert.match(pickerSource, new RegExp(`sortCriterion === '${criterion}'`), `Pair tooltip metadata must support the ${criterion} sort.`);
 }
+assert.match(pickerSource, /if \(sortMetadataText\) \{/, 'Pair tooltips must omit redundant sort metadata when no extra sort value is needed.');
 assert.match(pickerSource, /new Intl\.DateTimeFormat\(locale/, 'Pair tooltip dates must follow the active UI locale.');
 assert.match(pickerSource, /row\.querySelector\('\.be-pair-sort-meta'\)/, 'Icon-view tooltips must read the current sort metadata instead of visible type and role text.');
 assert.match(pickerSource, /sortMetadata\.hidden = true/, 'Sort metadata must not replace type and role in list view.');
