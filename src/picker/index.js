@@ -938,7 +938,7 @@ function skillSearchField() {
   [
     [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField']],
     [copy.skillStatChanges, ['statUp', 'statDown', 'rebuff']],
-    [copy.skillConditions, ['status', 'interference']],
+    [copy.skillConditions, ['status', 'interference', 'immunity']],
     [SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale]
       || 'Master Passive', ['masterPassive']],
   ].forEach(([title, parentValues]) => {
@@ -1018,7 +1018,7 @@ function filterPanel() {
   const exRoleRow = document.createElement('div');
   exRoleRow.className = 'be-chip-row';
   ROLE_FAMILIES.filter((family) => family.value !== 'multi').forEach((family) => exRoleRow.append(createChip({
-    label: family[locale],
+    label: family.labels[locale],
     value: family.value,
     group: 'exRole',
     iconName: `role_ex_${family.icon}`,
@@ -1038,7 +1038,7 @@ function filterPanel() {
   combinations.forEach((combination) => {
     const families = combination.split('-').map((value) => ROLE_FAMILIES.find((family) => family.value === value));
     roleCombinationRow.append(createChip({
-      label: families.map((family) => family[locale]).join(' + '),
+      label: families.map((family) => family.labels[locale]).join(' + '),
       value: combination,
       group: 'roleCombination',
       iconNames: families.map((family) => `role_${family.icon}`),
@@ -1050,7 +1050,7 @@ function filterPanel() {
   const regionRow = document.createElement('div');
   regionRow.className = 'be-chip-row';
   REGION_OPTIONS.forEach((region) => regionRow.append(createChip({
-    label: region[locale],
+    label: region.labels[locale],
     value: region.value,
     group: 'region',
     iconUrl: region.iconUrl,
@@ -1113,7 +1113,7 @@ function filterPanel() {
   otherAcquisitionCluster.className = 'be-skill-category-cluster';
   ACQUISITION_OPTIONS.forEach((option) => {
     const chip = createChip({
-      label: option[locale],
+      label: option.labels[locale],
       value: option.value,
       group: 'acquisition',
       iconName: option.icon,
@@ -1121,7 +1121,7 @@ function filterPanel() {
     (option.value === '1' ? scoutCluster : otherAcquisitionCluster).append(chip);
   });
   EXCLUSIVITY_OPTIONS.forEach((option) => scoutCluster.append(createChip({
-    label: option[locale],
+    label: option.labels[locale],
     value: option.value,
     group: 'exclusivity',
     iconName: option.icon,

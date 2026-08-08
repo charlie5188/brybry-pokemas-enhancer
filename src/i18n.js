@@ -314,43 +314,43 @@ const ROLE_NAMES = {
 };
 
 const ROLE_FAMILIES = [
-  { value: 'strike', icon: 'strike', roles: [0, 1], en: 'Strike', fr: 'Attaquant', de: 'Angreifer', es: 'Atacante', it: 'Attaccante', ja: 'アタッカー', ko: '어태커', zh: '攻擊' },
-  { value: 'support', icon: 'support', roles: [2], en: 'Support', fr: 'Soutien', de: 'Helfer', es: 'Apoyo', it: 'Supporto', ja: 'サポート', ko: '서포트', zh: '輔助' },
-  { value: 'tech', icon: 'tech', roles: [3], en: 'Tech', fr: 'Tacticien', de: 'Taktiker', es: 'Técnico', it: 'Tecnico', ja: 'テクニカル', ko: '테크니컬', zh: '技術' },
-  { value: 'sprint', icon: 'sprint', roles: [4], en: 'Sprint', fr: 'Accélérateur', de: 'Sprint', es: 'Velocidad', it: 'Sprint', ja: 'スピード', ko: '스피드', zh: '速度' },
-  { value: 'field', icon: 'field', roles: [5], en: 'Field', fr: 'Environnement', de: 'Feld', es: 'Campo', it: 'Campo', ja: 'フィールド', ko: '필드', zh: '場地' },
-  { value: 'multi', icon: 'multi', roles: [6], en: 'Multi', fr: 'Multi', de: 'Multi', es: 'Multi', it: 'Multi', ja: 'マルチ', ko: '멀티', zh: '全能' },
+  { value: 'strike', icon: 'strike', roles: [0, 1], labels: { en: 'Strike', fr: 'Attaquant', de: 'Angreifer', es: 'Atacante', it: 'Attaccante', ja: 'アタッカー', ko: '어태커', zh: '攻擊' } },
+  { value: 'support', icon: 'support', roles: [2], labels: { en: 'Support', fr: 'Soutien', de: 'Helfer', es: 'Apoyo', it: 'Supporto', ja: 'サポート', ko: '서포트', zh: '輔助' } },
+  { value: 'tech', icon: 'tech', roles: [3], labels: { en: 'Tech', fr: 'Tacticien', de: 'Taktiker', es: 'Técnico', it: 'Tecnico', ja: 'テクニカル', ko: '테크니컬', zh: '技術' } },
+  { value: 'sprint', icon: 'sprint', roles: [4], labels: { en: 'Sprint', fr: 'Accélérateur', de: 'Sprint', es: 'Velocidad', it: 'Sprint', ja: 'スピード', ko: '스피드', zh: '速度' } },
+  { value: 'field', icon: 'field', roles: [5], labels: { en: 'Field', fr: 'Environnement', de: 'Feld', es: 'Campo', it: 'Campo', ja: 'フィールド', ko: '필드', zh: '場地' } },
+  { value: 'multi', icon: 'multi', roles: [6], labels: { en: 'Multi', fr: 'Multi', de: 'Multi', es: 'Multi', it: 'Multi', ja: 'マルチ', ko: '멀티', zh: '全能' } },
 ];
 const REGION_OPTIONS = [
-  { value: '20020001', iconUrl: 'https://archives.bulbagarden.net/media/upload/9/97/Let%27s_Go_icon_HOME.png', en: 'Kanto', fr: 'Kanto', de: 'Kanto', es: 'Kanto', it: 'Kanto', ja: 'カントー', ko: '관동', zh: '關都' },
-  { value: '20020002', en: 'Johto', fr: 'Johto', de: 'Johto', es: 'Johto', it: 'Johto', ja: 'ジョウト', ko: '성도', zh: '城都' },
-  { value: '20020003', en: 'Hoenn', fr: 'Hoenn', de: 'Hoenn', es: 'Hoenn', it: 'Hoenn', ja: 'ホウエン', ko: '호연', zh: '豐緣' },
-  { value: '20020004', iconUrl: 'https://archives.bulbagarden.net/media/upload/0/0a/BDSP_icon_HOME.png', en: 'Sinnoh', fr: 'Sinnoh', de: 'Sinnoh', es: 'Sinnoh', it: 'Sinnoh', ja: 'シンオウ', ko: '신오', zh: '神奧' },
-  { value: '20020005', iconText: '◑', en: 'Unova', fr: 'Unys', de: 'Einall', es: 'Teselia', it: 'Unima', ja: 'イッシュ', ko: '하나', zh: '合眾' },
-  { value: '20020006', iconUrl: 'https://archives.bulbagarden.net/media/upload/d/d2/Blue_pentagon_HOME.png', en: 'Kalos', fr: 'Kalos', de: 'Kalos', es: 'Kalos', it: 'Kalos', ja: 'カロス', ko: '칼로스', zh: '卡洛斯' },
-  { value: '20020007', iconUrl: 'https://archives.bulbagarden.net/media/upload/0/04/Black_clover_HOME.png', en: 'Alola', fr: 'Alola', de: 'Alola', es: 'Alola', it: 'Alola', ja: 'アローラ', ko: '알로라', zh: '阿羅拉' },
-  { value: '20020008', iconUrl: 'https://archives.bulbagarden.net/media/upload/6/6e/Galar_symbol_HOME.png', en: 'Galar', fr: 'Galar', de: 'Galar', es: 'Galar', it: 'Galar', ja: 'ガラル', ko: '가라르', zh: '伽勒爾' },
-  { value: '20020009', iconUrl: 'https://archives.bulbagarden.net/media/upload/f/fe/Paldea_icon_HOME.png', en: 'Paldea', fr: 'Paldea', de: 'Paldea', es: 'Paldea', it: 'Paldea', ja: 'パルデア', ko: '팔데아', zh: '帕底亞' },
-  { value: '20020020', en: 'Pasio', fr: 'Passio', de: 'Passio', es: 'Passio', it: 'Pasio', ja: 'パシオ', ko: '파시오', zh: '帕希歐' },
+  { value: '20020001', iconUrl: 'https://archives.bulbagarden.net/media/upload/9/97/Let%27s_Go_icon_HOME.png', labels: { en: 'Kanto', fr: 'Kanto', de: 'Kanto', es: 'Kanto', it: 'Kanto', ja: 'カントー', ko: '관동', zh: '關都' } },
+  { value: '20020002', labels: { en: 'Johto', fr: 'Johto', de: 'Johto', es: 'Johto', it: 'Johto', ja: 'ジョウト', ko: '성도', zh: '城都' } },
+  { value: '20020003', labels: { en: 'Hoenn', fr: 'Hoenn', de: 'Hoenn', es: 'Hoenn', it: 'Hoenn', ja: 'ホウエン', ko: '호연', zh: '豐緣' } },
+  { value: '20020004', iconUrl: 'https://archives.bulbagarden.net/media/upload/0/0a/BDSP_icon_HOME.png', labels: { en: 'Sinnoh', fr: 'Sinnoh', de: 'Sinnoh', es: 'Sinnoh', it: 'Sinnoh', ja: 'シンオウ', ko: '신오', zh: '神奧' } },
+  { value: '20020005', iconText: '◑', labels: { en: 'Unova', fr: 'Unys', de: 'Einall', es: 'Teselia', it: 'Unima', ja: 'イッシュ', ko: '하나', zh: '合眾' } },
+  { value: '20020006', iconUrl: 'https://archives.bulbagarden.net/media/upload/d/d2/Blue_pentagon_HOME.png', labels: { en: 'Kalos', fr: 'Kalos', de: 'Kalos', es: 'Kalos', it: 'Kalos', ja: 'カロス', ko: '칼로스', zh: '卡洛斯' } },
+  { value: '20020007', iconUrl: 'https://archives.bulbagarden.net/media/upload/0/04/Black_clover_HOME.png', labels: { en: 'Alola', fr: 'Alola', de: 'Alola', es: 'Alola', it: 'Alola', ja: 'アローラ', ko: '알로라', zh: '阿羅拉' } },
+  { value: '20020008', iconUrl: 'https://archives.bulbagarden.net/media/upload/6/6e/Galar_symbol_HOME.png', labels: { en: 'Galar', fr: 'Galar', de: 'Galar', es: 'Galar', it: 'Galar', ja: 'ガラル', ko: '가라르', zh: '伽勒爾' } },
+  { value: '20020009', iconUrl: 'https://archives.bulbagarden.net/media/upload/f/fe/Paldea_icon_HOME.png', labels: { en: 'Paldea', fr: 'Paldea', de: 'Paldea', es: 'Paldea', it: 'Paldea', ja: 'パルデア', ko: '팔데아', zh: '帕底亞' } },
+  { value: '20020020', labels: { en: 'Pasio', fr: 'Passio', de: 'Passio', es: 'Passio', it: 'Pasio', ja: 'パシオ', ko: '파시오', zh: '帕希歐' } },
 ];
 
 const TYPE_COLORS = ['#9ca3af', '#ef5350', '#42a5f5', '#f6c447', '#66bb6a', '#8fd6e8', '#e57373', '#a871cc', '#bc9368', '#7399e8', '#ec78ad', '#9fbe45', '#b9a47b', '#876b9b', '#577dcc', '#735a7b', '#8590a5', '#ea8fb7'];
 const TYPE_ICON_NAMES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
 const ROLE_ICON_NAMES = ['strike', 'strike', 'support', 'tech', 'sprint', 'field', 'multi'];
 const ACQUISITION_OPTIONS = [
-  { value: '1', icon: 'icon_gem', en: 'Scout', fr: 'Appel Duo', de: 'Gefährtensuche', es: 'Reclutamiento', it: 'Ricerca Unità', ja: 'スカウト', ko: '버디즈서치', zh: '卡池' },
-  { value: '2', icon: 'icon_event', en: 'Free / Exchange', fr: 'Gratuit / Échange', de: 'Gratis / Tausch', es: 'Gratis / Canje', it: 'Gratis / Scambio', ja: '配布・交換', ko: '무료 / 교환', zh: '免費／兌換' },
-  { value: '4', icon: 'icon_gymscout', en: 'Gym Scout', fr: 'Appel Arène', de: 'Arenasuche', es: 'Reclutamiento de Gimnasio', it: 'Ricerca Palestra', ja: 'ジムスカウト', ko: '체육관서치', zh: '道館精選' },
-  { value: '5', icon: 'icon_academy', en: 'Academy', fr: 'Académie', de: 'Akademie', es: 'Academia', it: 'Accademia', ja: 'アカデミー', ko: '아카데미', zh: '學院' },
+  { value: '1', icon: 'icon_gem', labels: { en: 'Scout', fr: 'Appel Duo', de: 'Gefährtensuche', es: 'Reclutamiento', it: 'Ricerca Unità', ja: 'スカウト', ko: '버디즈서치', zh: '卡池' } },
+  { value: '2', icon: 'icon_event', labels: { en: 'Free / Exchange', fr: 'Gratuit / Échange', de: 'Gratis / Tausch', es: 'Gratis / Canje', it: 'Gratis / Scambio', ja: '配布・交換', ko: '무료 / 교환', zh: '免費／兌換' } },
+  { value: '4', icon: 'icon_gymscout', labels: { en: 'Gym Scout', fr: 'Appel Arène', de: 'Arenasuche', es: 'Reclutamiento de Gimnasio', it: 'Ricerca Palestra', ja: 'ジムスカウト', ko: '체육관서치', zh: '道館精選' } },
+  { value: '5', icon: 'icon_academy', labels: { en: 'Academy', fr: 'Académie', de: 'Akademie', es: 'Academia', it: 'Accademia', ja: 'アカデミー', ko: '아카데미', zh: '學院' } },
 ];
 const EXCLUSIVITY_OPTIONS = [
-  { value: '1', icon: 'icon_genpool', en: 'General Pool', fr: 'Permanent', de: 'Standard', es: 'Permanente', it: 'Standard', ja: '恒常', ko: '통상', zh: '常駐' },
-  { value: '2', icon: 'icon_pokefair', en: 'Fair', fr: 'Festival', de: 'Festival', es: 'Festival', it: 'Festival', ja: 'フェス', ko: '페스티벌', zh: '慶典' },
-  { value: '3', icon: 'icon_seasonal', en: 'Seasonal', fr: 'Saisonnier', de: 'Saisonal', es: 'Temporada', it: 'Stagionale', ja: '季節限定', ko: '시즌 한정', zh: '季節限定' },
-  { value: '4', icon: 'icon_alt', en: 'Special Costume', fr: 'Costume spécial', de: 'Spezialkostüm', es: 'Traje especial', it: 'Costume speciale', ja: 'スペシャルコス', ko: '스페셜 코스튬', zh: '特別服裝' },
-  { value: '5', icon: 'icon_gem', en: 'Variety', fr: 'Variété', de: 'Variety', es: 'Variedad', it: 'Varietà', ja: 'バラエティ', ko: '버라이어티', zh: '多樣' },
-  { value: '6', icon: 'icon_rotate', en: 'Mix', fr: 'Mix', de: 'Mix', es: 'Mix', it: 'Mix', ja: 'ミックス', ko: '믹스', zh: '混合' },
-  { value: '7', icon: 'icon_masterex', en: 'EX Fair', fr: 'Festival EX', de: 'EX-Festival', es: 'Festival EX', it: 'Festival EX', ja: 'EXフェス', ko: 'EX페스티벌', zh: 'EX慶典' },
+  { value: '1', icon: 'icon_genpool', labels: { en: 'General Pool', fr: 'Permanent', de: 'Standard', es: 'Permanente', it: 'Standard', ja: '恒常', ko: '통상', zh: '常駐' } },
+  { value: '2', icon: 'icon_pokefair', labels: { en: 'Fair', fr: 'Festival', de: 'Festival', es: 'Festival', it: 'Festival', ja: 'フェス', ko: '페스티벌', zh: '慶典' } },
+  { value: '3', icon: 'icon_seasonal', labels: { en: 'Seasonal', fr: 'Saisonnier', de: 'Saisonal', es: 'Temporada', it: 'Stagionale', ja: '季節限定', ko: '시즌 한정', zh: '季節限定' } },
+  { value: '4', icon: 'icon_alt', labels: { en: 'Special Costume', fr: 'Costume spécial', de: 'Spezialkostüm', es: 'Traje especial', it: 'Costume speciale', ja: 'スペシャルコス', ko: '스페셜 코스튬', zh: '特別服裝' } },
+  { value: '5', icon: 'icon_gem', labels: { en: 'Variety', fr: 'Variété', de: 'Variety', es: 'Variedad', it: 'Varietà', ja: 'バラエティ', ko: '버라이어티', zh: '多樣' } },
+  { value: '6', icon: 'icon_rotate', labels: { en: 'Mix', fr: 'Mix', de: 'Mix', es: 'Mix', it: 'Mix', ja: 'ミックス', ko: '믹스', zh: '混合' } },
+  { value: '7', icon: 'icon_masterex', labels: { en: 'EX Fair', fr: 'Festival EX', de: 'EX-Festival', es: 'Festival EX', it: 'Festival EX', ja: 'EXフェス', ko: 'EX페스티벌', zh: 'EX慶典' } },
 ];
 
 const TRAINER_MOVE_LABELS = {
