@@ -9,6 +9,21 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const outputPath = path.join(projectRoot, 'brybry-enhancer.user.js');
 const committedOutput = await readFile(outputPath, 'utf8');
 const rebuiltOutput = await buildUserscript({ write: false });
+const packageManifest = JSON.parse(await readFile(path.join(projectRoot, 'package.json'), 'utf8'));
+const packageLock = JSON.parse(await readFile(path.join(projectRoot, 'package-lock.json'), 'utf8'));
+const metadataSource = await readFile(path.join(projectRoot, 'src/metadata.txt'), 'utf8');
+const metadataVersion = metadataSource.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
+
+if (!metadataVersion) throw new Error('src/metadata.txt is missing a valid @version value.');
+for (const [location, version] of [
+  ['package.json', packageManifest.version],
+  ['package-lock.json', packageLock.version],
+  ['package-lock.json root package', packageLock.packages?.['']?.version],
+]) {
+  if (version !== metadataVersion) {
+    throw new Error(`Version mismatch: src/metadata.txt is ${metadataVersion}, but ${location} is ${version}.`);
+  }
+}
 
 if (!committedOutput.startsWith('// ==UserScript==\n')) {
   throw new Error('Generated userscript metadata header is missing or is not at byte zero.');
