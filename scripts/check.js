@@ -182,11 +182,32 @@ assert.match(
 );
 assert.match(
   pickerSource,
-  /accordionSection\('region', text\(\)\.region, regionRow, \{ defaultOpen: true \}\)/,
+  /accordionSection\('region', text\(\)\.region, regionRow, \{[\s\S]{0,80}defaultOpen: true/,
   'Region filters must be expanded by default.',
 );
 assert.match(pickerSource, /accordionSection\('weakness'/, 'Weakness filters must be collapsible.');
 assert.match(pickerSource, /accordionSection\('superawakening'/, 'Superawakening filters must be collapsible.');
+assert.match(
+  pickerSource,
+  /acquisitionGroups\.append\(scoutCluster, otherAcquisitionCluster\)/,
+  'Acquisition must render Scout and its child types as a grouped parent-child cluster.',
+);
+assert.match(pickerSource, /EXCLUSIVITY_OPTIONS\.forEach\(\(option\) => scoutCluster\.append/, 'Scout types must render beside their Scout parent.');
+assert.match(
+  pickerSource,
+  /group: 'exclusivity',[\s\S]{0,80}detail: true/,
+  'Scout type children must use the detail-button treatment.',
+);
+assert.doesNotMatch(
+  pickerSource,
+  /const exclusivitySection = accordionSection/,
+  'Scout type must not render as a separate accordion.',
+);
+assert.match(
+  pickerSource,
+  /active: acquisitionActive/,
+  'Stored Scout-type selections must open the merged Acquisition accordion.',
+);
 assert.match(
   pickerSource,
   /queuePairRender\(FILTER_RENDER_DELAY_MS\)/,
@@ -202,11 +223,61 @@ assert.match(pickerSource, /parentValues\[0\] === 'statUp'/, 'Stat changes must 
 const configSource = await readFile(path.join(projectRoot, 'src/config.js'), 'utf8');
 assert.match(configSource, /FILTER_RENDER_DELAY_MS = 500/, 'Filter rendering must wait through a normal double-click window.');
 assert.match(configSource, /\['exFairyZone', 'zoneEx'/, 'EX Zone child filters must be declared.');
-assert.match(configSource, /iconOnly: true, exVariant:/, 'Concrete field-effect children must use icon buttons.');
+assert.match(configSource, /value: 'circle', group: 'field',\s*\n\s*labels:/, 'Circle parent filter must remain text-only.');
+for (const circleIcon of ['icon_stat_atk', 'icon_stat_spa', 'icon_stat_hp']) {
+  assert.match(configSource, new RegExp(`${circleIcon}\\.png`), `${circleIcon} must be used by a Circle child filter.`);
+}
+for (const circleFilter of ['circlePhysical', 'circleSpecial', 'circleDefensive']) {
+  assert.match(
+    configSource,
+    new RegExp(`${circleFilter}: \\{[^}]*iconOnly: false`),
+    `${circleFilter} must show its text label beside the icon.`,
+  );
+}
+for (const damageFieldIcon of ['Fire', 'Poison', 'Rock', 'Dark', 'Steel']) {
+  assert.match(
+    configSource,
+    new RegExp(`${damageFieldIcon}_Damage_Field_icon_Masters\\.png`),
+    `${damageFieldIcon} Damage Field must use its dedicated game icon.`,
+  );
+}
+for (const fieldEffect of [
+  'physicalDamageReduction', 'specialDamageReduction', 'criticalHitDefense',
+  'statusConditionDefense', 'statusMoveDefense', 'statReductionDefense',
+  'moveGaugeAcceleration', 'fireDamageField',
+  'poisonDamageField', 'rockDamageField', 'darkDamageField', 'steelDamageField',
+  'noStatIncreases',
+]) {
+  assert.match(configSource, new RegExp(`\\['${fieldEffect}',`), `${fieldEffect} field-effect filter must be declared.`);
+}
+assert.match(configSource, /iconOnly: icon\.iconOnly !== false, exVariant:/, 'Concrete field-effect children must use icons while allowing labeled exceptions.');
+for (const iconCode of ['FILD_001', 'FILD_002', 'FILD_004', 'FILD_008', 'FILD_016', 'FILD_032']) {
+  assert.match(configSource, new RegExp(`${iconCode}\\.png`), `${iconCode} game field-effect icon must be used.`);
+}
+assert.match(configSource, /statusConditionDefense: \{ iconSrc: STATUS_CONDITION_DEFENSE_ICON_SRC \}/, 'Status Condition Defense must use the embedded user-provided icon.');
+assert.match(configSource, /statusMoveDefense: \{ iconSrc: '[^']*\/FILD_032\.png' \}/, 'Status Move Defense must use FILD_032.');
+assert.match(configSource, /statReductionDefense: \{ iconSrc: '[^']*\/FILD_016\.png' \}/, 'Stat Reduction Defense must use FILD_016.');
+assert.match(configSource, /noStatIncreases: \{ iconSrc: NO_STAT_INCREASES_ICON_SRC \}/, 'No Stat Increases must use the embedded project icon.');
+assert.match(committedOutput, /NO_STAT_INCREASES_ICON_SRC = "data:image\/png;base64,iVBORw0KGgo/, 'The user-provided No Stat Increases PNG must be embedded during the build.');
+assert.match(committedOutput, /data:image\/png;base64,iVBORw0KGgo/, 'The Status Condition Defense PNG must be embedded during the build.');
 assert.match(
   pickerSource,
   /category\.value !== 'masterPassive'/,
   'Master Passive must not render a redundant All filter button.',
+);
+assert.match(configSource, /masterPhysical'[\s\S]{0,100}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.physical\]/, 'Physical Master Passive must use its category icon.');
+assert.match(configSource, /masterSpecial'[\s\S]{0,100}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.special\]/, 'Special Master Passive must use its category icon.');
+assert.match(configSource, /masterGeneral'[\s\S]{0,140}iconSrcs: \[MASTER_PASSIVE_ICON_URLS\.physical, MASTER_PASSIVE_ICON_URLS\.special\]/, 'General Master Passive must use both category icons.');
+assert.doesNotMatch(
+  configSource,
+  /value === 'master(?:Physical|Special|General)'[\s\S]{0,180}iconOnly/,
+  'Master Passive child filters must keep their text labels visible.',
+);
+assert.match(pickerSource, /category\.iconSrcs\.forEach/, 'Skill category buttons must render multiple icons when configured.');
+assert.match(
+  pickerSource,
+  /icon\.referrerPolicy = 'no-referrer';\s*\n\s*icon\.src = category\.iconSrc/,
+  'Remote skill-category icons must suppress the Brybry referrer before loading.',
 );
 assert.doesNotMatch(pickerSource, /battleTitle/, 'The redundant Battle Features heading must not render.');
 assert.doesNotMatch(pickerSource, /clickTo(?:Include|Exclude|Clear)/, 'Filter tooltips must not contain click instructions.');
@@ -214,6 +285,14 @@ assert.match(pickerSource, /function renderActiveFilterTags\(\)/, 'Active filter
 assert.match(pickerSource, /tag\.addEventListener\('click', \(\) => removeActiveFilter\(entry\)\)/, 'Header tags must clear one filter.');
 assert.match(pickerSource, /document\.createElement\('form'\)/, 'The filter controls must use a semantic form container.');
 assert.match(pickerSource, /be-accordion-content/, 'Every accordion item must wrap its content consistently.');
+for (const group of ['region', 'trainerGroup', 'fashion', 'other']) {
+  assert.match(
+    pickerSource,
+    new RegExp(`iconSrc: FILTER_SECTION_ICON_URLS\\.${group}`),
+    `${group} accordion must use its configured heading icon.`,
+  );
+}
+assert.match(pickerSource, /be-accordion-heading-icon/, 'Accordion headings must render configured icons.');
 for (const group of ['type', 'role', 'exRole', 'rarity']) {
   assert.match(pickerSource, new RegExp(`accordionSection\\('${group}'`), `${group} must use the shared accordion component.`);
 }
@@ -224,6 +303,7 @@ const storageSource = await readFile(path.join(projectRoot, 'src/storage.js'), '
 assert.match(storageSource, /openFilterAccordions: \[\.\.\.openFilterAccordions\]/, 'Open accordion preferences must persist.');
 assert.match(storageSource, /closedFilterAccordions: \[\.\.\.closedFilterAccordions\]/, 'Closed accordion preferences must persist.');
 const stylesSource = await readFile(path.join(projectRoot, 'src/styles.css'), 'utf8');
+assert.match(stylesSource, /\.be-chip--detail\s*\{/, 'Generic child filter buttons must have a distinct detail style.');
 assert.doesNotMatch(
   stylesSource,
   /\.be-skill-battle-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2/s,
@@ -232,6 +312,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(stylesSource, /border-style:\s*dashed/, 'Interactive filter buttons must use consistent solid borders.');
 assert.match(stylesSource, /summary\.be-accordion-trigger:focus-visible/, 'Accordion triggers must expose a keyboard focus state.');
 assert.match(stylesSource, /\.be-accordion-chevron/, 'Accordion triggers must use a consistent chevron affordance.');
+assert.match(stylesSource, /\.be-accordion-heading-icon/, 'Accordion heading icons must have dedicated sizing.');
 assert.match(stylesSource, /\.be-active-filter-tag/, 'Active filter tags must have dedicated styling.');
 assert.match(
   stylesSource,
@@ -256,6 +337,15 @@ const fieldDetailPatternChecks = [
   ['hailstorm', [['causes a hailstorm']], 'Causes a hailstorm.'],
   ['Electric Terrain', [['terrain into electric terrain']], 'Turns the field of play’s terrain into Electric Terrain.'],
   ['Fairy Zone', [['zone into a fairy zone']], 'Turns the field of play’s zone into a Fairy Zone.'],
+  ['Physical Damage Reduction', [['physical damage reduction effect']], 'Applies the Physical Damage Reduction effect to the allied field of play.'],
+  ['Special Damage Reduction', [['special damage reduction effect']], 'Applies the Special Damage Reduction effect to the allied field of play.'],
+  ['Critical-Hit Defense', [['critical-hit defense effect']], 'Applies the Critical-Hit Defense effect to the allied field of play.'],
+  ['Status Condition Defense', [['status condition defense effect']], 'Applies the Status Condition Defense effect to the allied field of play.'],
+  ['Status Move Defense', [['status move defense effect']], 'Applies the Status Move Defense effect to the allied field of play.'],
+  ['Stat Reduction Defense', [['stat reduction defense effect']], 'Applies the Stat Reduction Defense effect to the allied field of play.'],
+  ['Move Gauge Acceleration', [['move gauge acceleration effect']], 'Applies the Move Gauge Acceleration effect to the allied field of play.'],
+  ['Fire Damage Field', [['fire damage field']], 'Applies the Fire Damage Field to the opponents’ field of play.'],
+  ['No Stat Increases', [['no stat increases effect']], 'Applies the No Stat Increases effect to the opponents’ field of play.'],
 ];
 for (const [name, patterns, document] of fieldDetailPatternChecks) {
   assert.equal(parserContext.matchDocumentsForCheck([document], patterns), true, `${name}: concrete field effect must match.`);
@@ -366,7 +456,8 @@ const gridContext = {
   requestAnimationFrame: () => {},
 };
 vm.createContext(gridContext);
-vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel;`, gridContext);
+gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
+vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo;`, gridContext);
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 25 }, 'ja'), 'B技: 威力+25');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 40 }, 'en'), 'Sync: Power +40');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: false, abilityValue: 25 }, 'ja'), '');
@@ -379,5 +470,40 @@ gridContext.moveInfoByCellId.set('regular-power', { isSyncPowerBoost: false, abi
 assert.equal(gridContext.displayTileNameForCheck(regularTile, regularTile.dataset.tileName), 'Thunderbolt: Power +3');
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: { level: '4' } }), 4);
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: {} }), 1, 'Tiles without data-level must default to move level 1.');
+assert.equal(gridContext.moveLevelIconUrlForCheck(5), 'https://pomasters.github.io/SyncPairsTracker/images/5.png');
+assert.match(gridSource, /icon\.alt = accessibleLabel/, 'Move-level icons must retain localized fallback text.');
+assert.match(stylesSource, /\.be-required-move-level-icon/, 'Move-level icons must have dedicated tooltip sizing.');
+assert.match(
+  gridSource,
+  /title\.insertBefore\(line, titleText\)/,
+  'Move-level icons must appear immediately before the tooltip title text.',
+);
+assert.doesNotMatch(
+  stylesSource,
+  /\.tooltip \.be-required-move-level\s*\{[^}]*background:/s,
+  'Move-level requirements must not render as a separate tooltip block.',
+);
+assert.deepEqual(
+  { ...gridContext.fieldDurationInfoForCheck(19020803, 'Extends the duration of sunny weather when the weather turns sunny while the user is on the field.') },
+  { baseSeconds: 45, extensionSeconds: 30 },
+  'Field Extension 3 must explain its approximately 30-second extension.',
+);
+assert.deepEqual(
+  { ...gridContext.fieldDurationInfoForCheck(19061805, 'Makes the weather sunny the first time the user attacks. Extends the duration of sunny weather when the weather turns sunny while the user is on the field.') },
+  { baseSeconds: 45, extensionSeconds: 50 },
+  'Field-setting Extension 5 skills must explain both base duration and extension.',
+);
+assert.deepEqual(
+  { ...gridContext.fieldDurationInfoForCheck(19020301, 'Turns the field of play’s terrain into Grassy Terrain after using the user’s sync move.') },
+  { baseSeconds: 45, extensionSeconds: null },
+  'Field-setting skills must explain the base field duration.',
+);
+assert.equal(
+  gridContext.fieldDurationInfoForCheck(13010603, 'Powers up the user’s moves when the terrain is Grassy Terrain.'),
+  null,
+  'Skills that only benefit from an active field must not receive a duration explanation.',
+);
+assert.match(gridSource, /appendFieldDuration\(tooltip, moveInfo\)/, 'Grid tooltips must append verified field-duration details.');
+assert.match(stylesSource, /\.be-field-duration/, 'Field-duration tooltip details must have dedicated styling.');
 
 console.log('Check passed: build, metadata, syntax and committed artifact are valid.');

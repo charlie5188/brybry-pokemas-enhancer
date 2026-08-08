@@ -132,6 +132,17 @@ const PASSIVE_SKILL_SEARCH_URLS = {
 // everyday feature work does not need to load the large source dictionaries.
 
 const FILTER_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
+const MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
+const MASTER_PASSIVE_ICON_URLS = {
+  physical: 'https://pomasters.github.io/SyncPairEditor/images/category_physical.png',
+  special: 'https://pomasters.github.io/SyncPairEditor/images/category_special.png',
+};
+const FILTER_SECTION_ICON_URLS = {
+  region: 'https://www.pomatools.site/assets/images/icon_theme_region.png',
+  trainerGroup: 'https://www.pomatools.site/assets/images/icon_theme_trainergroup.png',
+  fashion: 'https://www.pomatools.site/assets/images/icon_theme_fashion.png',
+  other: 'https://www.pomatools.site/assets/images/icon_theme_other.png',
+};
 const PICKER_PREFERENCES_KEY = 'brybry-enhancer-picker-preferences';
 const GRID_PREFERENCES_KEY = 'brybry-enhancer-sync-grid-builds';
 const PREFERENCE_VERSION = 3;
@@ -195,6 +206,22 @@ const FIELD_DETAIL_ICON_CONFIG = {
   darkZone: { iconName: 'type_dark' },
   steelZone: { iconName: 'type_steel' },
   fairyZone: { iconName: 'type_fairy' },
+  circlePhysical: { iconSrc: 'https://www.pomatools.site/assets/images/icon_stat_atk.png', iconOnly: false },
+  circleSpecial: { iconSrc: 'https://www.pomatools.site/assets/images/icon_stat_spa.png', iconOnly: false },
+  circleDefensive: { iconSrc: 'https://www.pomatools.site/assets/images/icon_stat_hp.png', iconOnly: false },
+  moveGaugeAcceleration: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_001.png' },
+  physicalDamageReduction: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_002.png' },
+  specialDamageReduction: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_004.png' },
+  criticalHitDefense: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_008.png' },
+  statusConditionDefense: { iconSrc: STATUS_CONDITION_DEFENSE_ICON_SRC },
+  statusMoveDefense: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_032.png' },
+  statReductionDefense: { iconSrc: 'https://pomatools.github.io/assets/img/battle/FILD_016.png' },
+  noStatIncreases: { iconSrc: NO_STAT_INCREASES_ICON_SRC },
+  fireDamageField: { iconSrc: 'https://archives.bulbagarden.net/media/upload/f/fb/Fire_Damage_Field_icon_Masters.png' },
+  poisonDamageField: { iconSrc: 'https://archives.bulbagarden.net/media/upload/f/fc/Poison_Damage_Field_icon_Masters.png' },
+  rockDamageField: { iconSrc: 'https://archives.bulbagarden.net/media/upload/b/b7/Rock_Damage_Field_icon_Masters.png' },
+  darkDamageField: { iconSrc: 'https://archives.bulbagarden.net/media/upload/c/c6/Dark_Damage_Field_icon_Masters.png' },
+  steelDamageField: { iconSrc: 'https://archives.bulbagarden.net/media/upload/a/a7/Steel_Damage_Field_icon_Masters.png' },
 };
 const SKILL_FILTER_CATEGORIES = [
   {
@@ -244,13 +271,31 @@ const SKILL_FILTER_CATEGORIES = [
     ] },
   },
   {
-    value: 'circle', group: 'field', iconName: 'icon_circle',
+    value: 'circle', group: 'field',
     labels: { en: 'Circle', fr: 'Cercle', de: 'Kreis', es: 'Círculo', it: 'Cerchio', ja: 'サークル', ko: '서클', zh: '圓環' },
     patterns: {
       en: [['applies', 'circle', 'allied field']],
       ja: [['味方全体の場を', 'サークル', 'にする']],
       zh: [['我方全體的場地', '圓環'], ['我方全体的场地', '圆环']],
     },
+  },
+  {
+    value: 'alliedField', group: 'field',
+    labels: { en: 'Allied Field', fr: 'Terrain allié', de: 'Mitstreiter-Feld', es: 'Campo aliado', it: 'Campo alleato', ja: '味方の場', ko: '아군 필드', zh: '我方場地' },
+    patterns: { en: [
+      ['physical damage reduction effect'], ['special damage reduction effect'],
+      ['critical-hit defense effect'], ['status condition defense effect'],
+      ['status move defense effect'], ['stat reduction defense effect'],
+      ['move gauge acceleration effect'],
+    ] },
+  },
+  {
+    value: 'opponentField', group: 'field',
+    labels: { en: 'Opponent Field', fr: 'Terrain adverse', de: 'Gegner-Feld', es: 'Campo rival', it: 'Campo avversario', ja: '相手の場', ko: '상대 필드', zh: '對手場地' },
+    patterns: { en: [
+      ['fire damage field'], ['poison damage field'], ['rock damage field'],
+      ['dark damage field'], ['steel damage field'], ['no stat increases effect'],
+    ] },
   },
   {
     value: 'statUp', group: 'utility',
@@ -328,6 +373,19 @@ const SKILL_FILTER_DETAILS = [
   ['circlePhysical', 'circle', 'Physical', '物理', '物理', [['circle (physical)']]],
   ['circleSpecial', 'circle', 'Special', '特殊', '特殊', [['circle (special)']]],
   ['circleDefensive', 'circle', 'Defensive', '防御', '防御', [['circle (defensive)']]],
+  ['physicalDamageReduction', 'alliedField', 'Physical Damage ↓', '物理ダメージ軽減', '物理傷害減輕', [['physical damage reduction effect']]],
+  ['specialDamageReduction', 'alliedField', 'Special Damage ↓', '特殊ダメージ軽減', '特殊傷害減輕', [['special damage reduction effect']]],
+  ['criticalHitDefense', 'alliedField', 'Critical-Hit Defense', '急所防御', '要害防禦', [['critical-hit defense effect']]],
+  ['statusConditionDefense', 'alliedField', 'Status Defense', '状態異常防御', '異常狀態防禦', [['status condition defense effect']]],
+  ['statusMoveDefense', 'alliedField', 'Status Move Defense', '変化技防御', '變化招式防禦', [['status move defense effect']]],
+  ['statReductionDefense', 'alliedField', 'Stat Reduction Defense', '能力下降防御', '能力下降防禦', [['stat reduction defense effect']]],
+  ['moveGaugeAcceleration', 'alliedField', 'Move Gauge Acceleration', 'わざゲージ加速', '招式計量槽加速', [['move gauge acceleration effect']]],
+  ['fireDamageField', 'opponentField', 'Fire Damage Field', 'ほのおダメージの場', '火屬性傷害場地', [['fire damage field']]],
+  ['poisonDamageField', 'opponentField', 'Poison Damage Field', 'どくダメージの場', '毒屬性傷害場地', [['poison damage field']]],
+  ['rockDamageField', 'opponentField', 'Rock Damage Field', 'いわダメージの場', '岩石屬性傷害場地', [['rock damage field']]],
+  ['darkDamageField', 'opponentField', 'Dark Damage Field', 'あくダメージの場', '惡屬性傷害場地', [['dark damage field']]],
+  ['steelDamageField', 'opponentField', 'Steel Damage Field', 'はがねダメージの場', '鋼屬性傷害場地', [['steel damage field']]],
+  ['noStatIncreases', 'opponentField', 'No Stat Increases', '能力上昇不可', '能力無法提升', [['no stat increases effect']]],
   ['attackUp', 'statUp', 'Attack ↑', '攻撃↑', '攻擊↑', [['raises', 'attack', 'stat rank']]],
   ['spAttackUp', 'statUp', 'Sp. Atk ↑', '特攻↑', '特攻↑', [['raises', 'sp. atk', 'stat rank']]],
   ['defenseUp', 'statUp', 'Defense ↑', '防御↑', '防御↑', [['raises', 'defense', 'stat rank']]],
@@ -363,7 +421,7 @@ const SKILL_FILTER_DETAILS = [
   ...(() => {
     const baseValue = value.startsWith('ex') ? `${value[2].toLowerCase()}${value.slice(3)}` : value;
     const icon = FIELD_DETAIL_ICON_CONFIG[baseValue];
-    return icon ? { ...icon, iconOnly: true, exVariant: value.startsWith('ex') } : {};
+    return icon ? { ...icon, iconOnly: icon.iconOnly !== false, exVariant: value.startsWith('ex') } : {};
   })(),
   ...((STAT_FILTER_ICON_URLS[value.replace(/(?:Up|Down)$/, '')] || CONDITION_FILTER_ICON_URLS[value]) ? {
     iconSrc: STAT_FILTER_ICON_URLS[value.replace(/(?:Up|Down)$/, '')] || CONDITION_FILTER_ICON_URLS[value],
@@ -371,10 +429,12 @@ const SKILL_FILTER_DETAILS = [
   } : {}),
   ...(masterPassiveType ? { masterPassiveType } : {}),
   ...(value === 'masterPhysical' ? {
-    iconSrc: 'https://pomatools.github.io/assets/img/battle/ROLE_001P.png', iconOnly: true,
+    iconSrcs: [MASTER_PASSIVE_ICON_URLS.physical],
   } : value === 'masterSpecial' ? {
-    iconSrc: 'https://pomatools.github.io/assets/img/battle/ROLE_001S.png', iconOnly: true,
-  } : value === 'masterGeneral' ? { iconName: 'role_multi', iconOnly: true } : {}),
+    iconSrcs: [MASTER_PASSIVE_ICON_URLS.special],
+  } : value === 'masterGeneral' ? {
+    iconSrcs: [MASTER_PASSIVE_ICON_URLS.physical, MASTER_PASSIVE_ICON_URLS.special],
+  } : {}),
 }));
 
 SKILL_FILTER_CATEGORIES.push(...SKILL_FILTER_DETAILS);
