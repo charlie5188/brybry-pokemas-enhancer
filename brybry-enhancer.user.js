@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.60
+// @version      1.11.77
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -532,6 +532,10 @@ white-space: nowrap;
 width: 1px;
     }
 
+    #pairSearchModal .be-skill-category-chip--compact-label .be-skill-category-label {
+font-size: 16px;
+    }
+
     #pairSearchModal .be-skill-category-chip--icon-only > img {
 height: 22px;
 object-fit: contain;
@@ -564,9 +568,16 @@ gap: 1px;
 width: 44px;
     }
 
+    #pairSearchModal .be-skill-category-chip--directional-icon {
+gap: 3px;
+min-width: 44px;
+padding: 4px 6px;
+width: auto;
+    }
+
     #pairSearchModal .be-stat-direction {
 color: #3f7180;
-font: 900 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+font: 700 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 margin-left: -1px;
     }
 
@@ -1358,8 +1369,8 @@ text-align: center;
   const MOVE_LEVEL_ICON_BASE = "https://pomasters.github.io/SyncPairsTracker/images/";
   const PROJECT_GITHUB_URL = "https://github.com/charlie5188/brybry-pokemas-enhancer";
   const MASTER_PASSIVE_ICON_URLS = {
-    physical: "https://pomasters.github.io/SyncPairEditor/images/category_physical.png",
-    special: "https://pomasters.github.io/SyncPairEditor/images/category_special.png"
+    physical: "https://pomatools.github.io/assets/img/battle/STAT_002R.png",
+    special: "https://pomatools.github.io/assets/img/battle/STAT_008R.png"
   };
   const FILTER_SECTION_ICON_URLS = {
     region: "https://www.pomatools.site/assets/images/icon_theme_region.png",
@@ -1409,7 +1420,31 @@ text-align: center;
       ["protected against critical hits"]
     ]
   };
-  const STAT_FILTER_ICON_URLS = {
+  const STATUS_IMMUNITY_DETAIL_PATTERNS = {
+    allStatusImmunity: IMMUNITY_FILTER_PATTERNS.statusImmunity,
+    poisonImmunity: [["prevents", "getting poisoned"], ...IMMUNITY_FILTER_PATTERNS.statusImmunity],
+    burnImmunity: [["prevents", "getting burned"], ...IMMUNITY_FILTER_PATTERNS.statusImmunity],
+    paralysisImmunity: [["prevents", "getting paralyzed"], ...IMMUNITY_FILTER_PATTERNS.statusImmunity],
+    sleepImmunity: [["prevents", "falling asleep"], ...IMMUNITY_FILTER_PATTERNS.statusImmunity],
+    freezeImmunity: [["prevents", "getting frozen"], ...IMMUNITY_FILTER_PATTERNS.statusImmunity]
+  };
+  const INTERFERENCE_IMMUNITY_DETAIL_PATTERNS = {
+    allInterferenceImmunity: IMMUNITY_FILTER_PATTERNS.interferenceImmunity,
+    flinchImmunity: [["prevents", "flinching"], ...IMMUNITY_FILTER_PATTERNS.interferenceImmunity],
+    confusionImmunity: [["prevents", "becoming confused"], ...IMMUNITY_FILTER_PATTERNS.interferenceImmunity],
+    trapImmunity: [["prevents", "becoming trapped"], ...IMMUNITY_FILTER_PATTERNS.interferenceImmunity]
+  };
+  const STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS = {
+    allStatReductionImmunity: IMMUNITY_FILTER_PATTERNS.statReductionImmunity,
+    attackReductionImmunity: [["prevents", "attack", "being lowered"], ["attack", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    spAttackReductionImmunity: [["prevents", "sp. atk", "being lowered"], ["sp. atk", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    defenseReductionImmunity: [["prevents", "defense", "being lowered"], ["defense", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    spDefenseReductionImmunity: [["prevents", "sp. def", "being lowered"], ["sp. def", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    speedReductionImmunity: [["prevents", "speed", "being lowered"], ["speed", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    accuracyReductionImmunity: [["prevents", "accuracy", "being lowered"], ["accuracy", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
+    evasionReductionImmunity: [["prevents", "evasiveness", "being lowered"], ["evasiveness", "protected", "stat rank reduction"], ...IMMUNITY_FILTER_PATTERNS.statReductionImmunity]
+  };
+  const STAT_DECREASE_ICON_URLS = {
     attack: "https://pomatools.github.io/assets/img/battle/STAT_002L.png",
     defense: "https://pomatools.github.io/assets/img/battle/STAT_004L.png",
     spAttack: "https://pomatools.github.io/assets/img/battle/STAT_008L.png",
@@ -1418,6 +1453,16 @@ text-align: center;
     accuracy: "https://pomatools.github.io/assets/img/battle/STAT_064L.png",
     evasion: "https://pomatools.github.io/assets/img/battle/STAT_128L.png",
     critical: "https://pomatools.github.io/assets/img/battle/STAT_256L.png"
+  };
+  const STAT_INCREASE_ICON_URLS = {
+    attack: "https://pomatools.github.io/assets/img/battle/STAT_002R.png",
+    defense: "https://pomatools.github.io/assets/img/battle/STAT_004R.png",
+    spAttack: "https://pomatools.github.io/assets/img/battle/STAT_008R.png",
+    spDefense: "https://pomatools.github.io/assets/img/battle/STAT_016R.png",
+    speed: "https://pomatools.github.io/assets/img/battle/STAT_032R.png",
+    accuracy: "https://pomatools.github.io/assets/img/battle/STAT_064R.png",
+    evasion: "https://pomatools.github.io/assets/img/battle/STAT_128R.png",
+    critical: "https://pomatools.github.io/assets/img/battle/STAT_256R.png"
   };
   const CONDITION_FILTER_ICON_URLS = {
     poison: "https://pomatools.github.io/assets/img/battle/SCPM_001.png",
@@ -1429,6 +1474,62 @@ text-align: center;
     flinch: "https://pomatools.github.io/assets/img/battle/SCTP_002.png",
     trap: "https://pomatools.github.io/assets/img/battle/SCTP_004.png"
   };
+  const IMMUNITY_DETAIL_ICON_KEYS = {
+    poisonImmunity: "poison",
+    burnImmunity: "burn",
+    paralysisImmunity: "paralysis",
+    sleepImmunity: "sleep",
+    freezeImmunity: "freeze",
+    flinchImmunity: "flinch",
+    confusionImmunity: "confusion",
+    trapImmunity: "trap",
+    attackReductionImmunity: "attack",
+    spAttackReductionImmunity: "spAttack",
+    defenseReductionImmunity: "defense",
+    spDefenseReductionImmunity: "spDefense",
+    speedReductionImmunity: "speed",
+    accuracyReductionImmunity: "accuracy",
+    evasionReductionImmunity: "evasion"
+  };
+  const REBUFF_DETAIL_CONFIG = Object.fromEntries([
+    ["normalRebuffDown", "normal", "normalZone"],
+    ["fireRebuffDown", "fire", "fireType"],
+    ["waterRebuffDown", "water", "waterType"],
+    ["electricRebuffDown", "electric", "electricType"],
+    ["grassRebuffDown", "grass", "grassType"],
+    ["iceRebuffDown", "ice", "iceZone"],
+    ["fightingRebuffDown", "fighting", "fightingZone"],
+    ["poisonRebuffDown", "poison", "poisonZone"],
+    ["groundRebuffDown", "ground", "groundZone"],
+    ["flyingRebuffDown", "flying", "flyingZone"],
+    ["psychicRebuffDown", "psychic", "psychicType"],
+    ["bugRebuffDown", "bug", "bugZone"],
+    ["rockRebuffDown", "rock", "rockZone"],
+    ["ghostRebuffDown", "ghost", "ghostZone"],
+    ["dragonRebuffDown", "dragon", "dragonZone"],
+    ["darkRebuffDown", "dark", "darkZone"],
+    ["steelRebuffDown", "steel", "steelZone"],
+    ["fairyRebuffDown", "fairy", "fairyZone"],
+    ["stellarRebuffDown", "stellar", "stellarType", "StellarIC_Masters.png"]
+  ].map(([value, type, labelKey, iconFile]) => [value, {
+    type,
+    labelKey,
+    iconSrc: `https://archives.bulbagarden.net/wiki/Special:Redirect/file/${iconFile || `${type[0].toUpperCase()}${type.slice(1)}_Rebuff_down_icon_Masters.png`}`,
+    rebuffDirection: iconFile ? "↓" : ""
+  }]));
+  const REBUFF_UP_DETAIL_CONFIG = Object.fromEntries(Object.entries(REBUFF_DETAIL_CONFIG).map(([value, detail]) => [
+    value.replace(/Down$/, "Up"),
+    {
+      ...detail,
+      iconSrc: `https://archives.bulbagarden.net/wiki/Special:Redirect/file/${detail.type[0].toUpperCase()}${detail.type.slice(1)}IC_Masters.png`
+    }
+  ]));
+  function rebuffDetailPatterns(direction, detail) {
+    return [
+      [[direction, `${detail.type} type rebuff`]],
+      [[direction, "following type rebuffs", detail.type]]
+    ].flat();
+  }
   const FIELD_DETAIL_ICON_CONFIG = {
     sunnyWeather: { iconSrc: "https://pomatools.github.io/assets/img/battle/WTHR_002.png" },
     rainyWeather: { iconSrc: "https://pomatools.github.io/assets/img/battle/WTHR_001.png" },
@@ -1478,11 +1579,13 @@ text-align: center;
     alliedField: { en: "Allied Field", fr: "Terrain allié", de: "Mitstreiter-Feld", es: "Campo aliado", it: "Campo alleato", ja: "味方の場", ko: "아군 필드", zh: "我方場地" },
     opponentField: { en: "Opponent Field", fr: "Terrain adverse", de: "Gegner-Feld", es: "Campo rival", it: "Campo avversario", ja: "相手の場", ko: "상대 필드", zh: "對手場地" },
     statUp: { en: "Stat ↑", fr: "Stats ↑", de: "Werte ↑", es: "Características ↑", it: "Statistiche ↑", ja: "能力↑", ko: "능력↑", zh: "能力↑" },
-    statDown: { en: "Stat ↓", fr: "Stats ↓", de: "Werte ↓", es: "Características ↓", it: "Statistiche ↓", ja: "能力↓", ko: "능력↓", zh: "能力↓" },
-    status: { en: "Status", fr: "Altérations", de: "Statusprobleme", es: "Problemas de estado", it: "Problemi di stato", ja: "状態異常", ko: "상태 이상", zh: "異常狀態" },
-    interference: { en: "Interference", fr: "Entraves", de: "Störungen", es: "Interferencias", it: "Interferenze", ja: "妨害状態", ko: "방해 상태", zh: "妨害狀態" },
+    statDown: { en: "Opponent Stat ↓", fr: "Stats adverses ↓", de: "Gegner-Werte ↓", es: "Características del rival ↓", it: "Statistiche avversarie ↓", ja: "相手能力↓", ko: "상대 능력↓", zh: "對手能力↓" },
+    status: { en: "Inflict Status", fr: "Infliger une altération", de: "Statusproblem zufügen", es: "Causar problema de estado", it: "Infliggi stato alterato", ja: "異常付与", ko: "상태 이상 부여", zh: "賦予異常狀態" },
+    interference: { en: "Inflict Interference", fr: "Infliger une entrave", de: "Störung zufügen", es: "Causar interferencia", it: "Infliggi interferenza", ja: "妨害付与", ko: "방해 상태 부여", zh: "賦予妨害狀態" },
     immunity: { en: "Immunity", fr: "Immunité", de: "Immunität", es: "Inmunidad", it: "Immunità", ja: "無効", ko: "무효", zh: "免疫" },
+    immunitySymbol: { en: "🚫", fr: "🚫", de: "🚫", es: "🚫", it: "🚫", ja: "🚫", ko: "🚫", zh: "🚫" },
     rebuff: { en: "Rebuff", fr: "Résilience au type ↓", de: "Typ-Widerstand ↓", es: "Resistencia de tipo ↓", it: "Resistenza al tipo ↓", ja: "タイプ抵抗↓", ko: "타입 저항↓", zh: "屬性抵抗↓" },
+    rebuffUp: { en: "Type Rebuff ↑", fr: "Résilience au type ↑", de: "Typ-Widerstand ↑", es: "Resistencia de tipo ↑", it: "Resistenza al tipo ↑", ja: "タイプ抵抗↑", ko: "타입 저항↑", zh: "屬性抵抗↑" },
     masterPassive: { en: "Master Passive", fr: "Talent Maître", de: "Meister-Passivfähigkeit", es: "Habilidad maestra", it: "Abilità Master", ja: "マスターパッシブ", ko: "마스터 패시브", zh: "大師被動" },
     sunnyWeather: { en: "Sunny", fr: "Soleil", de: "Sonne", es: "Sol", it: "Sole", ja: "晴れ", ko: "쾌청", zh: "晴天" },
     rainyWeather: { en: "Rain", fr: "Pluie", de: "Regen", es: "Lluvia", it: "Pioggia", ja: "雨", ko: "비", zh: "下雨" },
@@ -1491,6 +1594,12 @@ text-align: center;
     electricTerrain: { en: "Electric", fr: "Électrik", de: "Elektro", es: "Eléctrico", it: "Elettro", ja: "エレキ", ko: "일렉트릭", zh: "電氣" },
     grassyTerrain: { en: "Grassy", fr: "Herbu", de: "Gras", es: "Hierba", it: "Erba", ja: "グラス", ko: "그래스", zh: "青草" },
     psychicTerrain: { en: "Psychic", fr: "Psychique", de: "Psycho", es: "Psíquico", it: "Psico", ja: "サイコ", ko: "사이코", zh: "精神" },
+    fireType: { en: "Fire", fr: "Feu", de: "Feuer", es: "Fuego", it: "Fuoco", ja: "ほのお", ko: "불꽃", zh: "火" },
+    waterType: { en: "Water", fr: "Eau", de: "Wasser", es: "Agua", it: "Acqua", ja: "みず", ko: "물", zh: "水" },
+    electricType: { en: "Electric", fr: "Électrik", de: "Elektro", es: "Eléctrico", it: "Elettro", ja: "でんき", ko: "전기", zh: "電" },
+    grassType: { en: "Grass", fr: "Plante", de: "Pflanze", es: "Planta", it: "Erba", ja: "くさ", ko: "풀", zh: "草" },
+    psychicType: { en: "Psychic", fr: "Psy", de: "Psycho", es: "Psíquico", it: "Psico", ja: "エスパー", ko: "에스퍼", zh: "超能力" },
+    stellarType: { en: "Stellar", fr: "Stellaire", de: "Stellar", es: "Astral", it: "Astrale", ja: "ステラ", ko: "스텔라", zh: "太晶" },
     normalZone: { en: "Normal", fr: "Normal", de: "Normal", es: "Normal", it: "Normale", ja: "ノーマル", ko: "노말", zh: "一般" },
     iceZone: { en: "Ice", fr: "Glace", de: "Eis", es: "Hielo", it: "Ghiaccio", ja: "こおり", ko: "얼음", zh: "冰" },
     fightingZone: { en: "Fighting", fr: "Combat", de: "Kampf", es: "Lucha", it: "Lotta", ja: "かくとう", ko: "격투", zh: "格鬥" },
@@ -1536,15 +1645,44 @@ text-align: center;
     flinch: { en: "Flinch", fr: "Apeurement", de: "Zurückschrecken", es: "Retroceso", it: "Tentennamento", ja: "ひるみ", ko: "풀죽음", zh: "畏縮" },
     confusion: { en: "Confusion", fr: "Confusion", de: "Verwirrung", es: "Confusión", it: "Confusione", ja: "こんらん", ko: "혼란", zh: "混乱" },
     trap: { en: "Trap", fr: "Ligotage", de: "Fesselung", es: "Atadura", it: "Imprigionamento", ja: "バインド", ko: "바인드", zh: "束縛" },
-    statusImmunity: { en: "Status Immunity", fr: "Immunité aux altérations", de: "Statusimmunität", es: "Inmunidad a problemas de estado", it: "Immunità agli stati alterati", ja: "状態異常無効", ko: "상태 이상 무효", zh: "異常狀態免疫" },
-    statReductionImmunity: { en: "Stat Reduction Immunity", fr: "Immunité aux baisses de stats", de: "Wertesenkungsimmunität", es: "Inmunidad a reducción de características", it: "Immunità alla riduzione delle statistiche", ja: "能力ダウン無効", ko: "능력치 하락 무효", zh: "能力下降免疫" },
+    statusImmunity: { en: "Status Immunity", fr: "Immunité aux altérations", de: "Statusimmunität", es: "Inmunidad a problemas de estado", it: "Immunità agli stati alterati", ja: "異常無効", ko: "상태 이상 무효", zh: "異常狀態免疫" },
+    statReductionImmunity: { en: "Stat ↓ Immunity", fr: "Immunité Stats ↓", de: "Werte ↓ Immunität", es: "Inmunidad Características ↓", it: "Immunità Statistiche ↓", ja: "能力↓無効", ko: "능력↓ 무효", zh: "能力↓免疫" },
     interferenceImmunity: { en: "Interference Immunity", fr: "Immunité aux entraves", de: "Störungsimmunität", es: "Inmunidad a interferencias", it: "Immunità alle interferenze", ja: "妨害無効", ko: "방해 무효", zh: "妨害免疫" },
     criticalHitImmunity: { en: "Critical-Hit Immunity", fr: "Immunité aux critiques", de: "Volltrefferimmunität", es: "Inmunidad a golpes críticos", it: "Immunità ai brutti colpi", ja: "急所無効", ko: "급소 무효", zh: "要害免疫" },
+    allStatusImmunity: { en: "All Status Immunity", fr: "Immunité à toutes les altérations", de: "Immunität gegen alle Statusprobleme", es: "Inmunidad a todos los problemas de estado", it: "Immunità a tutti gli stati alterati", ja: "全状態異常無効", ko: "모든 상태 이상 무효", zh: "全異常狀態免疫" },
+    allInterferenceImmunity: { en: "All Interference Immunity", fr: "Immunité à toutes les entraves", de: "Immunität gegen alle Störungen", es: "Inmunidad a todas las interferencias", it: "Immunità a tutte le interferenze", ja: "全妨害無効", ko: "모든 방해 무효", zh: "全妨害免疫" },
+    allStatReductionImmunity: { en: "All Stats ↓ Immunity", fr: "Immunité Toutes stats ↓", de: "Alle Werte ↓ Immunität", es: "Inmunidad Todas las características ↓", it: "Immunità Tutte le statistiche ↓", ja: "全↓無効", ko: "모든 능력↓ 무효", zh: "全能力↓免疫" },
+    poisonImmunity: { en: "Poison Immunity", fr: "Immunité au poison", de: "Giftimmunität", es: "Inmunidad al veneno", it: "Immunità al veleno", ja: "どく無効", ko: "독 무효", zh: "中毒免疫" },
+    burnImmunity: { en: "Burn Immunity", fr: "Immunité aux brûlures", de: "Verbrennungsimmunität", es: "Inmunidad a quemaduras", it: "Immunità alle scottature", ja: "やけど無効", ko: "화상 무효", zh: "灼傷免疫" },
+    paralysisImmunity: { en: "Paralysis Immunity", fr: "Immunité à la paralysie", de: "Paralyseimmunität", es: "Inmunidad a parálisis", it: "Immunità alla paralisi", ja: "まひ無効", ko: "마비 무효", zh: "麻痺免疫" },
+    sleepImmunity: { en: "Sleep Immunity", fr: "Immunité au sommeil", de: "Schlafimmunität", es: "Inmunidad al sueño", it: "Immunità al sonno", ja: "ねむり無効", ko: "잠듦 무효", zh: "睡眠免疫" },
+    freezeImmunity: { en: "Freeze Immunity", fr: "Immunité au gel", de: "Einfrierimmunität", es: "Inmunidad a congelación", it: "Immunità al congelamento", ja: "こおり無効", ko: "얼음 무효", zh: "冰凍免疫" },
+    flinchImmunity: { en: "Flinch Immunity", fr: "Immunité à l’apeurement", de: "Zurückschreckimmunität", es: "Inmunidad al retroceso", it: "Immunità al tentennamento", ja: "ひるみ無効", ko: "풀죽음 무효", zh: "畏縮免疫" },
+    confusionImmunity: { en: "Confusion Immunity", fr: "Immunité à la confusion", de: "Verwirrungsimmunität", es: "Inmunidad a confusión", it: "Immunità alla confusione", ja: "こんらん無効", ko: "혼란 무효", zh: "混亂免疫" },
+    trapImmunity: { en: "Trap Immunity", fr: "Immunité au ligotage", de: "Fesselungsimmunität", es: "Inmunidad a ataduras", it: "Immunità all’imprigionamento", ja: "バインド無効", ko: "바인드 무효", zh: "束縛免疫" },
+    attackReductionImmunity: { en: "Attack ↓ Immunity", fr: "Immunité Attaque ↓", de: "Angriff ↓ Immunität", es: "Inmunidad Ataque ↓", it: "Immunità Attacco ↓", ja: "攻撃↓無効", ko: "공격↓ 무효", zh: "攻擊↓免疫" },
+    spAttackReductionImmunity: { en: "Sp. Atk ↓ Immunity", fr: "Immunité Atq. Spé. ↓", de: "Spezial-Angriff ↓ Immunität", es: "Inmunidad At. Esp. ↓", it: "Immunità Att. Sp. ↓", ja: "特攻↓無効", ko: "특수공격↓ 무효", zh: "特攻↓免疫" },
+    defenseReductionImmunity: { en: "Defense ↓ Immunity", fr: "Immunité Défense ↓", de: "Verteidigung ↓ Immunität", es: "Inmunidad Defensa ↓", it: "Immunità Difesa ↓", ja: "防御↓無効", ko: "방어↓ 무효", zh: "防禦↓免疫" },
+    spDefenseReductionImmunity: { en: "Sp. Def ↓ Immunity", fr: "Immunité Déf. Spé. ↓", de: "Spezial-Verteidigung ↓ Immunität", es: "Inmunidad Def. Esp. ↓", it: "Immunità Dif. Sp. ↓", ja: "特防↓無効", ko: "특수방어↓ 무효", zh: "特防↓免疫" },
+    speedReductionImmunity: { en: "Speed ↓ Immunity", fr: "Immunité Vitesse ↓", de: "Initiative ↓ Immunität", es: "Inmunidad Velocidad ↓", it: "Immunità Velocità ↓", ja: "素早さ↓無効", ko: "스피드↓ 무효", zh: "速度↓免疫" },
+    accuracyReductionImmunity: { en: "Accuracy ↓ Immunity", fr: "Immunité Précision ↓", de: "Genauigkeit ↓ Immunität", es: "Inmunidad Precisión ↓", it: "Immunità Precisione ↓", ja: "命中率↓無効", ko: "명중률↓ 무효", zh: "命中率↓免疫" },
+    evasionReductionImmunity: { en: "Evasiveness ↓ Immunity", fr: "Immunité Esquive ↓", de: "Fluchtwert ↓ Immunität", es: "Inmunidad Evasión ↓", it: "Immunità Elusione ↓", ja: "回避率↓無効", ko: "회피율↓ 무효", zh: "閃避率↓免疫" },
     masterPhysical: { en: "Physical", fr: "Physique", de: "Physisch", es: "Físico", it: "Fisico", ja: "物理", ko: "물리", zh: "物理" },
     masterSpecial: { en: "Special", fr: "Spécial", de: "Spezial", es: "Especial", it: "Speciale", ja: "特殊", ko: "특수", zh: "特殊" },
     masterGeneral: { en: "General", fr: "Général", de: "Allgemein", es: "General", it: "Generale", ja: "汎用", ko: "범용", zh: "泛用" }
   };
   function skillFilterLabels(value) {
+    const directLabels = SKILL_FILTER_TRANSLATIONS[value];
+    if (directLabels) return directLabels;
+    const rebuff = REBUFF_DETAIL_CONFIG[value] || REBUFF_UP_DETAIL_CONFIG[value];
+    if (rebuff) {
+      const typeLabels = SKILL_FILTER_TRANSLATIONS[rebuff.labelKey];
+      const rebuffLabels = SKILL_FILTER_TRANSLATIONS[REBUFF_UP_DETAIL_CONFIG[value] ? "rebuffUp" : "rebuff"];
+      return Object.fromEntries(Object.keys(typeLabels).map((locale) => [
+        locale,
+        `${typeLabels[locale]}${locale === "ja" || locale === "zh" ? "" : " "}${rebuffLabels[locale]}`
+      ]));
+    }
     let translationKey = value;
     let prefix = "";
     let suffix = "";
@@ -1682,17 +1820,21 @@ text-align: center;
       labels: skillFilterLabels("interference"),
       patterns: { en: Object.values(INTERFERENCE_INFLICT_PATTERNS).flat() }
     },
-    {
-      value: "immunity",
-      group: "utility",
-      labels: skillFilterLabels("immunity"),
-      patterns: { en: Object.values(IMMUNITY_FILTER_PATTERNS).flat() }
-    },
+    { value: "statusImmunity", group: "utility", labels: skillFilterLabels("statusImmunity"), patterns: { en: Object.values(STATUS_IMMUNITY_DETAIL_PATTERNS).flat() } },
+    { value: "interferenceImmunity", group: "utility", labels: skillFilterLabels("interferenceImmunity"), patterns: { en: Object.values(INTERFERENCE_IMMUNITY_DETAIL_PATTERNS).flat() } },
+    { value: "statReductionImmunity", group: "utility", labels: skillFilterLabels("statReductionImmunity"), patterns: { en: Object.values(STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS).flat() } },
+    { value: "criticalHitImmunity", group: "utility", labels: skillFilterLabels("criticalHitImmunity"), patterns: { en: IMMUNITY_FILTER_PATTERNS.criticalHitImmunity } },
     {
       value: "rebuff",
       group: "utility",
       labels: skillFilterLabels("rebuff"),
-      patterns: { en: [["type rebuff"], ["rebuff"]], ja: [["タイプ抵抗"]], zh: [["屬性抵抗"], ["属性抵抗"]] }
+      patterns: { en: Object.values(REBUFF_DETAIL_CONFIG).flatMap((detail) => rebuffDetailPatterns("lowers", detail)) }
+    },
+    {
+      value: "rebuffUp",
+      group: "utility",
+      labels: skillFilterLabels("rebuffUp"),
+      patterns: { en: Object.values(REBUFF_UP_DETAIL_CONFIG).flatMap((detail) => rebuffDetailPatterns("raises", detail)) }
     },
     {
       value: "masterPassive",
@@ -1782,10 +1924,11 @@ text-align: center;
     ["flinch", "interference", INTERFERENCE_INFLICT_PATTERNS.flinch],
     ["confusion", "interference", INTERFERENCE_INFLICT_PATTERNS.confusion],
     ["trap", "interference", INTERFERENCE_INFLICT_PATTERNS.trap],
-    ["statusImmunity", "immunity", IMMUNITY_FILTER_PATTERNS.statusImmunity],
-    ["statReductionImmunity", "immunity", IMMUNITY_FILTER_PATTERNS.statReductionImmunity],
-    ["interferenceImmunity", "immunity", IMMUNITY_FILTER_PATTERNS.interferenceImmunity],
-    ["criticalHitImmunity", "immunity", IMMUNITY_FILTER_PATTERNS.criticalHitImmunity],
+    ...Object.entries(STATUS_IMMUNITY_DETAIL_PATTERNS).map(([value, patterns]) => [value, "statusImmunity", patterns]),
+    ...Object.entries(INTERFERENCE_IMMUNITY_DETAIL_PATTERNS).map(([value, patterns]) => [value, "interferenceImmunity", patterns]),
+    ...Object.entries(STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS).map(([value, patterns]) => [value, "statReductionImmunity", patterns]),
+    ...Object.entries(REBUFF_DETAIL_CONFIG).map(([value, detail]) => [value, "rebuff", rebuffDetailPatterns("lowers", detail)]),
+    ...Object.entries(REBUFF_UP_DETAIL_CONFIG).map(([value, detail]) => [value, "rebuffUp", rebuffDetailPatterns("raises", detail)]),
     ["masterPhysical", "masterPassive", [], "physical"],
     ["masterSpecial", "masterPassive", [], "special"],
     ["masterGeneral", "masterPassive", [], "general"]
@@ -1800,10 +1943,25 @@ text-align: center;
       const icon = FIELD_DETAIL_ICON_CONFIG[baseValue];
       return icon ? { ...icon, iconOnly: icon.iconOnly !== false, exVariant: value.startsWith("ex") } : {};
     })(),
-    ...STAT_FILTER_ICON_URLS[value.replace(/(?:Up|Down)$/, "")] || CONDITION_FILTER_ICON_URLS[value] ? {
-      iconSrc: STAT_FILTER_ICON_URLS[value.replace(/(?:Up|Down)$/, "")] || CONDITION_FILTER_ICON_URLS[value],
+    ...REBUFF_DETAIL_CONFIG[value] ? {
+      iconSrc: REBUFF_DETAIL_CONFIG[value].iconSrc,
+      iconOnly: true,
+      rebuffDirection: REBUFF_DETAIL_CONFIG[value].rebuffDirection
+    } : {},
+    ...REBUFF_UP_DETAIL_CONFIG[value] ? { iconSrc: REBUFF_UP_DETAIL_CONFIG[value].iconSrc, iconOnly: true, rebuffDirection: "↑" } : {},
+    ...STAT_DECREASE_ICON_URLS[value.replace(/(?:Up|Down)$/, "")] || CONDITION_FILTER_ICON_URLS[value] ? {
+      iconSrc: (value.endsWith("Up") ? STAT_INCREASE_ICON_URLS : STAT_DECREASE_ICON_URLS)[value.replace(/(?:Up|Down)$/, "")] || CONDITION_FILTER_ICON_URLS[value],
       iconOnly: true
     } : {},
+    ...(() => {
+      const iconKey = IMMUNITY_DETAIL_ICON_KEYS[value];
+      const iconSrc = STAT_DECREASE_ICON_URLS[iconKey] || CONDITION_FILTER_ICON_URLS[iconKey];
+      return iconSrc ? {
+        iconSrc,
+        compactLabels: skillFilterLabels("immunitySymbol"),
+        attributeDirection: STAT_DECREASE_ICON_URLS[iconKey] ? "↓" : ""
+      } : {};
+    })(),
     ...masterPassiveType ? { masterPassiveType } : {},
     ...value === "masterPhysical" ? {
       iconSrcs: [MASTER_PASSIVE_ICON_URLS.physical]
@@ -4075,9 +4233,23 @@ text-align: center;
     if (state === "exclude") return `${label} · − ${copy.exclude}`;
     return label;
   }
+  function expandedDirectionLabel(label, locale) {
+    const directionWords = {
+      en: { "↑": "Increase", "↓": "Decrease" },
+      fr: { "↑": "en hausse", "↓": "en baisse" },
+      de: { "↑": "erhöht", "↓": "gesenkt" },
+      es: { "↑": "aumentado", "↓": "reducido" },
+      it: { "↑": "aumentata", "↓": "ridotta" },
+      ja: { "↑": "上昇", "↓": "低下" },
+      ko: { "↑": "상승", "↓": "하락" },
+      zh: { "↑": "上升", "↓": "下降" }
+    };
+    const words = directionWords[locale] || directionWords.en;
+    return label.replace(/[↑↓]/g, (direction) => words[direction]).replace(/\s+/g, " ").trim();
+  }
   function updateFilterButtonState(button, state, label) {
     const tooltip = filterTooltip(label, state);
-    const needsTooltip = button.matches(".be-chip--icon-only, .be-skill-category-chip--icon-only");
+    const needsTooltip = button.matches(".be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label");
     button.dataset.beFilterState = state;
     if (needsTooltip) button.dataset.beTooltip = tooltip;
     else delete button.dataset.beTooltip;
@@ -4477,15 +4649,19 @@ text-align: center;
   }
   function createSkillCategoryChip(category, locale) {
     const categoryLabel = category.labels[locale] || category.labels.en;
+    const tooltipLabel = expandedDirectionLabel(categoryLabel, locale);
     const button = document.createElement("button");
     button.className = "be-skill-category-chip";
     if (category.detailOf) button.classList.add("be-skill-category-chip--detail");
+    if (category.compactLabels) button.classList.add("be-skill-category-chip--compact-label");
+    if (category.rebuffDirection) button.classList.add("be-skill-category-chip--directional-icon");
     if (category.iconOnly) button.classList.add("be-skill-category-chip--icon-only");
     if (category.exVariant) button.classList.add("be-skill-category-chip--ex-detail");
     if (category.detailOf === "statUp" || category.detailOf === "statDown") {
       button.classList.add("be-skill-category-chip--stat-direction");
     }
     button.type = "button";
+    button.setAttribute("aria-label", categoryLabel);
     button.dataset.beSkillCategory = category.value;
     if (category.iconName) {
       const icon = document.createElement("img");
@@ -4529,9 +4705,16 @@ text-align: center;
       direction.textContent = category.detailOf === "statUp" ? "↑" : "↓";
       button.append(direction);
     }
+    if (category.rebuffDirection || category.attributeDirection) {
+      const direction = document.createElement("span");
+      direction.className = "be-stat-direction";
+      direction.setAttribute("aria-hidden", "true");
+      direction.textContent = category.rebuffDirection || category.attributeDirection;
+      button.append(direction);
+    }
     const label = document.createElement("span");
     label.className = "be-skill-category-label";
-    label.textContent = categoryLabel;
+    label.textContent = category.compactLabels?.[locale] || category.compactLabels?.en || categoryLabel;
     button.append(label);
     const marker = document.createElement("span");
     marker.className = "be-filter-state-mark";
@@ -4542,7 +4725,7 @@ text-align: center;
       if (excludedSkillCategories.has(category.value)) return "exclude";
       return "off";
     };
-    updateFilterButtonState(button, categoryState(), categoryLabel);
+    updateFilterButtonState(button, categoryState(), tooltipLabel);
     button.addEventListener("click", () => {
       if (selectedSkillCategories.has(category.value)) {
         selectedSkillCategories.delete(category.value);
@@ -4552,7 +4735,7 @@ text-align: center;
       } else {
         selectedSkillCategories.add(category.value);
       }
-      updateFilterButtonState(button, categoryState(), categoryLabel);
+      updateFilterButtonState(button, categoryState(), tooltipLabel);
       queuePairRender(FILTER_RENDER_DELAY_MS);
     });
     return button;
@@ -4726,8 +4909,8 @@ text-align: center;
     battleGrid.className = "be-skill-battle-grid";
     [
       [copy.skillFieldEffects, ["weather", "terrain", "zone", "weatherEx", "terrainEx", "zoneEx", "circle", "alliedField", "opponentField"]],
-      [copy.skillStatChanges, ["statUp", "statDown", "rebuff"]],
-      [copy.skillConditions, ["status", "interference", "immunity"]],
+      [copy.skillStatChanges, ["statUp", "statDown", "statReductionImmunity", "rebuffUp", "rebuff"]],
+      [copy.skillConditions, ["status", "interference", "statusImmunity", "interferenceImmunity", "criticalHitImmunity"]],
       [SKILL_FILTER_CATEGORIES.find((category) => category.value === "masterPassive")?.labels?.[locale] || "Master Passive", ["masterPassive"]]
     ].forEach(([title, parentValues]) => {
       const row = document.createElement("div");

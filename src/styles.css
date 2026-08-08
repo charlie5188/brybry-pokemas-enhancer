@@ -515,6 +515,10 @@ white-space: nowrap;
 width: 1px;
     }
 
+    #pairSearchModal .be-skill-category-chip--compact-label .be-skill-category-label {
+font-size: 16px;
+    }
+
     #pairSearchModal .be-skill-category-chip--icon-only > img {
 height: 22px;
 object-fit: contain;
@@ -547,9 +551,16 @@ gap: 1px;
 width: 44px;
     }
 
+    #pairSearchModal .be-skill-category-chip--directional-icon {
+gap: 3px;
+min-width: 44px;
+padding: 4px 6px;
+width: auto;
+    }
+
     #pairSearchModal .be-stat-direction {
 color: #3f7180;
-font: 900 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+font: 700 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 margin-left: -1px;
     }
 
