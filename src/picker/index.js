@@ -977,9 +977,15 @@ function skillSearchField() {
     SKILL_FILTER_CATEGORIES.filter((category) => parentValues.includes(category.value) && !category.detailOf)
       .sort((first, second) => parentValues.indexOf(first.value) - parentValues.indexOf(second.value))
       .forEach((category) => {
+        if (category.value === 'criticalHitImmunity' && parentValues.includes('sureHitNext')) return;
         const categoryRow = groupByParent ? document.createElement('div') : row;
         if (groupByParent) categoryRow.className = 'be-skill-category-cluster';
         if (category.value !== 'masterPassive') categoryRow.append(createSkillCategoryChip(category, locale));
+        if (category.value === 'sureHitNext' && parentValues.includes('criticalHitImmunity')) {
+          const criticalHitImmunity = SKILL_FILTER_CATEGORIES
+            .find((item) => item.value === 'criticalHitImmunity');
+          if (criticalHitImmunity) categoryRow.append(createSkillCategoryChip(criticalHitImmunity, locale));
+        }
         SKILL_FILTER_CATEGORIES.filter((detail) => detail.detailOf === category.value)
           .forEach((detail) => categoryRow.append(createSkillCategoryChip(detail, locale)));
         if (groupByParent) row.append(categoryRow);
