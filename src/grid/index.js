@@ -181,16 +181,66 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
+function fieldDurationInfo(passiveId, englishDescription) {
+  const description = String(englishDescription || '').normalize('NFKC');
+  const extendsDuration = /extends the duration/i.test(description);
+  const createsTimedField = [
+    /makes the weather (?:sunny|rainy)/i,
+    /causes (?:a sandstorm|a hailstorm|snow)/i,
+    /turns the field of play(?:’s|'s) (?:terrain|zone) into/i,
+    /applies [^.]*circle[^.]* to the allied field of play/i,
+    /applies (?:the )?(?:physical damage reduction|special damage reduction|critical-hit defense|status condition defense|status move defense|stat reduction defense|move gauge acceleration|no stat increases) effect/i,
+    /applies (?:the )?(?:fire|poison|rock|dark|steel) damage field/i,
+  ].some((pattern) => pattern.test(description));
+  if (!extendsDuration && !createsTimedField) return null;
+  const level = Math.abs(Number(passiveId)) % 10;
+  return {
+    baseSeconds: 45,
+    extensionSeconds: extendsDuration && level > 0 ? level * 10 : null,
+  };
+}
+
+function appendFieldDuration(tooltip, moveInfo) {
+  if (!tooltip || !moveInfo?.passiveId || tooltip.querySelector('.be-field-duration')) return;
+  const englishDescription = passiveSkillDetails(moveInfo.passiveId, 'en')?.description;
+  const duration = fieldDurationInfo(moveInfo.passiveId, englishDescription);
+  if (!duration) return;
+  const copy = text();
+  const details = [copy.fieldDurationBase.replace('{value}', String(duration.baseSeconds))];
+  if (duration.extensionSeconds) {
+    details.push(copy.fieldDurationExtension.replace('{value}', String(duration.extensionSeconds)));
+  }
+  const line = document.createElement('span');
+  line.className = 'be-field-duration';
+  line.textContent = details.join(' · ');
+  tooltip.append(line);
+}
+
 function requiredMoveLevel(tile) {
   return Math.max(1, Number(tile?.dataset.level) || 1);
 }
 
+function moveLevelIconUrl(level) {
+  return `${MOVE_LEVEL_ICON_BASE}${Math.min(5, Math.max(1, Number(level) || 1))}.png`;
+}
+
 function appendRequiredMoveLevel(tooltip, tile) {
   if (!tooltip || tooltip.querySelector('.be-required-move-level')) return;
+  const level = requiredMoveLevel(tile);
+  const accessibleLabel = text().requiredMoveLevel.replace('{value}', String(level));
   const line = document.createElement('span');
   line.className = 'be-required-move-level';
-  line.textContent = text().requiredMoveLevel.replace('{value}', String(requiredMoveLevel(tile)));
-  tooltip.append(line);
+  line.setAttribute('aria-label', accessibleLabel);
+  line.title = accessibleLabel;
+  const icon = document.createElement('img');
+  icon.className = 'be-required-move-level-icon';
+  icon.src = moveLevelIconUrl(level);
+  icon.alt = accessibleLabel;
+  line.append(icon);
+  const title = tooltip.firstElementChild;
+  const titleText = title?.querySelector('b') || title?.firstChild;
+  if (title && titleText) title.insertBefore(line, titleText);
+  else tooltip.prepend(line);
 }
 
 function appendRelatedMoveDescription(tooltip, moveInfo) {
@@ -218,6 +268,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+  appendFieldDuration(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo);
   repositionGridTooltip(tooltip, tile);
 }
