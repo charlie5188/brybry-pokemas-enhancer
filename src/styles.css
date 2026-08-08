@@ -96,9 +96,52 @@ border-color: rgba(255, 255, 255, .18);
 
     #pairSearchModal .be-picker-tools {
 display: flex;
+flex-wrap: wrap;
 gap: 8px;
 align-items: center;
 margin: 0 0 10px;
+    }
+
+    #pairSearchModal .be-active-filter-tags {
+display: flex;
+flex: 1 0 100%;
+flex-wrap: wrap;
+gap: 6px;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-active-filter-tags[hidden] { display: none; }
+
+    #pairSearchModal .be-active-filter-tag {
+appearance: none;
+align-items: center;
+background: rgba(39, 117, 139, .1);
+border: 1px solid rgba(39, 117, 139, .38);
+border-radius: 999px;
+color: #225f70;
+cursor: pointer;
+display: inline-flex;
+font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 5px;
+max-width: 100%;
+padding: 5px 7px 5px 9px;
+    }
+
+    #pairSearchModal .be-active-filter-tag[data-be-filter-state="exclude"] {
+background: rgba(170, 68, 68, .08);
+border-color: rgba(170, 68, 68, .34);
+color: #8b3d3d;
+    }
+
+    #pairSearchModal .be-active-filter-tag > span:first-child {
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+    }
+
+    #pairSearchModal .be-active-filter-tag-remove {
+font-size: 15px;
+line-height: .8;
     }
 
     #pairSearchModal .be-filter-button,
@@ -127,6 +170,7 @@ border-color: #27758b;
       .be-chip,
       .be-skill-category-chip,
       .be-skill-token,
+      .be-active-filter-tag,
       .be-pair-result
     ):focus-visible,
     .be-settings-button:focus-visible,

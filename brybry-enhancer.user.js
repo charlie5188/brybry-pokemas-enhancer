@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.35
+// @version      1.11.36
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -113,9 +113,52 @@ border-color: rgba(255, 255, 255, .18);
 
     #pairSearchModal .be-picker-tools {
 display: flex;
+flex-wrap: wrap;
 gap: 8px;
 align-items: center;
 margin: 0 0 10px;
+    }
+
+    #pairSearchModal .be-active-filter-tags {
+display: flex;
+flex: 1 0 100%;
+flex-wrap: wrap;
+gap: 6px;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-active-filter-tags[hidden] { display: none; }
+
+    #pairSearchModal .be-active-filter-tag {
+appearance: none;
+align-items: center;
+background: rgba(39, 117, 139, .1);
+border: 1px solid rgba(39, 117, 139, .38);
+border-radius: 999px;
+color: #225f70;
+cursor: pointer;
+display: inline-flex;
+font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 5px;
+max-width: 100%;
+padding: 5px 7px 5px 9px;
+    }
+
+    #pairSearchModal .be-active-filter-tag[data-be-filter-state="exclude"] {
+background: rgba(170, 68, 68, .08);
+border-color: rgba(170, 68, 68, .34);
+color: #8b3d3d;
+    }
+
+    #pairSearchModal .be-active-filter-tag > span:first-child {
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+    }
+
+    #pairSearchModal .be-active-filter-tag-remove {
+font-size: 15px;
+line-height: .8;
     }
 
     #pairSearchModal .be-filter-button,
@@ -144,6 +187,7 @@ border-color: #27758b;
       .be-chip,
       .be-skill-category-chip,
       .be-skill-token,
+      .be-active-filter-tag,
       .be-pair-result
     ):focus-visible,
     .be-settings-button:focus-visible,
@@ -3573,6 +3617,89 @@ text-align: center;
     const summary = [included ? `✓${included}` : "", excluded ? `−${excluded}` : ""].filter(Boolean).join(" ");
     return `${text().filter}${summary ? ` (${summary})` : ""}`;
   }
+  function activeFilterEntries() {
+    const locale = language();
+    const entries = [];
+    const chipLabel = (group, value) => Array.from(document.querySelectorAll(".be-chip")).find((chip) => chip.dataset.beGroup === group && chip.dataset.beValue === String(value))?.dataset.beLabel || String(value);
+    Object.entries({
+      type: selectedTypes,
+      moveType: selectedMoveTypes,
+      role: selectedRoles,
+      weakness: selectedWeaknesses,
+      rarity: selectedRarities,
+      acquisition: selectedAcquisitions,
+      exclusivity: selectedExclusivities,
+      region: selectedRegions,
+      exRole: selectedExRoles,
+      roleCombination: selectedRoleCombinations,
+      superawakening: selectedSuperawakening,
+      trainerGroup: selectedTrainerGroups,
+      fashion: selectedFashion,
+      other: selectedOther
+    }).forEach(([group, values]) => {
+      values.forEach((value) => entries.push({ group, value, state: "include", label: chipLabel(group, value) }));
+      excludedFilters.get(group)?.forEach((value) => {
+        entries.push({ group, value, state: "exclude", label: chipLabel(group, value) });
+      });
+    });
+    const categoryLabel = (value) => {
+      const category = SKILL_FILTER_CATEGORIES.find((candidate) => candidate.value === value);
+      return category?.labels[locale] || category?.labels.en || value;
+    };
+    selectedSkillCategories.forEach((value) => entries.push({
+      group: "skillCategory",
+      value,
+      state: "include",
+      label: categoryLabel(value)
+    }));
+    excludedSkillCategories.forEach((value) => entries.push({
+      group: "skillCategory",
+      value,
+      state: "exclude",
+      label: categoryLabel(value)
+    }));
+    selectedSkillIds.forEach((value) => entries.push({
+      group: "skill",
+      value,
+      state: "include",
+      label: passiveSkillDetails(value, locale)?.name || value
+    }));
+    return entries;
+  }
+  function removeActiveFilter({ group, value, state }) {
+    if (group === "skill") {
+      selectedSkillIds.delete(value);
+    } else if (group === "skillCategory") {
+      (state === "exclude" ? excludedSkillCategories : selectedSkillCategories).delete(value);
+    } else {
+      (state === "exclude" ? exclusionForGroup(group) : selectionForGroup(group))?.delete(value);
+    }
+    savePickerPreferences();
+    refreshPicker();
+  }
+  function renderActiveFilterTags() {
+    const container = document.querySelector(".be-active-filter-tags");
+    if (!container) return;
+    const fragment = document.createDocumentFragment();
+    activeFilterEntries().forEach((entry) => {
+      const tag = document.createElement("button");
+      tag.className = "be-active-filter-tag";
+      tag.type = "button";
+      tag.dataset.beFilterState = entry.state;
+      tag.setAttribute("aria-label", `${text().clear}: ${entry.label}`);
+      const label = document.createElement("span");
+      label.textContent = `${entry.state === "exclude" ? "− " : ""}${entry.label}`;
+      const remove = document.createElement("span");
+      remove.className = "be-active-filter-tag-remove";
+      remove.setAttribute("aria-hidden", "true");
+      remove.textContent = "×";
+      tag.append(label, remove);
+      tag.addEventListener("click", () => removeActiveFilter(entry));
+      fragment.append(tag);
+    });
+    container.replaceChildren(fragment);
+    container.hidden = !container.childElementCount;
+  }
   function selectionForGroup(group) {
     return {
       type: selectedTypes,
@@ -4494,6 +4621,7 @@ text-align: center;
     if (filterButton) {
       filterButton.textContent = filterButtonLabel();
     }
+    renderActiveFilterTags();
     resultList.dataset.beView = viewMode;
     document.querySelectorAll(".be-view-button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.beView === viewMode));
@@ -4639,7 +4767,11 @@ text-align: center;
     clearButton.type = "button";
     clearButton.textContent = text().clear;
     clearButton.hidden = selectedCount() === 0 && excludedCount() === 0 && !input.value.trim() && !skillSearchQuery.trim();
-    tools.append(filterButton, clearButton, count);
+    const activeFilterTags = document.createElement("div");
+    activeFilterTags.className = "be-active-filter-tags";
+    activeFilterTags.setAttribute("aria-label", text().filters);
+    activeFilterTags.hidden = true;
+    tools.append(filterButton, clearButton, count, activeFilterTags);
     const toolbar = resultsToolbar();
     const skillSearch = skillSearchField();
     const panel = filterPanel();
