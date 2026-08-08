@@ -8,13 +8,11 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 
 ## Features
 
-### Readable, responsive Sync Grids
+### Better Sync Grids
 
-- Shows useful labels directly inside each tile, with up to four lines and responsive 9–16px text.
-- Uses localized PomaTools abbreviations only when the full label does not fit. Tooltips always keep the complete name and details.
-- Displays compact, consistent labels for Sync Move power nodes, while leaving regular move and stat nodes unchanged.
-- Adds related move descriptions and community-verified power multipliers to compact Grid tooltips, and scales the Grid to make better use of the viewport.
-- Places Sync Grid before Stats and remembers a separate Grid configuration for each Sync Pair.
+- Adds readable labels directly to Grid tiles and makes better use of the screen.
+- Shows Move Level requirements and useful move details in tooltips; unavailable tiles are clearly dimmed.
+- Remembers selected tiles, Move Level and Max Energy Cap for each Sync Pair.
 
 ![Enhanced Sync Grid with responsive labels and move details](docs/images/sync-grid.png)
 
@@ -22,37 +20,19 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 
 ### A faster Sync Pair picker
 
-- Uses a roomy two-column layout: Sync Pair results on the left and searchable filters on the right.
-- Supports compact icon view and detailed list view, using Brybry's original pair artwork with graceful image fallbacks.
-- Searches pair names and full move, passive-skill and description text, with multi-select skill tags.
-- Sorts by latest update by default, with release date, Sync Pair number, Pokédex number, trainer name, type and rarity also available.
-- Keeps result count and reset controls visible while browsing long filter lists.
+- Quickly searches Sync Pairs by name, moves, passive skills and effects.
+- Filters by traits such as type, role, availability, region and battle effects.
+- Supports icon and list views with several useful sorting options.
 
 ![Two-column Sync Pair picker with icon results and structured filters](docs/images/sync-pair-picker.png)
 
 ![Passive-skill search with verified multi-select suggestions](docs/images/passive-skill-search.png)
 
-### Structured filters, not just keywords
+### Player preferences
 
-- Pair identity: Type, Weakness, damaging-move Type, Role, EX Role, Role Combination, initial stars and Superawakening.
-- Availability: acquisition method, scout type and region.
-- Trainer tags: trainer group, fashion and other team-skill tags.
-- Battle effects: Weather, Terrain, Zone and their EX variants; Circle; stat changes; status and interference effects; type resistance reduction; and Master Passive categories.
-- Every filter cycles through include, exclude and off states. Expensive result updates are delayed so several choices can be made smoothly.
-
-### Preferences and spoiler protection
-
-- Optional spoiler protection hides unreleased pairs, redirects direct unreleased-pair links, and hides Brybry's Last update section. It is off by default.
-- Remembers picker view, sorting, spoiler setting, Accordion state and per-pair Sync Grid configurations locally.
-- Keeps the floating Sync Pair launcher available while scrolling.
-
-Pair names and filter metadata continue to come from Brybry's current data files. No separate Sync Pair catalog is maintained.
-
-Brybry's structured ability, move, passive-skill and localized message data are resolved into complete searchable text. New Sync Pairs and supported skill templates therefore become available without maintaining a manual pair-ID list.
-
-The enhancer follows Brybry's content-language URL/cookie and supports the same eight languages: English, français, Deutsch, español, italiano, 日本語, 한국어 and 繁體中文. Localized game terms and skill text come from Brybry; authored Grid abbreviations come from PomaTools.
-
-The current abbreviation snapshot and supported power-multiplier formulas are based on PomaTools commit `47943a730951580152bae7fa3d223c9ac97f80b1`. PomaTools' calculator combines datamined structures with community damage testing; the enhancer only displays multipliers covered by its verified calculation model and does not guess unknown bespoke effects.
+- Optional spoiler protection hides unreleased Sync Pairs.
+- Remembers your picker, sorting and Grid preferences locally.
+- Supports the same eight languages as Brybry.
 
 ## Install
 
@@ -98,7 +78,7 @@ src/
   config.js                URLs, storage keys and shared configuration
   i18n.js                  Locale detection data and UI copy
   state.js                 Shared runtime state and defaults
-  storage.js               Picker preferences and per-pair Sync Grid builds
+  storage.js               Picker preferences, Grid builds, Move Level and energy caps
   spoiler-protection.js    Spoiler redirect, settings and sensitive sections
   styles.css               All injected styles
   styles.js                Style element mounting
@@ -108,7 +88,7 @@ src/
       *-skills.json        Locale-specific authored Grid skill abbreviations
       *-moves.json         Locale-specific authored move abbreviations
   grid/
-    index.js               Labels, wrapping, responsive sizing and tooltips
+    index.js               Labels, tooltips, Move Level states and responsive sizing
   picker/
     index.js               Dialog, filters, sorting and list/icon results
 scripts/

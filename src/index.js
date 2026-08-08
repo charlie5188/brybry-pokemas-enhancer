@@ -5,6 +5,7 @@ function queueRefresh() {
     refreshQueued = false;
     addTileLabels();
     setupMoveTooltips();
+    setupMoveLevelAvailability();
     setupResponsiveGrid();
     setupGridBuildMemory();
     setupSectionOrdering();

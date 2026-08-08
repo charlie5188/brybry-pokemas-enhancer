@@ -181,6 +181,18 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
+function requiredMoveLevel(tile) {
+  return Math.max(1, Number(tile?.dataset.level) || 1);
+}
+
+function appendRequiredMoveLevel(tooltip, tile) {
+  if (!tooltip || tooltip.querySelector('.be-required-move-level')) return;
+  const line = document.createElement('span');
+  line.className = 'be-required-move-level';
+  line.textContent = text().requiredMoveLevel.replace('{value}', String(requiredMoveLevel(tile)));
+  tooltip.append(line);
+}
+
 function appendRelatedMoveDescription(tooltip, moveInfo) {
   if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11
     || tooltip.querySelector('.be-related-move')) return;
@@ -204,6 +216,7 @@ function appendRelatedMoveDescription(tooltip, moveInfo) {
 function appendGridTooltipDetails(tile, moveInfo) {
   const tooltip = visibleGridTooltip();
   if (!tooltip) return;
+  appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
   appendRelatedMoveDescription(tooltip, moveInfo);
   repositionGridTooltip(tooltip, tile);
@@ -211,17 +224,55 @@ function appendGridTooltipDetails(tile, moveInfo) {
 
 function setupMoveTooltips() {
   const grid = document.getElementById('grid');
-  if (!grid || !moveInfoByCellId.size) return;
+  if (!grid) return;
   const polygons = Array.from(grid.querySelectorAll('polygon'));
   grid.querySelectorAll('g[data-cell-id]').forEach((tile) => {
     const moveInfo = moveInfoByCellId.get(String(tile.dataset.cellId));
-    if (!moveInfo) return;
     const transform = tile.getAttribute('transform');
     const polygon = polygons.find((candidate) => candidate.parentElement?.getAttribute('transform') === transform);
     if (!polygon || polygon.dataset.beMoveTooltipBound === 'true') return;
     polygon.dataset.beMoveTooltipBound = 'true';
-    polygon.addEventListener('mouseenter', () => appendGridTooltipDetails(tile, moveInfo));
+    polygon.addEventListener('mouseenter', () => {
+      tile.classList.add('be-move-level-hovered');
+      appendGridTooltipDetails(tile, moveInfo);
+    });
+    polygon.addEventListener('mouseleave', () => tile.classList.remove('be-move-level-hovered'));
   });
+}
+
+function currentMoveLevel() {
+  const activeLevels = [...document.querySelectorAll('[data-sync-level]')]
+    .filter((control) => !getComputedStyle(control).backgroundImage.includes('level-off'))
+    .map((control) => Number(control.dataset.syncLevel))
+    .filter(Number.isFinite);
+  return activeLevels.length ? Math.max(...activeLevels) : 1;
+}
+
+function updateMoveLevelAvailability() {
+  const level = currentMoveLevel();
+  document.querySelectorAll('#grid g[data-cell-id]').forEach((tile) => {
+    let shade = tile.querySelector('.be-move-level-shade');
+    if (!shade) {
+      shade = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      shade.classList.add('be-move-level-shade');
+      shade.setAttribute('points', '17.25,0 51.75,0 69,30 51.75,60 17.25,60 0,30');
+      tile.append(shade);
+    }
+    const unavailable = requiredMoveLevel(tile) > level;
+    tile.classList.toggle('be-move-level-disabled', unavailable);
+    tile.setAttribute('aria-disabled', String(unavailable));
+  });
+}
+
+function setupMoveLevelAvailability() {
+  if (!document.documentElement.dataset.beMoveLevelAvailability) {
+    document.documentElement.dataset.beMoveLevelAvailability = 'true';
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest?.('[data-sync-level]')) return;
+      requestAnimationFrame(updateMoveLevelAvailability);
+    }, true);
+  }
+  updateMoveLevelAvailability();
 }
 
 function resizeGrid() {

@@ -55,14 +55,32 @@ function currentPairId() {
   return String(document.getElementById('syncPairSelect')?.value || new URL(location.href).searchParams.get('pair') || '');
 }
 
+function normalizedGridBuild(value) {
+  if (Array.isArray(value)) return { selectedCellIds: value.map(String) };
+  if (!value || typeof value !== 'object') return { selectedCellIds: [] };
+  return {
+    selectedCellIds: Array.isArray(value.selectedCellIds) ? value.selectedCellIds.map(String) : [],
+    moveLevel: Number(value.moveLevel) || 0,
+    maxEnergyCap: Number(value.maxEnergyCap) || 0,
+  };
+}
+
+function currentMaxEnergyCap() {
+  const selected = document.querySelector('input[name="energy-radio"]:checked');
+  return Number(selected?.id.match(/^energy-(\d+)$/)?.[1]) || 0;
+}
+
 function saveCurrentGridBuild(grid = observedMemoryGrid) {
   if (restoringGridBuild || !grid?.isConnected) return;
   const pairId = currentPairId();
   if (!pairId) return;
   const builds = readSavedGridBuilds();
   const selectedCellIds = Array.from(grid.querySelectorAll('g[data-cell-id][selected]'), (cell) => cell.dataset.cellId);
-  if (selectedCellIds.length) builds[pairId] = selectedCellIds;
-  else delete builds[pairId];
+  builds[pairId] = {
+    selectedCellIds,
+    moveLevel: currentMoveLevel(),
+    maxEnergyCap: currentMaxEnergyCap(),
+  };
   try {
     localStorage.setItem(GRID_PREFERENCES_KEY, JSON.stringify(builds));
   } catch (_) {
@@ -81,9 +99,19 @@ function queueGridBuildSave() {
 
 function selectRememberedGridCell(cell, grid) {
   const transform = cell.getAttribute('transform');
-  const polygon = Array.from(grid.querySelectorAll('polygon'))
+  const polygon = Array.from(grid.querySelectorAll('polygon:not(.be-move-level-shade)'))
     .find((candidate) => candidate.parentElement?.getAttribute('transform') === transform);
   polygon?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
+function restoreGridControls(remembered) {
+  if (remembered.moveLevel) {
+    document.querySelector(`[data-sync-level="${Math.min(5, remembered.moveLevel)}"]`)?.click();
+  }
+  if (remembered.maxEnergyCap) {
+    const energy = document.getElementById(`energy-${remembered.maxEnergyCap}`);
+    if (energy && !energy.checked) energy.click();
+  }
 }
 
 function setupGridBuildMemory() {
@@ -94,17 +122,30 @@ function setupGridBuildMemory() {
   observedMemoryGrid = grid;
   const pairId = currentPairId();
   const sharedBuild = new URL(location.href).searchParams.has('build');
-  const remembered = readSavedGridBuilds()[pairId];
+  const remembered = normalizedGridBuild(readSavedGridBuilds()[pairId]);
 
-  if (!sharedBuild && Array.isArray(remembered) && remembered.length) {
+  if (!sharedBuild) {
     restoringGridBuild = true;
-    const rememberedIds = new Set(remembered.map(String));
+    restoreGridControls(remembered);
+    const rememberedIds = new Set(remembered.selectedCellIds);
     grid.querySelectorAll('g[data-cell-id]').forEach((cell) => {
       if (rememberedIds.has(String(cell.dataset.cellId)) && !cell.hasAttribute('selected')) {
         selectRememberedGridCell(cell, grid);
       }
     });
     restoringGridBuild = false;
+  }
+
+  if (!document.documentElement.dataset.beGridControlMemory) {
+    document.documentElement.dataset.beGridControlMemory = 'true';
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest?.('[data-sync-level]')) return;
+      queueGridBuildSave();
+    }, true);
+    document.addEventListener('change', (event) => {
+      if (!event.target.matches?.('input[name="energy-radio"]')) return;
+      queueGridBuildSave();
+    }, true);
   }
 
   gridMemoryObserver = new MutationObserver(queueGridBuildSave);
