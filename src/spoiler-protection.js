@@ -119,7 +119,13 @@ function ensureSettingsControl() {
   switchVisual.className = 'be-switch';
   switchVisual.setAttribute('aria-hidden', 'true');
   toggleRow.append(toggleCopy, checkbox, switchVisual);
-  popover.append(heading, toggleRow);
+  const contributeLink = document.createElement('a');
+  contributeLink.className = 'be-settings-contribute';
+  contributeLink.href = PROJECT_GITHUB_URL;
+  contributeLink.target = '_blank';
+  contributeLink.rel = 'noopener noreferrer';
+  contributeLink.textContent = copy.contributeOnGitHub;
+  popover.append(heading, toggleRow, contributeLink);
   wrapper.append(button, popover);
   header.append(wrapper);
 

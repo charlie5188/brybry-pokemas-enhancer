@@ -216,9 +216,11 @@ function filterTooltip(label, state) {
 
 function updateFilterButtonState(button, state, label) {
   const tooltip = filterTooltip(label, state);
+  const needsTooltip = button.matches('.be-chip--icon-only, .be-skill-category-chip--icon-only');
   button.dataset.beFilterState = state;
-  button.dataset.beTooltip = tooltip;
-  button.title = tooltip;
+  if (needsTooltip) button.dataset.beTooltip = tooltip;
+  else delete button.dataset.beTooltip;
+  button.removeAttribute('title');
   button.setAttribute('aria-pressed', state === 'exclude' ? 'mixed' : String(state === 'include'));
   button.setAttribute('aria-label', tooltip);
   const marker = button.querySelector('.be-filter-state-mark');
@@ -327,7 +329,7 @@ function bindPairTooltips(resultList) {
 }
 
 function bindFilterTooltips(panel) {
-  const tooltipButton = (target) => target.closest?.('.be-chip, .be-skill-category-chip');
+  const tooltipButton = (target) => target.closest?.('.be-chip, .be-skill-category-chip, .be-sort-direction, .be-view-button');
   panel.addEventListener('pointerover', (event) => showFilterTooltip(tooltipButton(event.target)));
   panel.addEventListener('pointerout', (event) => {
     const button = tooltipButton(event.target);
@@ -495,7 +497,8 @@ function resultsToolbar() {
     directionButton.dataset.direction = sortDirection;
     const label = sortDirection === 'asc' ? copy.ascending : copy.descending;
     directionButton.setAttribute('aria-label', label);
-    directionButton.title = label;
+    directionButton.dataset.beTooltip = label;
+    directionButton.removeAttribute('title');
   };
   updateDirectionLabel();
   directionButton.addEventListener('click', () => {
@@ -519,7 +522,8 @@ function resultsToolbar() {
     button.dataset.beView = value;
     button.setAttribute('aria-label', label);
     button.setAttribute('aria-pressed', String(viewMode === value));
-    button.title = label;
+    button.dataset.beTooltip = label;
+    button.removeAttribute('title');
     button.innerHTML = VIEW_ICONS[value];
     button.addEventListener('click', () => {
       viewMode = value;
@@ -1405,6 +1409,7 @@ function ensurePicker() {
   const panel = filterPanel();
   mountPickerLayout(body, input, skillSearch, resultList, toolbar, tools, panel);
   bindFilterTooltips(panel);
+  bindFilterTooltips(toolbar);
   bindPairTooltips(resultList);
 
   pickerAvatarObserver?.disconnect();
