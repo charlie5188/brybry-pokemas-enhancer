@@ -32,9 +32,11 @@ export async function buildUserscript({ write = true } = {}) {
     `data/pomatools-abbreviations/${locale}-skills.json`,
     `data/pomatools-abbreviations/${locale}-moves.json`,
   ]);
-  const [metadata, css, ...sources] = await Promise.all([
+  const [metadata, css, noStatIncreasesIcon, statusConditionDefenseIcon, ...sources] = await Promise.all([
     readSource('metadata.txt'),
     readSource('styles.css'),
+    readSource('assets/no-stat-increases.png.base64'),
+    readSource('assets/status-condition-defense.png.base64'),
     ...abbreviationFiles.map(readSource),
     ...sourceFiles.map(readSource),
   ]);
@@ -45,6 +47,8 @@ export async function buildUserscript({ write = true } = {}) {
 
   const generatedData = [
     `const BRYBRY_ENHANCER_CSS = ${JSON.stringify(css)};`,
+    `const NO_STAT_INCREASES_ICON_SRC = ${JSON.stringify(`data:image/png;base64,${noStatIncreasesIcon.trim()}`)};`,
+    `const STATUS_CONDITION_DEFENSE_ICON_SRC = ${JSON.stringify(`data:image/png;base64,${statusConditionDefenseIcon.trim()}`)};`,
     `const POMATOOLS_SKILL_ABBR = Object.freeze(${JSON.stringify(skillAbbreviations)});`,
     `const POMATOOLS_MOVE_ABBR = Object.freeze(${JSON.stringify(moveAbbreviations)});`,
   ].join('\n');
