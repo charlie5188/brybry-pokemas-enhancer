@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.32
+// @version      1.11.33
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -48,6 +48,21 @@ stroke-width: 2.1px;
 stroke-linejoin: round;
     }
 
+#grid .be-move-level-shade {
+fill: #000;
+opacity: 0;
+pointer-events: none;
+transition: opacity .16s ease;
+    }
+
+#grid g[data-cell-id].be-move-level-disabled .be-move-level-shade {
+opacity: .45;
+    }
+
+#grid g[data-cell-id].be-move-level-disabled.be-move-level-hovered .be-move-level-shade {
+opacity: .28;
+    }
+
     body > .tooltip {
 box-sizing: border-box;
 font-size: 13px;
@@ -79,7 +94,8 @@ margin-bottom: 2px;
 
     .tooltip .be-related-move span { display: block; }
 
-    .tooltip .be-power-multiplier {
+    .tooltip .be-power-multiplier,
+    .tooltip .be-required-move-level {
 background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);
 border-radius: 6px;
@@ -88,6 +104,11 @@ display: block;
 font: 750 11.5px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 margin: 8px 0 0;
 padding: 6px 8px;
+    }
+
+    .tooltip .be-required-move-level {
+background: rgba(255, 255, 255, .08);
+border-color: rgba(255, 255, 255, .18);
     }
 
     #pairSearchModal .be-picker-tools {
@@ -1518,6 +1539,7 @@ text-align: center;
       loading: "Updating results…",
       multiplier: "Multiplier: +{value}%",
       multiplierCap: "Multiplier cap: +{value}%",
+      requiredMoveLevel: "Required move level: {value}/5",
       skillNoResults: "No matching skills",
       removeSkill: "Remove",
       type: "Type",
@@ -1571,6 +1593,7 @@ text-align: center;
       loading: "Mise à jour des résultats…",
       multiplier: "Multiplicateur : +{value} %",
       multiplierCap: "Multiplicateur maximal : +{value} %",
+      requiredMoveLevel: "Niveau de capacité requis : {value}/5",
       skillNoResults: "Aucun talent correspondant",
       removeSkill: "Retirer",
       type: "Type",
@@ -1624,6 +1647,7 @@ text-align: center;
       loading: "Ergebnisse werden aktualisiert…",
       multiplier: "Multiplikator: +{value} %",
       multiplierCap: "Maximaler Multiplikator: +{value} %",
+      requiredMoveLevel: "Benötigtes Attackenlevel: {value}/5",
       skillNoResults: "Keine passenden Fähigkeiten",
       removeSkill: "Entfernen",
       type: "Typ",
@@ -1677,6 +1701,7 @@ text-align: center;
       loading: "Actualizando resultados…",
       multiplier: "Multiplicador: +{value} %",
       multiplierCap: "Multiplicador máximo: +{value} %",
+      requiredMoveLevel: "Nivel de movimiento requerido: {value}/5",
       skillNoResults: "No hay habilidades coincidentes",
       removeSkill: "Quitar",
       type: "Tipo",
@@ -1730,6 +1755,7 @@ text-align: center;
       loading: "Aggiornamento dei risultati…",
       multiplier: "Moltiplicatore: +{value}%",
       multiplierCap: "Moltiplicatore massimo: +{value}%",
+      requiredMoveLevel: "Livello mossa richiesto: {value}/5",
       skillNoResults: "Nessuna abilità corrispondente",
       removeSkill: "Rimuovi",
       type: "Tipo",
@@ -1783,6 +1809,7 @@ text-align: center;
       loading: "結果を更新中…",
       multiplier: "倍率: +{value}%",
       multiplierCap: "倍率上限: +{value}%",
+      requiredMoveLevel: "必要わざレベル: {value}/5",
       skillNoResults: "一致するスキルがありません",
       removeSkill: "削除",
       type: "タイプ",
@@ -1836,6 +1863,7 @@ text-align: center;
       loading: "결과 업데이트 중…",
       multiplier: "배율: +{value}%",
       multiplierCap: "최대 배율: +{value}%",
+      requiredMoveLevel: "필요 기술 레벨: {value}/5",
       skillNoResults: "일치하는 스킬이 없습니다",
       removeSkill: "삭제",
       type: "타입",
@@ -1889,6 +1917,7 @@ text-align: center;
       loading: "正在更新结果…",
       multiplier: "倍率：+{value}%",
       multiplierCap: "倍率上限：+{value}%",
+      requiredMoveLevel: "所需招式等級：{value}/5",
       skillNoResults: "没有匹配的技能",
       removeSkill: "移除",
       type: "属性",
@@ -2146,14 +2175,30 @@ text-align: center;
   function currentPairId() {
     return String(document.getElementById("syncPairSelect")?.value || new URL(location.href).searchParams.get("pair") || "");
   }
+  function normalizedGridBuild(value) {
+    if (Array.isArray(value)) return { selectedCellIds: value.map(String) };
+    if (!value || typeof value !== "object") return { selectedCellIds: [] };
+    return {
+      selectedCellIds: Array.isArray(value.selectedCellIds) ? value.selectedCellIds.map(String) : [],
+      moveLevel: Number(value.moveLevel) || 0,
+      maxEnergyCap: Number(value.maxEnergyCap) || 0
+    };
+  }
+  function currentMaxEnergyCap() {
+    const selected = document.querySelector('input[name="energy-radio"]:checked');
+    return Number(selected?.id.match(/^energy-(\d+)$/)?.[1]) || 0;
+  }
   function saveCurrentGridBuild(grid = observedMemoryGrid) {
     if (restoringGridBuild || !grid?.isConnected) return;
     const pairId = currentPairId();
     if (!pairId) return;
     const builds = readSavedGridBuilds();
     const selectedCellIds = Array.from(grid.querySelectorAll("g[data-cell-id][selected]"), (cell) => cell.dataset.cellId);
-    if (selectedCellIds.length) builds[pairId] = selectedCellIds;
-    else delete builds[pairId];
+    builds[pairId] = {
+      selectedCellIds,
+      moveLevel: currentMoveLevel(),
+      maxEnergyCap: currentMaxEnergyCap()
+    };
     try {
       localStorage.setItem(GRID_PREFERENCES_KEY, JSON.stringify(builds));
     } catch (_) {
@@ -2169,8 +2214,17 @@ text-align: center;
   }
   function selectRememberedGridCell(cell, grid) {
     const transform = cell.getAttribute("transform");
-    const polygon = Array.from(grid.querySelectorAll("polygon")).find((candidate) => candidate.parentElement?.getAttribute("transform") === transform);
+    const polygon = Array.from(grid.querySelectorAll("polygon:not(.be-move-level-shade)")).find((candidate) => candidate.parentElement?.getAttribute("transform") === transform);
     polygon?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  }
+  function restoreGridControls(remembered) {
+    if (remembered.moveLevel) {
+      document.querySelector(`[data-sync-level="${Math.min(5, remembered.moveLevel)}"]`)?.click();
+    }
+    if (remembered.maxEnergyCap) {
+      const energy = document.getElementById(`energy-${remembered.maxEnergyCap}`);
+      if (energy && !energy.checked) energy.click();
+    }
   }
   function setupGridBuildMemory() {
     const grid = document.getElementById("grid");
@@ -2179,16 +2233,28 @@ text-align: center;
     observedMemoryGrid = grid;
     const pairId = currentPairId();
     const sharedBuild = new URL(location.href).searchParams.has("build");
-    const remembered = readSavedGridBuilds()[pairId];
-    if (!sharedBuild && Array.isArray(remembered) && remembered.length) {
+    const remembered = normalizedGridBuild(readSavedGridBuilds()[pairId]);
+    if (!sharedBuild) {
       restoringGridBuild = true;
-      const rememberedIds = new Set(remembered.map(String));
+      restoreGridControls(remembered);
+      const rememberedIds = new Set(remembered.selectedCellIds);
       grid.querySelectorAll("g[data-cell-id]").forEach((cell) => {
         if (rememberedIds.has(String(cell.dataset.cellId)) && !cell.hasAttribute("selected")) {
           selectRememberedGridCell(cell, grid);
         }
       });
       restoringGridBuild = false;
+    }
+    if (!document.documentElement.dataset.beGridControlMemory) {
+      document.documentElement.dataset.beGridControlMemory = "true";
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest?.("[data-sync-level]")) return;
+        queueGridBuildSave();
+      }, true);
+      document.addEventListener("change", (event) => {
+        if (!event.target.matches?.('input[name="energy-radio"]')) return;
+        queueGridBuildSave();
+      }, true);
     }
     gridMemoryObserver = new MutationObserver(queueGridBuildSave);
     gridMemoryObserver.observe(grid, { subtree: true, attributes: true, attributeFilter: ["selected"] });
@@ -2483,6 +2549,16 @@ text-align: center;
     if (effect) effect.append(line);
     else tooltip.append(line);
   }
+  function requiredMoveLevel(tile) {
+    return Math.max(1, Number(tile?.dataset.level) || 1);
+  }
+  function appendRequiredMoveLevel(tooltip, tile) {
+    if (!tooltip || tooltip.querySelector(".be-required-move-level")) return;
+    const line = document.createElement("span");
+    line.className = "be-required-move-level";
+    line.textContent = text().requiredMoveLevel.replace("{value}", String(requiredMoveLevel(tile)));
+    tooltip.append(line);
+  }
   function appendRelatedMoveDescription(tooltip, moveInfo) {
     if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11 || tooltip.querySelector(".be-related-move")) return;
     const moveDescriptionResolver = typeof window.getMoveDescr === "function" ? window.getMoveDescr : typeof getMoveDescr === "function" ? getMoveDescr : null;
@@ -2500,23 +2576,56 @@ text-align: center;
   function appendGridTooltipDetails(tile, moveInfo) {
     const tooltip = visibleGridTooltip();
     if (!tooltip) return;
+    appendRequiredMoveLevel(tooltip, tile);
     appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
     appendRelatedMoveDescription(tooltip, moveInfo);
     repositionGridTooltip(tooltip, tile);
   }
   function setupMoveTooltips() {
     const grid = document.getElementById("grid");
-    if (!grid || !moveInfoByCellId.size) return;
+    if (!grid) return;
     const polygons = Array.from(grid.querySelectorAll("polygon"));
     grid.querySelectorAll("g[data-cell-id]").forEach((tile) => {
       const moveInfo = moveInfoByCellId.get(String(tile.dataset.cellId));
-      if (!moveInfo) return;
       const transform = tile.getAttribute("transform");
       const polygon = polygons.find((candidate) => candidate.parentElement?.getAttribute("transform") === transform);
       if (!polygon || polygon.dataset.beMoveTooltipBound === "true") return;
       polygon.dataset.beMoveTooltipBound = "true";
-      polygon.addEventListener("mouseenter", () => appendGridTooltipDetails(tile, moveInfo));
+      polygon.addEventListener("mouseenter", () => {
+        tile.classList.add("be-move-level-hovered");
+        appendGridTooltipDetails(tile, moveInfo);
+      });
+      polygon.addEventListener("mouseleave", () => tile.classList.remove("be-move-level-hovered"));
     });
+  }
+  function currentMoveLevel() {
+    const activeLevels = [...document.querySelectorAll("[data-sync-level]")].filter((control) => !getComputedStyle(control).backgroundImage.includes("level-off")).map((control) => Number(control.dataset.syncLevel)).filter(Number.isFinite);
+    return activeLevels.length ? Math.max(...activeLevels) : 1;
+  }
+  function updateMoveLevelAvailability() {
+    const level = currentMoveLevel();
+    document.querySelectorAll("#grid g[data-cell-id]").forEach((tile) => {
+      let shade = tile.querySelector(".be-move-level-shade");
+      if (!shade) {
+        shade = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        shade.classList.add("be-move-level-shade");
+        shade.setAttribute("points", "17.25,0 51.75,0 69,30 51.75,60 17.25,60 0,30");
+        tile.append(shade);
+      }
+      const unavailable = requiredMoveLevel(tile) > level;
+      tile.classList.toggle("be-move-level-disabled", unavailable);
+      tile.setAttribute("aria-disabled", String(unavailable));
+    });
+  }
+  function setupMoveLevelAvailability() {
+    if (!document.documentElement.dataset.beMoveLevelAvailability) {
+      document.documentElement.dataset.beMoveLevelAvailability = "true";
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest?.("[data-sync-level]")) return;
+        requestAnimationFrame(updateMoveLevelAvailability);
+      }, true);
+    }
+    updateMoveLevelAvailability();
   }
   function resizeGrid() {
     const svg = document.querySelector("#gridDiv > svg");
@@ -4616,6 +4725,7 @@ text-align: center;
       refreshQueued = false;
       addTileLabels();
       setupMoveTooltips();
+      setupMoveLevelAvailability();
       setupResponsiveGrid();
       setupGridBuildMemory();
       setupSectionOrdering();

@@ -363,7 +363,7 @@ const gridContext = {
   requestAnimationFrame: () => {},
 };
 vm.createContext(gridContext);
-vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel;`, gridContext);
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 25 }, 'ja'), 'B技: 威力+25');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 40 }, 'en'), 'Sync: Power +40');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: false, abilityValue: 25 }, 'ja'), '');
@@ -374,5 +374,7 @@ assert.equal(syncTile.dataset.tileName, 'Full Sync Move Name: Power +25', 'Full 
 const regularTile = { dataset: { cellId: 'regular-power', tileName: 'Thunderbolt: Power +3' } };
 gridContext.moveInfoByCellId.set('regular-power', { isSyncPowerBoost: false, abilityValue: 3 });
 assert.equal(gridContext.displayTileNameForCheck(regularTile, regularTile.dataset.tileName), 'Thunderbolt: Power +3');
+assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: { level: '4' } }), 4);
+assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: {} }), 1, 'Tiles without data-level must default to move level 1.');
 
 console.log('Check passed: build, metadata, syntax and committed artifact are valid.');
