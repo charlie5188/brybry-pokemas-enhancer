@@ -283,6 +283,17 @@ assert.doesNotMatch(pickerSource, /battleTitle/, 'The redundant Battle Features 
 assert.doesNotMatch(pickerSource, /clickTo(?:Include|Exclude|Clear)/, 'Filter tooltips must not contain click instructions.');
 assert.match(pickerSource, /function renderActiveFilterTags\(\)/, 'Active filters must render as removable header tags.');
 assert.match(pickerSource, /tag\.addEventListener\('click', \(\) => removeActiveFilter\(entry\)\)/, 'Header tags must clear one filter.');
+assert.match(pickerSource, /button\.removeAttribute\('title'\)/, 'Filter buttons must suppress the duplicate native browser tooltip.');
+assert.doesNotMatch(pickerSource, /button\.title = tooltip/, 'Filter buttons must rely on the custom tooltip only.');
+assert.match(
+  pickerSource,
+  /button\.matches\('\.be-chip--icon-only, \.be-skill-category-chip--icon-only'\)/,
+  'Only icon-only filter buttons should receive custom tooltips.',
+);
+assert.match(pickerSource, /else delete button\.dataset\.beTooltip/, 'Fully labeled filter buttons must not retain redundant tooltips.');
+assert.match(pickerSource, /directionButton\.dataset\.beTooltip = label/, 'Sort direction control must use the custom tooltip.');
+assert.match(pickerSource, /button\.dataset\.beTooltip = label;\s*\n\s*button\.removeAttribute\('title'\)/, 'View controls must use custom tooltips without native title hints.');
+assert.match(pickerSource, /bindFilterTooltips\(toolbar\)/, 'The left results toolbar must bind custom tooltip interactions.');
 assert.match(pickerSource, /document\.createElement\('form'\)/, 'The filter controls must use a semantic form container.');
 assert.match(pickerSource, /be-accordion-content/, 'Every accordion item must wrap its content consistently.');
 for (const group of ['region', 'trainerGroup', 'fashion', 'other']) {
@@ -303,6 +314,11 @@ const storageSource = await readFile(path.join(projectRoot, 'src/storage.js'), '
 assert.match(storageSource, /openFilterAccordions: \[\.\.\.openFilterAccordions\]/, 'Open accordion preferences must persist.');
 assert.match(storageSource, /closedFilterAccordions: \[\.\.\.closedFilterAccordions\]/, 'Closed accordion preferences must persist.');
 const stylesSource = await readFile(path.join(projectRoot, 'src/styles.css'), 'utf8');
+const spoilerProtectionSource = await readFile(path.join(projectRoot, 'src/spoiler-protection.js'), 'utf8');
+assert.match(configSource, /PROJECT_GITHUB_URL = 'https:\/\/github\.com\/charlie5188\/brybry-pokemas-enhancer'/, 'Project GitHub URL must remain configured centrally.');
+assert.match(spoilerProtectionSource, /contributeLink\.href = PROJECT_GITHUB_URL/, 'Settings popover must link to the project GitHub repository.');
+assert.match(spoilerProtectionSource, /contributeLink\.rel = 'noopener noreferrer'/, 'External GitHub link must isolate the opener.');
+assert.match(stylesSource, /\.be-settings-contribute\s*\{/, 'Settings GitHub contribution link must have dedicated styling.');
 assert.match(stylesSource, /\.be-chip--detail\s*\{/, 'Generic child filter buttons must have a distinct detail style.');
 assert.doesNotMatch(
   stylesSource,
