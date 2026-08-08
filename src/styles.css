@@ -116,6 +116,16 @@ align-items: center;
 margin: 0 0 10px;
     }
 
+    /* Keep wheel and touch scrolling inside the open picker when one of its
+       scroll regions reaches an edge. */
+    #pairSearchModal,
+    #pairSearchModal .modal-body,
+    #pairSearchModal #pairSearchResults,
+    #pairSearchModal .be-filter-sidebar,
+    #pairSearchModal .be-skill-suggestions {
+overscroll-behavior: contain;
+    }
+
     #pairSearchModal .be-active-filter-tags {
 display: flex;
 flex: 1 0 100%;
