@@ -210,6 +210,8 @@ assert.match(
 );
 assert.doesNotMatch(pickerSource, /battleTitle/, 'The redundant Battle Features heading must not render.');
 assert.doesNotMatch(pickerSource, /clickTo(?:Include|Exclude|Clear)/, 'Filter tooltips must not contain click instructions.');
+assert.match(pickerSource, /function renderActiveFilterTags\(\)/, 'Active filters must render as removable header tags.');
+assert.match(pickerSource, /tag\.addEventListener\('click', \(\) => removeActiveFilter\(entry\)\)/, 'Header tags must clear one filter.');
 assert.match(pickerSource, /document\.createElement\('form'\)/, 'The filter controls must use a semantic form container.');
 assert.match(pickerSource, /be-accordion-content/, 'Every accordion item must wrap its content consistently.');
 for (const group of ['type', 'role', 'exRole', 'rarity']) {
@@ -230,6 +232,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(stylesSource, /border-style:\s*dashed/, 'Interactive filter buttons must use consistent solid borders.');
 assert.match(stylesSource, /summary\.be-accordion-trigger:focus-visible/, 'Accordion triggers must expose a keyboard focus state.');
 assert.match(stylesSource, /\.be-accordion-chevron/, 'Accordion triggers must use a consistent chevron affordance.');
+assert.match(stylesSource, /\.be-active-filter-tag/, 'Active filter tags must have dedicated styling.');
 assert.match(
   stylesSource,
   /\.be-filter-sidebar > \.be-picker-tools\s*\{[^}]*position:\s*sticky/s,
