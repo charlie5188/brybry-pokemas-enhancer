@@ -629,6 +629,16 @@ text-transform: none;
     #pairSearchModal details.be-filter-section {
 border-bottom: 1px solid rgba(44, 104, 120, .16);
 margin: 0;
+scroll-margin-top: 10px;
+    }
+
+    #pairSearchModal details.be-filter-section.be-filter-section--jump-target {
+animation: be-filter-jump-highlight 1.35s ease-out;
+    }
+
+    @keyframes be-filter-jump-highlight {
+0%, 35% { box-shadow: 0 0 0 3px rgba(37, 132, 157, .3); }
+100% { box-shadow: 0 0 0 3px rgba(37, 132, 157, 0); }
     }
 
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger {
@@ -693,6 +703,32 @@ to { opacity: 1; transform: translateY(0); }
     }
 
     #pairSearchModal .be-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    #pairSearchModal .be-filter-anchor {
+align-items: center;
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 5px;
+color: #28738a;
+cursor: pointer;
+display: inline-flex;
+font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+min-height: 28px;
+padding: 5px 6px;
+text-decoration: underline;
+text-underline-offset: 2px;
+    }
+
+    #pairSearchModal .be-filter-anchor:hover { background: rgba(44, 104, 120, .08); }
+    #pairSearchModal .be-filter-anchor:focus-visible {
+box-shadow: 0 0 0 2px rgba(39, 117, 139, .55);
+outline: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+#pairSearchModal details.be-filter-section.be-filter-section--jump-target { animation: none; box-shadow: 0 0 0 3px rgba(37, 132, 157, .3); }
+    }
 
     #pairSearchModal .be-chip {
 appearance: none;

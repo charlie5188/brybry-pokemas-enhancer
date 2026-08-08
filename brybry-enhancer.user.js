@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.87
+// @version      1.11.91
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -646,6 +646,16 @@ text-transform: none;
     #pairSearchModal details.be-filter-section {
 border-bottom: 1px solid rgba(44, 104, 120, .16);
 margin: 0;
+scroll-margin-top: 10px;
+    }
+
+    #pairSearchModal details.be-filter-section.be-filter-section--jump-target {
+animation: be-filter-jump-highlight 1.35s ease-out;
+    }
+
+    @keyframes be-filter-jump-highlight {
+0%, 35% { box-shadow: 0 0 0 3px rgba(37, 132, 157, .3); }
+100% { box-shadow: 0 0 0 3px rgba(37, 132, 157, 0); }
     }
 
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger {
@@ -710,6 +720,32 @@ to { opacity: 1; transform: translateY(0); }
     }
 
     #pairSearchModal .be-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    #pairSearchModal .be-filter-anchor {
+align-items: center;
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 5px;
+color: #28738a;
+cursor: pointer;
+display: inline-flex;
+font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+min-height: 28px;
+padding: 5px 6px;
+text-decoration: underline;
+text-underline-offset: 2px;
+    }
+
+    #pairSearchModal .be-filter-anchor:hover { background: rgba(44, 104, 120, .08); }
+    #pairSearchModal .be-filter-anchor:focus-visible {
+box-shadow: 0 0 0 2px rgba(39, 117, 139, .55);
+outline: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+#pairSearchModal details.be-filter-section.be-filter-section--jump-target { animation: none; box-shadow: 0 0 0 3px rgba(37, 132, 157, .3); }
+    }
 
     #pairSearchModal .be-chip {
 appearance: none;
@@ -1712,6 +1748,21 @@ text-align: center;
     ko: "필중 차례 효과, 반드시 명중하는 기술, 조건부 또는 무조건으로 기술이 반드시 명중하는 효과를 포함합니다.",
     zh: "包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。"
   };
+  const CIRCLE_DETAIL_TOOLTIP_LABELS = {
+    circlePhysical: { en: "Physical Circle", fr: "Cercle physique", de: "Physischer Kreis", es: "Círculo físico", it: "Cerchio fisico", ja: "物理サークル", ko: "물리 서클", zh: "物理圓環" },
+    circleSpecial: { en: "Special Circle", fr: "Cercle spécial", de: "Spezial-Kreis", es: "Círculo especial", it: "Cerchio speciale", ja: "特殊サークル", ko: "특수 서클", zh: "特殊圓環" },
+    circleDefensive: { en: "Defensive Circle", fr: "Cercle défensif", de: "Defensiver Kreis", es: "Círculo defensivo", it: "Cerchio difensivo", ja: "防御サークル", ko: "방어 서클", zh: "防禦圓環" }
+  };
+  const CIRCLE_REGION_ANCHOR_TRANSLATIONS = {
+    en: { label: "→ Region", tooltip: "Filter Circles further by region" },
+    fr: { label: "→ Région", tooltip: "Affiner les Cercles par région" },
+    de: { label: "→ Region", tooltip: "Kreise weiter nach Region filtern" },
+    es: { label: "→ Región", tooltip: "Filtrar más los Círculos por región" },
+    it: { label: "→ Regione", tooltip: "Filtra ulteriormente i Cerchi per regione" },
+    ja: { label: "→ 地方", tooltip: "地方でサークルを絞り込む" },
+    ko: { label: "→ 지방", tooltip: "지방으로 서클을 더 필터링" },
+    zh: { label: "→ 地區", tooltip: "按地區進一步篩選圓環" }
+  };
   function skillFilterLabels(value) {
     const directLabels = SKILL_FILTER_TRANSLATIONS[value];
     if (directLabels) return directLabels;
@@ -1985,6 +2036,7 @@ text-align: center;
     detailOf,
     group: SKILL_FILTER_CATEGORIES.find((category) => category.value === detailOf)?.group || "utility",
     labels: skillFilterLabels(value),
+    ...CIRCLE_DETAIL_TOOLTIP_LABELS[value] ? { tooltipLabels: CIRCLE_DETAIL_TOOLTIP_LABELS[value] } : {},
     patterns: { en: patterns },
     ...value === "allStatReductionImmunity" ? { tooltipNotes: STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES } : {},
     ...(() => {
@@ -4369,11 +4421,21 @@ text-align: center;
     document.body.append(tooltip);
     return tooltip;
   }
+  function pairSortMetadata(pair, locale) {
+    const copy = text();
+    const dateValue = (timestamp) => timestamp > 0 ? new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(timestamp * 1e3)) : "—";
+    if (sortCriterion === "updated") return `${copy.sortUpdated}: ${dateValue(pair.updateDate)}`;
+    if (sortCriterion === "release") return `${copy.sortRelease}: ${dateValue(pair.releaseDate)}`;
+    if (sortCriterion === "sync-dex") return `${copy.sortSyncDex}: ${pair.syncDexNumber || "—"}`;
+    if (sortCriterion === "pokemon-dex") return `${copy.sortPokemonDex}: ${pair.pokemonNumber || "—"}`;
+    if (sortCriterion === "rarity") return `${copy.sortRarity}: ${pair.trainer.rarity || 0}★`;
+    return `${copy.sortName}: ${pair.name}`;
+  }
   function showPairTooltip(row) {
-    if (!row || document.getElementById("pairSearchResults")?.dataset.beView !== "icons") return;
+    if (!row) return;
     const tooltip = pairTooltipElement();
     tooltip.replaceChildren();
-    ["pair-stars", "pair-name", "be-pair-meta"].forEach((className) => {
+    ["pair-stars", "pair-name"].forEach((className) => {
       const source = row.querySelector(`.${className}`);
       if (!source) return;
       const line = document.createElement("span");
@@ -4381,6 +4443,13 @@ text-align: center;
       line.textContent = source.textContent;
       tooltip.append(line);
     });
+    const sortMetadata = row.querySelector(".be-pair-sort-meta");
+    if (sortMetadata) {
+      const line = document.createElement("span");
+      line.className = "be-pair-meta";
+      line.textContent = sortMetadata.textContent;
+      tooltip.append(line);
+    }
     tooltip.hidden = false;
     const rowRect = row.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
@@ -4413,7 +4482,7 @@ text-align: center;
     resultList.addEventListener("scroll", hidePairTooltip, { passive: true });
   }
   function bindFilterTooltips(panel) {
-    const tooltipButton = (target) => target.closest?.(".be-chip, .be-skill-category-chip, .be-sort-direction, .be-view-button");
+    const tooltipButton = (target) => target.closest?.(".be-chip, .be-skill-category-chip, .be-filter-anchor, .be-sort-direction, .be-view-button");
     panel.addEventListener("pointerover", (event) => showFilterTooltip(tooltipButton(event.target)));
     panel.addEventListener("pointerout", (event) => {
       const button = tooltipButton(event.target);
@@ -4716,10 +4785,11 @@ text-align: center;
   function createSkillCategoryChip(category, locale) {
     const categoryLabel = category.labels[locale] || category.labels.en;
     const tooltipNote = category.tooltipNotes?.[locale] || category.tooltipNotes?.en;
-    const tooltipLabel = [expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(" — ");
+    const explicitTooltipLabel = category.tooltipLabels?.[locale] || category.tooltipLabels?.en;
+    const tooltipLabel = [explicitTooltipLabel || expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(" — ");
     const button = document.createElement("button");
     button.className = "be-skill-category-chip";
-    if (tooltipNote) button.classList.add("be-skill-category-chip--has-note");
+    if (tooltipNote || explicitTooltipLabel) button.classList.add("be-skill-category-chip--has-note");
     if (category.detailOf) button.classList.add("be-skill-category-chip--detail");
     if (category.compactLabels) button.classList.add("be-skill-category-chip--compact-label");
     if (category.rebuffDirection) button.classList.add("be-skill-category-chip--directional-icon");
@@ -4807,6 +4877,30 @@ text-align: center;
       queuePairRender(FILTER_RENDER_DELAY_MS);
     });
     return button;
+  }
+  function createCircleRegionAnchor(locale) {
+    const copy = CIRCLE_REGION_ANCHOR_TRANSLATIONS[locale] || CIRCLE_REGION_ANCHOR_TRANSLATIONS.en;
+    const anchor = document.createElement("button");
+    anchor.className = "be-filter-anchor";
+    anchor.type = "button";
+    anchor.textContent = copy.label;
+    anchor.dataset.beTooltip = copy.tooltip;
+    anchor.setAttribute("aria-label", copy.tooltip);
+    anchor.addEventListener("click", () => {
+      const regionSection = document.querySelector('details.be-filter-section[data-be-group="region"]');
+      if (!regionSection) return;
+      regionSection.open = true;
+      const summary = regionSection.querySelector(":scope > summary");
+      regionSection.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start"
+      });
+      summary?.focus({ preventScroll: true });
+      regionSection.classList.remove("be-filter-section--jump-target");
+      window.requestAnimationFrame(() => regionSection.classList.add("be-filter-section--jump-target"));
+      window.setTimeout(() => regionSection.classList.remove("be-filter-section--jump-target"), 1400);
+    });
+    return anchor;
   }
   function skillSearchField() {
     const locale = language();
@@ -4995,6 +5089,7 @@ text-align: center;
           if (criticalHitImmunity) categoryRow.append(createSkillCategoryChip(criticalHitImmunity, locale));
         }
         SKILL_FILTER_CATEGORIES.filter((detail) => detail.detailOf === category.value).forEach((detail) => categoryRow.append(createSkillCategoryChip(detail, locale)));
+        if (category.value === "circle") categoryRow.append(createCircleRegionAnchor(locale));
         if (groupByParent) row.append(categoryRow);
       });
       const categoryValues = new Set(SKILL_FILTER_CATEGORIES.filter((category) => parentValues.includes(category.value) || parentValues.includes(category.detailOf)).map((category) => category.value));
@@ -5309,7 +5404,11 @@ text-align: center;
       const meta = document.createElement("span");
       meta.className = "be-pair-meta";
       meta.textContent = `${TYPE_NAMES[locale][pair.trainer.type - 1] || "—"} · ${ROLE_NAMES[locale][pair.trainer.role] || "—"}`;
-      info.append(stars, name, meta);
+      const sortMetadata = document.createElement("span");
+      sortMetadata.className = "be-pair-sort-meta";
+      sortMetadata.hidden = true;
+      sortMetadata.textContent = pairSortMetadata(pair, locale);
+      info.append(stars, name, meta, sortMetadata);
       row.append(images, info);
       const selectPair = () => {
         const select = document.getElementById("syncPairSelect");

@@ -447,6 +447,23 @@ const SURE_HIT_TOOLTIP_NOTES = {
   zh: '包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。',
 };
 
+const CIRCLE_DETAIL_TOOLTIP_LABELS = {
+  circlePhysical: { en: 'Physical Circle', fr: 'Cercle physique', de: 'Physischer Kreis', es: 'Círculo físico', it: 'Cerchio fisico', ja: '物理サークル', ko: '물리 서클', zh: '物理圓環' },
+  circleSpecial: { en: 'Special Circle', fr: 'Cercle spécial', de: 'Spezial-Kreis', es: 'Círculo especial', it: 'Cerchio speciale', ja: '特殊サークル', ko: '특수 서클', zh: '特殊圓環' },
+  circleDefensive: { en: 'Defensive Circle', fr: 'Cercle défensif', de: 'Defensiver Kreis', es: 'Círculo defensivo', it: 'Cerchio difensivo', ja: '防御サークル', ko: '방어 서클', zh: '防禦圓環' },
+};
+
+const CIRCLE_REGION_ANCHOR_TRANSLATIONS = {
+  en: { label: '→ Region', tooltip: 'Filter Circles further by region' },
+  fr: { label: '→ Région', tooltip: 'Affiner les Cercles par région' },
+  de: { label: '→ Region', tooltip: 'Kreise weiter nach Region filtern' },
+  es: { label: '→ Región', tooltip: 'Filtrar más los Círculos por región' },
+  it: { label: '→ Regione', tooltip: 'Filtra ulteriormente i Cerchi per regione' },
+  ja: { label: '→ 地方', tooltip: '地方でサークルを絞り込む' },
+  ko: { label: '→ 지방', tooltip: '지방으로 서클을 더 필터링' },
+  zh: { label: '→ 地區', tooltip: '按地區進一步篩選圓環' },
+};
+
 function skillFilterLabels(value) {
   const directLabels = SKILL_FILTER_TRANSLATIONS[value];
   if (directLabels) return directLabels;
@@ -687,6 +704,7 @@ const SKILL_FILTER_DETAILS = [
   detailOf,
   group: SKILL_FILTER_CATEGORIES.find((category) => category.value === detailOf)?.group || 'utility',
   labels: skillFilterLabels(value),
+  ...(CIRCLE_DETAIL_TOOLTIP_LABELS[value] ? { tooltipLabels: CIRCLE_DETAIL_TOOLTIP_LABELS[value] } : {}),
   patterns: { en: patterns },
   ...(value === 'allStatReductionImmunity' ? { tooltipNotes: STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES } : {}),
   ...(() => {

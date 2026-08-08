@@ -294,11 +294,25 @@ function pairTooltipElement() {
   return tooltip;
 }
 
+function pairSortMetadata(pair, locale) {
+  const copy = text();
+  const dateValue = (timestamp) => timestamp > 0
+    ? new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit' })
+      .format(new Date(timestamp * 1000))
+    : '—';
+  if (sortCriterion === 'updated') return `${copy.sortUpdated}: ${dateValue(pair.updateDate)}`;
+  if (sortCriterion === 'release') return `${copy.sortRelease}: ${dateValue(pair.releaseDate)}`;
+  if (sortCriterion === 'sync-dex') return `${copy.sortSyncDex}: ${pair.syncDexNumber || '—'}`;
+  if (sortCriterion === 'pokemon-dex') return `${copy.sortPokemonDex}: ${pair.pokemonNumber || '—'}`;
+  if (sortCriterion === 'rarity') return `${copy.sortRarity}: ${pair.trainer.rarity || 0}★`;
+  return `${copy.sortName}: ${pair.name}`;
+}
+
 function showPairTooltip(row) {
-  if (!row || document.getElementById('pairSearchResults')?.dataset.beView !== 'icons') return;
+  if (!row) return;
   const tooltip = pairTooltipElement();
   tooltip.replaceChildren();
-  ['pair-stars', 'pair-name', 'be-pair-meta'].forEach((className) => {
+  ['pair-stars', 'pair-name'].forEach((className) => {
     const source = row.querySelector(`.${className}`);
     if (!source) return;
     const line = document.createElement('span');
@@ -306,6 +320,13 @@ function showPairTooltip(row) {
     line.textContent = source.textContent;
     tooltip.append(line);
   });
+  const sortMetadata = row.querySelector('.be-pair-sort-meta');
+  if (sortMetadata) {
+    const line = document.createElement('span');
+    line.className = 'be-pair-meta';
+    line.textContent = sortMetadata.textContent;
+    tooltip.append(line);
+  }
   tooltip.hidden = false;
 
   const rowRect = row.getBoundingClientRect();
@@ -344,7 +365,7 @@ function bindPairTooltips(resultList) {
 }
 
 function bindFilterTooltips(panel) {
-  const tooltipButton = (target) => target.closest?.('.be-chip, .be-skill-category-chip, .be-sort-direction, .be-view-button');
+  const tooltipButton = (target) => target.closest?.('.be-chip, .be-skill-category-chip, .be-filter-anchor, .be-sort-direction, .be-view-button');
   panel.addEventListener('pointerover', (event) => showFilterTooltip(tooltipButton(event.target)));
   panel.addEventListener('pointerout', (event) => {
     const button = tooltipButton(event.target);
@@ -694,10 +715,11 @@ function refreshSkillSearchSuggestions() {
 function createSkillCategoryChip(category, locale) {
   const categoryLabel = category.labels[locale] || category.labels.en;
   const tooltipNote = category.tooltipNotes?.[locale] || category.tooltipNotes?.en;
-  const tooltipLabel = [expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(' — ');
+  const explicitTooltipLabel = category.tooltipLabels?.[locale] || category.tooltipLabels?.en;
+  const tooltipLabel = [explicitTooltipLabel || expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(' — ');
   const button = document.createElement('button');
   button.className = 'be-skill-category-chip';
-  if (tooltipNote) button.classList.add('be-skill-category-chip--has-note');
+  if (tooltipNote || explicitTooltipLabel) button.classList.add('be-skill-category-chip--has-note');
   if (category.detailOf) button.classList.add('be-skill-category-chip--detail');
   if (category.compactLabels) button.classList.add('be-skill-category-chip--compact-label');
   if (category.rebuffDirection) button.classList.add('be-skill-category-chip--directional-icon');
@@ -785,6 +807,31 @@ function createSkillCategoryChip(category, locale) {
     queuePairRender(FILTER_RENDER_DELAY_MS);
   });
   return button;
+}
+
+function createCircleRegionAnchor(locale) {
+  const copy = CIRCLE_REGION_ANCHOR_TRANSLATIONS[locale] || CIRCLE_REGION_ANCHOR_TRANSLATIONS.en;
+  const anchor = document.createElement('button');
+  anchor.className = 'be-filter-anchor';
+  anchor.type = 'button';
+  anchor.textContent = copy.label;
+  anchor.dataset.beTooltip = copy.tooltip;
+  anchor.setAttribute('aria-label', copy.tooltip);
+  anchor.addEventListener('click', () => {
+    const regionSection = document.querySelector('details.be-filter-section[data-be-group="region"]');
+    if (!regionSection) return;
+    regionSection.open = true;
+    const summary = regionSection.querySelector(':scope > summary');
+    regionSection.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+    summary?.focus({ preventScroll: true });
+    regionSection.classList.remove('be-filter-section--jump-target');
+    window.requestAnimationFrame(() => regionSection.classList.add('be-filter-section--jump-target'));
+    window.setTimeout(() => regionSection.classList.remove('be-filter-section--jump-target'), 1400);
+  });
+  return anchor;
 }
 
 function skillSearchField() {
@@ -990,6 +1037,7 @@ function skillSearchField() {
         }
         SKILL_FILTER_CATEGORIES.filter((detail) => detail.detailOf === category.value)
           .forEach((detail) => categoryRow.append(createSkillCategoryChip(detail, locale)));
+        if (category.value === 'circle') categoryRow.append(createCircleRegionAnchor(locale));
         if (groupByParent) row.append(categoryRow);
       });
     const categoryValues = new Set(SKILL_FILTER_CATEGORIES
@@ -1337,7 +1385,11 @@ function renderPairs() {
     const meta = document.createElement('span');
     meta.className = 'be-pair-meta';
     meta.textContent = `${TYPE_NAMES[locale][pair.trainer.type - 1] || '—'} · ${ROLE_NAMES[locale][pair.trainer.role] || '—'}`;
-    info.append(stars, name, meta);
+    const sortMetadata = document.createElement('span');
+    sortMetadata.className = 'be-pair-sort-meta';
+    sortMetadata.hidden = true;
+    sortMetadata.textContent = pairSortMetadata(pair, locale);
+    info.append(stars, name, meta, sortMetadata);
     row.append(images, info);
 
     const selectPair = () => {

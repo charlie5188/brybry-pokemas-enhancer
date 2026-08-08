@@ -262,6 +262,17 @@ assert.equal(
   '包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。',
   'Guaranteed Hit must disclose every included hit-guarantee mechanism in its tooltip.',
 );
+for (const [value, japaneseTooltip] of [
+  ['circlePhysical', '物理サークル'],
+  ['circleSpecial', '特殊サークル'],
+  ['circleDefensive', '防御サークル'],
+]) {
+  assert.equal(
+    configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === value)?.tooltipLabels?.ja,
+    japaneseTooltip,
+    `${value} must identify its full Circle type in the tooltip.`,
+  );
+}
 assert.match(configSource, /FILTER_RENDER_DELAY_MS = 500/, 'Filter rendering must wait through a normal double-click window.');
 assert.match(configSource, /\['exFairyZone', 'zoneEx'/, 'EX Zone child filters must be declared.');
 assert.match(configSource, /value: 'circle', group: 'field',\s*\n\s*labels:/, 'Circle parent filter must remain text-only.');
@@ -324,6 +335,18 @@ assert.match(
 assert.doesNotMatch(pickerSource, /battleTitle/, 'The redundant Battle Features heading must not render.');
 assert.doesNotMatch(pickerSource, /clickTo(?:Include|Exclude|Clear)/, 'Filter tooltips must not contain click instructions.');
 assert.match(pickerSource, /function renderActiveFilterTags\(\)/, 'Active filters must render as removable header tags.');
+assert.match(pickerSource, /function pairSortMetadata\(pair, locale\)/, 'Icon-view pair tooltips must describe the active sort value.');
+for (const criterion of ['updated', 'release', 'sync-dex', 'pokemon-dex', 'rarity']) {
+  assert.match(pickerSource, new RegExp(`sortCriterion === '${criterion}'`), `Pair tooltip metadata must support the ${criterion} sort.`);
+}
+assert.match(pickerSource, /new Intl\.DateTimeFormat\(locale/, 'Pair tooltip dates must follow the active UI locale.');
+assert.match(pickerSource, /row\.querySelector\('\.be-pair-sort-meta'\)/, 'Icon-view tooltips must read the current sort metadata instead of visible type and role text.');
+assert.match(pickerSource, /sortMetadata\.hidden = true/, 'Sort metadata must not replace type and role in list view.');
+assert.doesNotMatch(
+  pickerSource,
+  /dataset\.beView !== 'icons'/,
+  'Pair tooltips must show identical content in list and icon views.',
+);
 assert.match(pickerSource, /tag\.addEventListener\('click', \(\) => removeActiveFilter\(entry\)\)/, 'Header tags must clear one filter.');
 assert.match(pickerSource, /button\.removeAttribute\('title'\)/, 'Filter buttons must suppress the duplicate native browser tooltip.');
 assert.doesNotMatch(pickerSource, /button\.title = tooltip/, 'Filter buttons must rely on the custom tooltip only.');
@@ -333,6 +356,12 @@ assert.match(
   'Icon-only, compact-label, and explanatory filter buttons should receive custom tooltips.',
 );
 assert.match(pickerSource, /category\.tooltipNotes\?\.\[locale\]/, 'Filter tooltip notes must follow the active UI language.');
+assert.match(pickerSource, /category\.tooltipLabels\?\.\[locale\]/, 'Filter tooltip label overrides must follow the active UI language.');
+assert.match(pickerSource, /category\.value === 'circle'\) categoryRow\.append\(createCircleRegionAnchor\(locale\)\)/, 'Circle filters must link to the Region section.');
+assert.match(pickerSource, /details\.be-filter-section\[data-be-group="region"\]/, 'The Circle region anchor must target the Region accordion.');
+assert.match(pickerSource, /regionSection\.open = true/, 'The Circle region anchor must expand the Region accordion.');
+assert.match(pickerSource, /regionSection\.scrollIntoView/, 'The Circle region anchor must scroll the Region accordion into view.');
+assert.match(configSource, /ja: \{ label: '→ 地方', tooltip: '地方でサークルを絞り込む' \}/, 'The Circle region anchor must have localized Japanese copy.');
 assert.match(pickerSource, /else delete button\.dataset\.beTooltip/, 'Fully labeled filter buttons must not retain redundant tooltips.');
 for (const immunityParent of ['statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity']) {
   assert.match(configSource, new RegExp(`value: '${immunityParent}', group: 'utility'`), `${immunityParent} must remain a top-level capability filter.`);
@@ -446,6 +475,8 @@ const storageSource = await readFile(path.join(projectRoot, 'src/storage.js'), '
 assert.match(storageSource, /openFilterAccordions: \[\.\.\.openFilterAccordions\]/, 'Open accordion preferences must persist.');
 assert.match(storageSource, /closedFilterAccordions: \[\.\.\.closedFilterAccordions\]/, 'Closed accordion preferences must persist.');
 const stylesSource = await readFile(path.join(projectRoot, 'src/styles.css'), 'utf8');
+assert.match(stylesSource, /\.be-filter-anchor/, 'The Circle region anchor must have dedicated styling.');
+assert.match(stylesSource, /be-filter-jump-highlight/, 'The Region jump target must receive visible feedback.');
 const spoilerProtectionSource = await readFile(path.join(projectRoot, 'src/spoiler-protection.js'), 'utf8');
 assert.match(configSource, /PROJECT_GITHUB_URL = 'https:\/\/github\.com\/charlie5188\/brybry-pokemas-enhancer'/, 'Project GitHub URL must remain configured centrally.');
 assert.match(spoilerProtectionSource, /contributeLink\.href = PROJECT_GITHUB_URL/, 'Settings popover must link to the project GitHub repository.');
