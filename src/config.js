@@ -327,6 +327,8 @@ const SKILL_FILTER_TRANSLATIONS = {
 };
 
 function skillFilterLabels(value) {
+  const directLabels = SKILL_FILTER_TRANSLATIONS[value];
+  if (directLabels) return directLabels;
   let translationKey = value;
   let prefix = '';
   let suffix = '';

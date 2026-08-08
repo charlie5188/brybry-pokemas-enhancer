@@ -222,6 +222,19 @@ assert.match(pickerSource, /parentValues\[0\] === 'weather'/, 'Field effects mus
 assert.match(pickerSource, /parentValues\[0\] === 'statUp'/, 'Stat changes must render one parent category per row.');
 const configSource = await readFile(path.join(projectRoot, 'src/config.js'), 'utf8');
 const i18nSource = await readFile(path.join(projectRoot, 'src/i18n.js'), 'utf8');
+const configRuntime = {};
+new vm.Script(`
+  const STATUS_CONDITION_DEFENSE_ICON_SRC = '';
+  const NO_STAT_INCREASES_ICON_SRC = '';
+  ${configSource}
+  globalThis.skillFilterCategoriesForCheck = SKILL_FILTER_CATEGORIES;
+`).runInNewContext(configRuntime);
+assert.ok(configRuntime.skillFilterCategoriesForCheck.length > 0, 'Skill filter configuration must initialize without throwing.');
+assert.equal(
+  configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === 'statUp')?.labels?.ja,
+  '能力↑',
+  'Direct parent labels such as statUp must not be treated as derived detail labels.',
+);
 assert.match(configSource, /FILTER_RENDER_DELAY_MS = 500/, 'Filter rendering must wait through a normal double-click window.');
 assert.match(configSource, /\['exFairyZone', 'zoneEx'/, 'EX Zone child filters must be declared.');
 assert.match(configSource, /value: 'circle', group: 'field',\s*\n\s*labels:/, 'Circle parent filter must remain text-only.');
@@ -296,6 +309,11 @@ for (const immunityFilter of ['statusImmunity', 'statReductionImmunity', 'interf
   assert.match(configSource, new RegExp(`\\['${immunityFilter}', 'immunity'`), `${immunityFilter} must remain an immunity child filter.`);
 }
 assert.match(configSource, /labels: skillFilterLabels\(value\)/, 'Every skill detail filter must read labels from the unified translation table.');
+assert.match(
+  configSource,
+  /const directLabels = SKILL_FILTER_TRANSLATIONS\[value\];\s*\n\s*if \(directLabels\) return directLabels;/,
+  'Direct parent-filter translations must resolve before derived Up, Down, or EX detail labels.',
+);
 assert.match(
   configSource,
   /\.map\(\(\[value, detailOf, patterns, masterPassiveType\]\)/,

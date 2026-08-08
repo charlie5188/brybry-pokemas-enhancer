@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.60
+// @version      1.11.61
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -1545,6 +1545,8 @@ text-align: center;
     masterGeneral: { en: "General", fr: "Général", de: "Allgemein", es: "General", it: "Generale", ja: "汎用", ko: "범용", zh: "泛用" }
   };
   function skillFilterLabels(value) {
+    const directLabels = SKILL_FILTER_TRANSLATIONS[value];
+    if (directLabels) return directLabels;
     let translationKey = value;
     let prefix = "";
     let suffix = "";
