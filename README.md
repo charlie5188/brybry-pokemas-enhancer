@@ -55,7 +55,7 @@ Available commands:
 
 - `npm run build` — bundles all source, CSS and data into `brybry-enhancer.user.js` using esbuild.
 - `npm run dev` — builds once, then watches `src/`.
-- `npm run check` — rebuilds in memory and checks metadata placement, JavaScript syntax and that the committed generated file is current.
+- `npm run check` — rebuilds in memory and checks version consistency, metadata placement, JavaScript syntax and that the committed generated file is current.
 - `npm test` — alias for `npm run check`.
 - `npm run update:pomatools -- /path/to/pomatools.github.io` — regenerates the eight locale-specific abbreviation datasets from a PomaTools checkout.
 
@@ -66,7 +66,7 @@ npm run build
 npm run check
 ```
 
-Commit both the source changes and the regenerated root userscript. CI repeats the build and fails if the committed artifact differs.
+Commit both the source changes and the regenerated root userscript. CI fails if the committed artifact differs and requires a patch-version increment when product source changes.
 
 ## Project structure
 
