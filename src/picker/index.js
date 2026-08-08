@@ -338,6 +338,7 @@ function pairSortMetadata(pair, locale) {
   if (sortCriterion === 'release') return `${copy.sortRelease}: ${dateValue(pair.releaseDate)}`;
   if (sortCriterion === 'sync-dex') return `${copy.sortSyncDex}: ${pair.syncDexNumber || '—'}`;
   if (sortCriterion === 'pokemon-dex') return `${copy.sortPokemonDex}: ${pair.pokemonNumber || '—'}`;
+  if (sortCriterion === 'sync-countdown-reduction') return `${copy.sortSyncCountdownReduction}: ${pairSyncCountdownReduction(pair)}`;
   return '';
 }
 
@@ -524,6 +525,7 @@ function sortPairs(pairs, locale) {
     if (sortCriterion === 'sync-dex') difference = first.syncDexNumber - second.syncDexNumber;
     if (sortCriterion === 'pokemon-dex') difference = first.pokemonNumber - second.pokemonNumber;
     if (sortCriterion === 'rarity') difference = (first.trainer.rarity || 0) - (second.trainer.rarity || 0);
+    if (sortCriterion === 'sync-countdown-reduction') difference = pairSyncCountdownReduction(first) - pairSyncCountdownReduction(second);
     if (sortCriterion === 'name') difference = collator.compare(first.name, second.name);
     if (difference) return sortDirection === 'asc' ? difference : -difference;
     if (sortCriterion === 'updated' && first.releaseDate !== second.releaseDate) {
@@ -554,6 +556,7 @@ function resultsToolbar() {
     ['pokemon-dex', copy.sortPokemonDex],
     ['name', copy.sortName],
     ['rarity', copy.sortRarity],
+    ['sync-countdown-reduction', copy.sortSyncCountdownReduction],
   ].forEach(([value, label]) => {
     const option = document.createElement('option');
     option.value = value;

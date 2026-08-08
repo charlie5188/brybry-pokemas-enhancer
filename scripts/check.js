@@ -15,6 +15,11 @@ const metadataSource = await readFile(path.join(projectRoot, 'src/metadata.txt')
 const metadataVersion = metadataSource.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
 
 if (!metadataVersion) throw new Error('src/metadata.txt is missing a valid @version value.');
+const versionConfigSource = await readFile(path.join(projectRoot, 'src/config.js'), 'utf8');
+const displayedVersion = versionConfigSource.match(/^const ENHANCER_VERSION = '([^']+)';$/m)?.[1];
+if (displayedVersion !== metadataVersion) {
+  throw new Error(`Version mismatch: src/config.js displays ${displayedVersion || 'no version'}, but src/metadata.txt is ${metadataVersion}.`);
+}
 for (const [location, version] of [
   ['package.json', packageManifest.version],
   ['package-lock.json', packageLock.version],
@@ -190,6 +195,34 @@ assert.match(
   'Capability filters must only evaluate directly owned passives, not implementation child effects.',
 );
 const pickerSource = await readFile(path.join(projectRoot, 'src/picker/index.js'), 'utf8');
+assert.match(pickerSource, /\['sync-countdown-reduction', copy\.sortSyncCountdownReduction\]/, 'Sync countdown reduction must be available as a sort option.');
+const syncCountdownReductionSource = await readFile(path.join(projectRoot, 'src/data/index.js'), 'utf8');
+assert.match(syncCountdownReductionSource, /function pairSyncCountdownReduction\(pair\)/, 'Sync countdown reduction must be calculated from pair skills.');
+assert.match(syncCountdownReductionSource, /addSkillEntry\(syncCountdownIndex, trainer\.trainerId, variation/, 'Theoretical sync countdown totals must include reachable form passives.');
+assert.match(syncCountdownReductionSource, /theoreticalMoveIndex\.get\(String\(trainer\.trainerId\)\)\?\.add/, 'Theoretical sync countdown totals must include reachable form moves.');
+assert.match(syncCountdownReductionSource, /pair\.trainer\.role\) === 4 \|\| Number\(pair\.exRole\) === 4/, 'Sprint main and EX roles must include their built-in three-count sync reduction.');
+assert.match(syncCountdownReductionSource, /P変化技使用時 BC加速/, 'Theoretical totals must multiply guaranteed Pokemon status-move reductions by their uses.');
+assert.match(syncCountdownReductionSource, /初B技後 S技 回数回復/, 'Theoretical totals must include one-time Syncro move-use recovery.');
+assert.match(syncCountdownReductionSource, /function moveSyncCountdownReduction/, 'Theoretical totals must include guaranteed countdown reduction on limited-use moves.');
+assert.match(syncCountdownReductionSource, /function moveSyncCountdownReductionUses/, 'Form-replaced move effects must cap their countdown-producing uses.');
+assert.match(syncCountdownReductionSource, /afterReplacement\) === 0\) return Math\.min\(availableUses, 1\)/, 'A form replacement that removes countdown reduction must leave only one reducing use.');
+assert.match(syncCountdownReductionSource, /maximum reduction is/, 'Ideal-party countdown totals must honor an explicit maximum reduction.');
+assert.match(syncCountdownReductionSource, /co-op battle/, 'Standard-battle countdown totals must exclude mutually exclusive co-op alternatives.');
+assert.match(syncCountdownReductionSource, /one\|two\|three/, 'Sync countdown reduction must parse written countdown values, not chance ranks.');
+const syncCountdownText = 'Has a chance (90%) of reducing the user’s sync move countdown by one when the user’s move is successful. Reduces the sync move countdown by 2 the first time its sync move is used.';
+const syncCountdownTotal = [...syncCountdownText.matchAll(/reduc(?:es|ing)\b[^.!?]*?\b(?:sync move countdown|sync countdown)\s+by\s+(one|two|three|four|five|six|seven|eight|nine|\d+)/gi)]
+  .reduce((total, match) => total + ({ one: 1, two: 2, three: 3 }[match[1].toLowerCase()] || Number(match[1]) || 0), 0);
+assert.equal(syncCountdownTotal, 3, 'Sync countdown reduction must count the reduction amount rather than its activation chance.');
+const guaranteedSyncCountdownTotal = syncCountdownText
+  .match(/[^.!?]+[.!?]?/g)
+  .filter(Boolean)
+  .filter((sentence) => !/\bchance\b/i.test(sentence))
+  .flatMap((sentence) => [...sentence.matchAll(/reduc(?:es|ing)\b[^.!?]*?\b(?:sync move countdown|sync countdown)\s+by\s+(one|two|three|four|five|six|seven|eight|nine|\d+)/gi)])
+  .reduce((total, match) => total + ({ one: 1, two: 2, three: 3 }[match[1].toLowerCase()] || Number(match[1]) || 0), 0);
+assert.equal(guaranteedSyncCountdownTotal, 2, 'Chance-based sync countdown reductions must not contribute to the total.');
+const idealPartyText = 'Reduces the user’s sync move countdown by one the first time it enters a battle. When used in a co-op battle, reduces the user’s sync move countdown by one instead. Each additional allied pair increases the reduction by one, and the maximum reduction is three.';
+const idealPartyMaximum = idealPartyText.match(/maximum reduction is\s+(one|two|three|\d+)/i)?.[1];
+assert.equal(({ one: 1, two: 2, three: 3 }[idealPartyMaximum] || Number(idealPartyMaximum)), 3, 'Ideal-party countdown totals must use the stated maximum.');
 assert.match(
   pickerSource,
   /panel\.append\(\s*typeSection,\s*weaknessSection,\s*moveTypeSection,/,

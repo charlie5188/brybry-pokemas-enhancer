@@ -2,7 +2,7 @@
 try {
   const preferences = JSON.parse(localStorage.getItem(PICKER_PREFERENCES_KEY) || '{}');
   const legacySort = typeof preferences.sort === 'string' ? preferences.sort.match(/^(release|name|rarity)-(asc|desc)$/) : null;
-  const savedCriterion = ['updated', 'release', 'sync-dex', 'pokemon-dex', 'name', 'rarity'].includes(preferences.sortCriterion)
+  const savedCriterion = ['updated', 'release', 'sync-dex', 'pokemon-dex', 'name', 'rarity', 'sync-countdown-reduction'].includes(preferences.sortCriterion)
     ? preferences.sortCriterion
     : legacySort?.[1];
   const migratingReleaseDefault = preferences.version < PREFERENCE_VERSION && (!savedCriterion || savedCriterion === 'release');

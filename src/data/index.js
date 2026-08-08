@@ -36,7 +36,9 @@ function addMoveEntry(index, trainerId, moveId, availableDate = 0) {
 
 function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, abilityById, superawakenings) {
   const index = new Map();
+  const syncCountdownIndex = new Map();
   const moveIndex = new Map();
+  const theoreticalMoveIndex = new Map();
   const moveEntryIndex = new Map();
   const variationsByMonsterId = new Map();
   (monsterVariations.entries || []).forEach((variation) => {
@@ -49,6 +51,7 @@ function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, ability
     trainerMoves.forEach((moveId) => addMoveEntry(moveEntryIndex, trainer.trainerId, moveId));
     [1, 2, 3, 4, 5].forEach((slot) => {
       addSkillEntry(index, trainer.trainerId, trainer[`passive${slot}Id`]);
+      addSkillEntry(syncCountdownIndex, trainer.trainerId, trainer[`passive${slot}Id`]);
     });
     const monster = monsterById.get(String(trainer.monsterId));
     [monster?.syncMoveId, monster?.move1ChangeId, monster?.move2ChangeId, monster?.move3ChangeId, monster?.move4ChangeId]
@@ -58,21 +61,26 @@ function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, ability
       });
     const monsterBase = monsterBaseById.get(String(monster?.monsterBaseId));
     addSkillEntry(index, trainer.trainerId, monsterBase?.formPassiveId);
+    addSkillEntry(syncCountdownIndex, trainer.trainerId, monsterBase?.formPassiveId);
+    theoreticalMoveIndex.set(String(trainer.trainerId), new Set([...trainerMoves].filter((id) => id > 0).map(String)));
     (variationsByMonsterId.get(String(trainer.monsterId)) || []).forEach((variation) => {
       const availableDate = releaseDateByScheduleId.get(String(variation.scheduleId)) || 0;
       [1, 2, 3, 4, 5].forEach((slot) => {
         addSkillEntry(index, trainer.trainerId, variation[`passive${slot}Id`], availableDate);
+        addSkillEntry(syncCountdownIndex, trainer.trainerId, variation[`passive${slot}Id`], availableDate);
       });
       [1, 2, 3, 4].forEach((slot) => {
         const moveId = Number(variation[`move${slot}Id`]);
         trainerMoves.add(moveId);
         addMoveEntry(moveEntryIndex, trainer.trainerId, moveId, availableDate);
+        if (moveId > 0) theoreticalMoveIndex.get(String(trainer.trainerId))?.add(String(moveId));
       });
       [variation.syncMoveId, variation.moveDynamax1Id, variation.moveDynamax2Id, variation.moveDynamax3Id,
         variation.moveDynamax4Id, variation.terastalMoveId]
         .map(Number).filter((id) => id > 0).forEach((id) => {
           trainerMoves.add(id);
           addMoveEntry(moveEntryIndex, trainer.trainerId, id, availableDate);
+          theoreticalMoveIndex.get(String(trainer.trainerId))?.add(String(id));
         });
     });
     moveIndex.set(String(trainer.trainerId), new Set([...trainerMoves].filter((id) => id > 0).map(String)));
@@ -81,14 +89,18 @@ function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, ability
     const ability = abilityById.get(String(panel.abilityId));
     const availableDate = releaseDateByScheduleId.get(String(panel.scheduleId)) || 0;
     addSkillEntry(index, panel.trainerId, ability?.passiveId, availableDate);
+    addSkillEntry(syncCountdownIndex, panel.trainerId, ability?.passiveId, availableDate);
   });
   (superawakenings.entries || []).forEach((entry) => {
     const availableDate = releaseDateByScheduleId.get(String(entry.scheduleId)) || 0;
     addSkillEntry(index, entry.trainerId, entry.passiveSkillId, availableDate);
+    addSkillEntry(syncCountdownIndex, entry.trainerId, entry.passiveSkillId, availableDate);
   });
   skillEntriesByTrainerId = index;
+  syncCountdownSkillEntriesByTrainerId = syncCountdownIndex;
   moveIdsByTrainerId = moveIndex;
   moveEntriesByTrainerId = moveEntryIndex;
+  theoreticalMoveIdsByTrainerId = theoreticalMoveIndex;
   passiveSkillSearchCache.clear();
   pairSkillSearchCache.clear();
   pairMoveSearchCache.clear();
@@ -97,6 +109,7 @@ function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, ability
   passiveSkillDetailCache.clear();
   pairSkillIdCache.clear();
   pairSkillCategoryMatchCache.clear();
+  pairSyncCountdownReductionCache.clear();
   pairListCacheKey = '';
 }
 
@@ -173,6 +186,7 @@ async function loadLocalizedSkillSearchData(resolvedLocale) {
   pairMoveSearchDocumentsCache.clear();
   passiveSkillDetailCache.clear();
   pairSkillCategoryMatchCache.clear();
+  pairSyncCountdownReductionCache.clear();
 }
 
 async function loadPassiveSkillSearchData(locale) {
@@ -284,7 +298,9 @@ async function loadTrainerData() {
   loadPassiveSkillSearchData(language())
     .then(() => {
       refreshSkillSearchSuggestions();
-      if (document.getElementById('pairSearchModal') && (selectedSkillIds.size || selectedSkillCategories.size)) queuePairRender();
+      if (document.getElementById('pairSearchModal') && (
+        selectedSkillIds.size || selectedSkillCategories.size || sortCriterion === 'sync-countdown-reduction'
+      )) queuePairRender();
     })
     .catch((error) => console.warn('[Brybry Enhancer] Skill search data could not be loaded.', error));
 }
@@ -451,6 +467,115 @@ function pairSkillIds(pair) {
   });
   pairSkillIdCache.set(cacheKey, result);
   return result;
+}
+
+function passiveSyncCountdownReduction(passiveId) {
+  const detail = passiveSkillDetails(passiveId, 'en');
+  if (!detail) return 0;
+  return syncCountdownReductionInDescription(detail.description);
+}
+
+function syncCountdownReductionInDescription(description) {
+  const values = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9 };
+  const text = String(description || '');
+  const valueOf = (value) => values[String(value).toLowerCase()] || Number(value) || 0;
+  const total = (text.match(/[^.!?]+[.!?]?/g) || [])
+    .filter((sentence) => !/\bchance\b/i.test(sentence) && !/\bco-op battle\b/i.test(sentence))
+    .flatMap((sentence) => [...sentence.matchAll(/reduc(?:es|ing)\b[^.!?]*?\b(?:sync move countdown|sync countdown)\s+by\s+(one|two|three|four|five|six|seven|eight|nine|\d+)/gi)])
+    .reduce((sum, match) => sum + valueOf(match[1]), 0);
+  // Team-scaling passives state their solo value in the main effect and their
+  // ideal-party ceiling later. The β sort intentionally uses that ceiling.
+  const maximum = text.match(/maximum reduction is\s+(one|two|three|four|five|six|seven|eight|nine|\d+)/i);
+  return Math.max(total, valueOf(maximum?.[1]));
+}
+
+function resolvedMoveDescription(moveId) {
+  const data = moveTextDataByLocale.get('en');
+  if (!data) return '';
+  return data.resolver?.resolveMoveDescription(moveId) || replaceSkillTemplateParts(
+    data.descriptions?.[String(moveId)] || '', data.descriptionParts || {}, 'MoveDescriptionPartsIdTag',
+  );
+}
+
+function moveSyncCountdownReduction(moveId) {
+  return syncCountdownReductionInDescription(resolvedMoveDescription(moveId));
+}
+
+function moveSyncCountdownReductionUses(moveId, availableUses) {
+  const description = resolvedMoveDescription(moveId);
+  const replacement = description.match(/replaces the effects of the user[’']s moves with the following when it is in [^.]*form\./i);
+  if (!replacement) return availableUses;
+  const replacementIndex = replacement.index || 0;
+  const beforeReplacement = description.slice(0, replacementIndex);
+  const afterReplacement = description.slice(replacementIndex + replacement[0].length);
+  if (syncCountdownReductionInDescription(beforeReplacement) > 0
+    && syncCountdownReductionInDescription(afterReplacement) === 0) return Math.min(availableUses, 1);
+  return availableUses;
+}
+
+function passiveTemplate(passiveId) {
+  return POMATOOLS_SKILL_ABBR.ja?.[String(Math.floor(Math.abs(Number(passiveId)) / 10))] || '';
+}
+
+function passiveRank(passiveId) {
+  return Math.abs(Number(passiveId)) % 10;
+}
+
+function pairTheoreticalMoveUses(pair) {
+  const moves = [...(theoreticalMoveIdsByTrainerId.get(pair.id) || [])]
+    .map((moveId) => moveById.get(String(moveId)))
+    .filter(Boolean);
+  let pokemonStatusUses = moves
+    .filter((move) => move.group === 'Regular' && move.user === 'Pokemon' && move.category === 'Status')
+    .reduce((total, move) => total + Number(move.uses || 0), 0);
+  let syncroMoveUses = moves
+    .filter((move) => move.group === 'Buddy')
+    .reduce((total, move) => total + Number(move.uses || 0), 0);
+  let syncroMoveRecovery = 0;
+  const now = Date.now() / 1000;
+  syncCountdownSkillEntriesByTrainerId.get(pair.id)?.forEach((availableDate, passiveId) => {
+    if (spoilerProtectionEnabled && availableDate > now) return;
+    const template = passiveTemplate(passiveId);
+    // These effects occur once after the pair's first sync move, so their
+    // recovery is a finite, self-contained addition to the move-use ceiling.
+    if (template.includes('初B技後 P変化技 回数回復')) pokemonStatusUses += passiveRank(passiveId);
+    if (template.includes('初B技後 S技 回数回復')) {
+      const recovery = passiveRank(passiveId);
+      syncroMoveUses += recovery;
+      syncroMoveRecovery += recovery;
+    }
+  });
+  return { pokemonStatusUses, syncroMoveUses, syncroMoveRecovery };
+}
+
+function pairSyncCountdownReduction(pair) {
+  const cacheKey = `${spoilerProtectionEnabled ? 'safe' : 'all'}:${pair.id}`;
+  if (pairSyncCountdownReductionCache.has(cacheKey)) return pairSyncCountdownReductionCache.get(cacheKey);
+  const now = Date.now() / 1000;
+  // Sprint is a built-in Sync Role effect, not a passive stored in Brybry's
+  // skill data: the first sync move used reduces the countdown by three.
+  let total = Number(pair.trainer.role) === 4 || Number(pair.exRole) === 4 ? 3 : 0;
+  const moveUses = pairTheoreticalMoveUses(pair);
+  // Only direct skills count: child effects implement their parent and would
+  // double-count it. Form passives remain included because this is a maximum
+  // theoretical total and forms reached during a battle can add their own BC reduction.
+  syncCountdownSkillEntriesByTrainerId.get(pair.id)?.forEach((availableDate, passiveId) => {
+    if (spoilerProtectionEnabled && availableDate > now) return;
+    let uses = 1;
+    const template = passiveTemplate(passiveId);
+    if (template.includes('P変化技使用時 BC加速')) uses = moveUses.pokemonStatusUses;
+    if (template.includes('S技後 BC加速')) uses = moveUses.syncroMoveUses;
+    total += passiveSyncCountdownReduction(passiveId) * uses;
+  });
+  [...(theoreticalMoveIdsByTrainerId.get(pair.id) || [])].forEach((moveId) => {
+    const move = moveById.get(String(moveId));
+    if (!move || Number(move.uses) <= 0) return;
+    const availableUses = Number(move.uses) + (move.group === 'Buddy' ? moveUses.syncroMoveRecovery : 0);
+    const uses = moveSyncCountdownReductionUses(moveId, availableUses);
+    total += moveSyncCountdownReduction(moveId) * uses;
+  });
+  pairSyncCountdownReductionCache.set(cacheKey, total);
+  return total;
 }
 
 function pairMatchesSkillCategory(pair, category, locale) {
