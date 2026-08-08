@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.78
+// @version      1.11.81
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -1629,6 +1629,7 @@ text-align: center;
     spDefense: { en: "Sp. Def", fr: "Déf. Spé.", de: "Spezial-Verteidigung", es: "Def. Esp.", it: "Dif. Sp.", ja: "特防", ko: "특수방어", zh: "特防" },
     speed: { en: "Speed", fr: "Vitesse", de: "Initiative", es: "Velocidad", it: "Velocità", ja: "素早さ", ko: "스피드", zh: "速度" },
     accuracy: { en: "Accuracy", fr: "Précision", de: "Genauigkeit", es: "Precisión", it: "Precisione", ja: "命中率", ko: "명중률", zh: "命中率" },
+    sureHitNext: { en: "Guaranteed Hit", fr: "Capacité immanquable", de: "Garantierter Treffer", es: "Golpe certero", it: "Colpo sicuro", ja: "必中", ko: "필중", zh: "必中" },
     evasion: { en: "Evasiveness", fr: "Esquive", de: "Fluchtwert", es: "Evasión", it: "Elusione", ja: "回避率", ko: "회피율", zh: "閃避率" },
     critical: { en: "Critical rate", fr: "Taux de critique", de: "Volltrefferquote", es: "Índice crítico", it: "Probabilità di brutto colpo", ja: "急所率", ko: "급소율", zh: "要害率" },
     circlePhysical: { en: "Physical", fr: "Physique", de: "Physisch", es: "Físico", it: "Fisico", ja: "物理", ko: "물리", zh: "物理" },
@@ -1829,6 +1830,12 @@ text-align: center;
       group: "utility",
       labels: skillFilterLabels("interference"),
       patterns: { en: Object.values(INTERFERENCE_INFLICT_PATTERNS).flat() }
+    },
+    {
+      value: "sureHitNext",
+      group: "utility",
+      labels: skillFilterLabels("sureHitNext"),
+      patterns: { en: [["sure hit next effect"], ["never miss"]] }
     },
     { value: "statusImmunity", group: "utility", labels: skillFilterLabels("statusImmunity"), patterns: { en: Object.values(STATUS_IMMUNITY_DETAIL_PATTERNS).flat() } },
     { value: "interferenceImmunity", group: "utility", labels: skillFilterLabels("interferenceImmunity"), patterns: { en: Object.values(INTERFERENCE_IMMUNITY_DETAIL_PATTERNS).flat() } },
@@ -4920,7 +4927,7 @@ text-align: center;
     [
       [copy.skillFieldEffects, ["weather", "terrain", "zone", "weatherEx", "terrainEx", "zoneEx", "circle", "alliedField", "opponentField"]],
       [copy.skillStatChanges, ["statUp", "statDown", "statReductionImmunity", "rebuffUp", "rebuff"]],
-      [copy.skillConditions, ["status", "interference", "statusImmunity", "interferenceImmunity", "criticalHitImmunity"]],
+      [copy.skillConditions, ["status", "interference", "sureHitNext", "statusImmunity", "interferenceImmunity", "criticalHitImmunity"]],
       [SKILL_FILTER_CATEGORIES.find((category) => category.value === "masterPassive")?.labels?.[locale] || "Master Passive", ["masterPassive"]]
     ].forEach(([title, parentValues]) => {
       const row = document.createElement("div");

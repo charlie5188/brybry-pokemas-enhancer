@@ -386,7 +386,7 @@ for (const [, labels] of detailTranslationEntries) {
     assert.match(labels, new RegExp(`(?:^|, )${locale}:`), `Every skill-detail translation must include ${locale}.`);
   }
 }
-for (const parentFilter of ['weather', 'terrain', 'zone', 'circle', 'alliedField', 'opponentField', 'statUp', 'statDown', 'status', 'interference', 'statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity', 'rebuffUp', 'rebuff', 'masterPassive']) {
+for (const parentFilter of ['weather', 'terrain', 'zone', 'circle', 'alliedField', 'opponentField', 'statUp', 'statDown', 'status', 'interference', 'sureHitNext', 'statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity', 'rebuffUp', 'rebuff', 'masterPassive']) {
   assert.match(configSource, new RegExp(`labels: skillFilterLabels\\('${parentFilter}'\\)`), `${parentFilter} must use the unified filter translation table.`);
 }
 for (const localizedOptions of ['ROLE_FAMILIES', 'REGION_OPTIONS', 'ACQUISITION_OPTIONS', 'EXCLUSIVITY_OPTIONS']) {
@@ -397,7 +397,7 @@ assert.match(pickerSource, /region\.labels\[locale\]/, 'Region filters must read
 assert.match(pickerSource, /option\.labels\[locale\]/, 'Acquisition filters must read the unified labels shape.');
 assert.match(
   pickerSource,
-  /\[copy\.skillConditions, \['status', 'interference', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'\]\]/,
+  /\[copy\.skillConditions, \['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'\]\]/,
   'Status and interference immunity filters must remain grouped under Status effects.',
 );
 assert.match(
@@ -466,6 +466,22 @@ assert.equal(
   parserContext.matchDocumentsForCheck(['Raises the user’s Sp. Atk by six stat ranks.'], [['raises', 'sp. atk', 'stat rank']]),
   true,
   'Sentence segmentation must preserve abbreviated stat names.',
+);
+const sureHitNextPatterns = [['sure hit next effect'], ['never miss']];
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Applies the Sure Hit Next effect to all allied sync pairs.'], sureHitNextPatterns),
+  true,
+  'Sure Hit Next providers must match the sure-hit filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Moves never miss.'], sureHitNextPatterns),
+  true,
+  'Innately accurate moves must match the sure-hit filter.',
+);
+assert.equal(
+  parserContext.matchDocumentsForCheck(['Never misses during a hailstorm.'], sureHitNextPatterns),
+  true,
+  'Conditional never-miss effects must match the sure-hit filter.',
 );
 const fieldDetailPatternChecks = [
   ['sunny weather', [['makes the weather sunny']], 'Makes the weather sunny.'],

@@ -964,7 +964,7 @@ function skillSearchField() {
   [
     [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField']],
     [copy.skillStatChanges, ['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff']],
-    [copy.skillConditions, ['status', 'interference', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity']],
+    [copy.skillConditions, ['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity']],
     [SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale]
       || 'Master Passive', ['masterPassive']],
   ].forEach(([title, parentValues]) => {
