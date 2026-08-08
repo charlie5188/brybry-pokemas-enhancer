@@ -533,10 +533,11 @@ function resultsToolbar() {
   return toolbar;
 }
 
-function createChip({ label, value, group, iconName, iconUrl, iconSrc, iconText, iconNames, textContent, iconOnly = false }) {
+function createChip({ label, value, group, iconName, iconUrl, iconSrc, iconText, iconNames, textContent, iconOnly = false, detail = false }) {
   const chip = document.createElement('button');
   chip.className = 'be-chip';
   if (iconOnly) chip.classList.add('be-chip--icon-only');
+  if (detail) chip.classList.add('be-chip--detail');
   chip.type = 'button';
   chip.dataset.beGroup = group;
   chip.dataset.beValue = value;
@@ -585,7 +586,7 @@ function createChip({ label, value, group, iconName, iconUrl, iconSrc, iconText,
   return chip;
 }
 
-function accordionSection(group, title, contentNode, { defaultOpen = false, active = false } = {}) {
+function accordionSection(group, title, contentNode, { defaultOpen = false, active = false, iconSrc = '' } = {}) {
   const section = document.createElement('details');
   section.className = 'be-filter-section';
   section.dataset.beGroup = group;
@@ -596,14 +597,24 @@ function accordionSection(group, title, contentNode, { defaultOpen = false, acti
     || (defaultOpen && !closedFilterAccordions.has(group));
   const summary = document.createElement('summary');
   summary.className = 'be-filter-title be-accordion-trigger';
+  const heading = document.createElement('span');
+  heading.className = 'be-accordion-heading';
+  if (iconSrc) {
+    const icon = document.createElement('img');
+    icon.className = 'be-accordion-heading-icon';
+    icon.src = iconSrc;
+    icon.alt = '';
+    heading.append(icon);
+  }
   const label = document.createElement('span');
   label.textContent = title;
+  heading.append(label);
   const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   chevron.classList.add('be-accordion-chevron');
   chevron.setAttribute('aria-hidden', 'true');
   chevron.setAttribute('viewBox', '0 0 24 24');
   chevron.innerHTML = '<path d="m6 9 6 6 6-6"/>';
-  summary.append(label, chevron);
+  summary.append(heading, chevron);
   const content = document.createElement('div');
   content.className = 'be-accordion-content';
   content.append(contentNode);
@@ -680,6 +691,7 @@ function createSkillCategoryChip(category, locale) {
     button.append(icon);
   } else if (category.iconSrc) {
     const icon = document.createElement('img');
+    icon.referrerPolicy = 'no-referrer';
     icon.src = category.iconSrc;
     icon.alt = '';
     button.append(icon);
@@ -688,6 +700,17 @@ function createSkillCategoryChip(category, locale) {
     icon.className = 'be-skill-category-icon';
     icon.innerHTML = category.iconSvg;
     button.append(icon);
+  } else if (category.iconSrcs) {
+    const icons = document.createElement('span');
+    icons.className = 'be-skill-category-icon-pair';
+    category.iconSrcs.forEach((src) => {
+      const icon = document.createElement('img');
+      icon.referrerPolicy = 'no-referrer';
+      icon.src = src;
+      icon.alt = '';
+      icons.append(icon);
+    });
+    button.append(icons);
   }
   if (category.exVariant) {
     const exBadge = document.createElement('span');
@@ -909,7 +932,7 @@ function skillSearchField() {
   const battleGrid = document.createElement('div');
   battleGrid.className = 'be-skill-battle-grid';
   [
-    [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle']],
+    [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField']],
     [copy.skillStatChanges, ['statUp', 'statDown', 'rebuff']],
     [copy.skillConditions, ['status', 'interference']],
     [SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale]
@@ -1029,7 +1052,10 @@ function filterPanel() {
     iconUrl: region.iconUrl,
     iconText: region.iconText,
   })));
-  const regionSection = accordionSection('region', text().region, regionRow, { defaultOpen: true });
+  const regionSection = accordionSection('region', text().region, regionRow, {
+    defaultOpen: true,
+    iconSrc: FILTER_SECTION_ICON_URLS.region,
+  });
 
   const weaknessRow = document.createElement('div');
   weaknessRow.className = 'be-chip-row';
@@ -1075,25 +1101,33 @@ function filterPanel() {
   }));
   const superawakeningSection = accordionSection('superawakening', text().superawakening, superawakeningRow);
 
-  const acquisitionRow = document.createElement('div');
-  acquisitionRow.className = 'be-chip-row';
-  ACQUISITION_OPTIONS.forEach((option) => acquisitionRow.append(createChip({
-    label: option[locale],
-    value: option.value,
-    group: 'acquisition',
-    iconName: option.icon,
-  })));
-  const acquisitionSection = accordionSection('acquisition', text().acquisition, acquisitionRow);
-
-  const exclusivityRow = document.createElement('div');
-  exclusivityRow.className = 'be-chip-row';
-  EXCLUSIVITY_OPTIONS.forEach((option) => exclusivityRow.append(createChip({
+  const acquisitionGroups = document.createElement('div');
+  acquisitionGroups.className = 'be-acquisition-groups be-skill-category-row--grouped';
+  const scoutCluster = document.createElement('div');
+  scoutCluster.className = 'be-skill-category-cluster';
+  const otherAcquisitionCluster = document.createElement('div');
+  otherAcquisitionCluster.className = 'be-skill-category-cluster';
+  ACQUISITION_OPTIONS.forEach((option) => {
+    const chip = createChip({
+      label: option[locale],
+      value: option.value,
+      group: 'acquisition',
+      iconName: option.icon,
+    });
+    (option.value === '1' ? scoutCluster : otherAcquisitionCluster).append(chip);
+  });
+  EXCLUSIVITY_OPTIONS.forEach((option) => scoutCluster.append(createChip({
     label: option[locale],
     value: option.value,
     group: 'exclusivity',
     iconName: option.icon,
+    detail: true,
   })));
-  const exclusivitySection = accordionSection('exclusivity', text().exclusivity, exclusivityRow);
+  acquisitionGroups.append(scoutCluster, otherAcquisitionCluster);
+  const acquisitionActive = selectedExclusivities.size > 0 || exclusionForGroup('exclusivity').size > 0;
+  const acquisitionSection = accordionSection('acquisition', text().acquisition, acquisitionGroups, {
+    active: acquisitionActive,
+  });
 
   const trainerGroupRow = document.createElement('div');
   trainerGroupRow.className = 'be-chip-row';
@@ -1103,7 +1137,9 @@ function filterPanel() {
     group: 'trainerGroup',
     textContent: option.label,
   })));
-  const trainerGroupSection = accordionSection('trainerGroup', text().trainerGroup, trainerGroupRow);
+  const trainerGroupSection = accordionSection('trainerGroup', text().trainerGroup, trainerGroupRow, {
+    iconSrc: FILTER_SECTION_ICON_URLS.trainerGroup,
+  });
 
   const fashionRow = document.createElement('div');
   fashionRow.className = 'be-chip-row';
@@ -1113,7 +1149,9 @@ function filterPanel() {
     group: 'fashion',
     textContent: option.label,
   })));
-  const fashionSection = accordionSection('fashion', text().fashion, fashionRow);
+  const fashionSection = accordionSection('fashion', text().fashion, fashionRow, {
+    iconSrc: FILTER_SECTION_ICON_URLS.fashion,
+  });
 
   const otherRow = document.createElement('div');
   otherRow.className = 'be-chip-row';
@@ -1123,7 +1161,9 @@ function filterPanel() {
     group: 'other',
     textContent: option.label,
   })));
-  const otherSection = accordionSection('other', text().other, otherRow);
+  const otherSection = accordionSection('other', text().other, otherRow, {
+    iconSrc: FILTER_SECTION_ICON_URLS.other,
+  });
 
   panel.append(
     typeSection,
@@ -1135,7 +1175,6 @@ function filterPanel() {
     raritySection,
     superawakeningSection,
     acquisitionSection,
-    exclusivitySection,
     regionSection,
     trainerGroupSection,
     fashionSection,

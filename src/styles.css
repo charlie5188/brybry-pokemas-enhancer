@@ -78,7 +78,7 @@ margin-bottom: 2px;
     .tooltip .be-related-move span { display: block; }
 
     .tooltip .be-power-multiplier,
-    .tooltip .be-required-move-level {
+    .tooltip .be-field-duration {
 background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);
 border-radius: 6px;
@@ -90,8 +90,22 @@ padding: 6px 8px;
     }
 
     .tooltip .be-required-move-level {
-background: rgba(255, 255, 255, .08);
-border-color: rgba(255, 255, 255, .18);
+align-items: center;
+display: inline-flex;
+margin-right: 4px;
+vertical-align: middle;
+    }
+
+    .tooltip .be-field-duration {
+background: rgba(239, 184, 75, .13);
+border-color: rgba(244, 198, 106, .3);
+    }
+
+    .tooltip .be-required-move-level-icon {
+display: block;
+height: 24px;
+object-fit: contain;
+width: 24px;
     }
 
     #pairSearchModal .be-picker-tools {
@@ -563,6 +577,17 @@ stroke-linejoin: round;
 stroke-width: 2;
     }
 
+    #pairSearchModal .be-skill-category-icon-pair {
+align-items: center;
+display: inline-flex;
+gap: 2px;
+    }
+
+    #pairSearchModal .be-skill-category-icon-pair > img {
+height: 20px;
+width: 20px;
+    }
+
     #pairSearchModal label.be-filter-title {
 color: #24586a;
 font: 800 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -597,6 +622,20 @@ text-transform: none;
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:focus-visible {
 box-shadow: inset 0 0 0 2px rgba(39, 117, 139, .55);
 outline: 0;
+    }
+
+    #pairSearchModal .be-accordion-heading {
+align-items: center;
+display: inline-flex;
+gap: 7px;
+min-width: 0;
+    }
+
+    #pairSearchModal .be-accordion-heading-icon {
+flex: 0 0 auto;
+height: 24px;
+object-fit: contain;
+width: 24px;
     }
 
     #pairSearchModal .be-accordion-chevron {
@@ -641,6 +680,18 @@ min-width: 0;
 padding: 6px 9px;
 position: relative;
 width: auto;
+    }
+
+    #pairSearchModal .be-chip--detail {
+background: #f7fafb;
+font-size: 12px;
+min-height: 28px;
+padding: 5px 7px;
+    }
+
+    #pairSearchModal .be-chip--detail .be-chip-icon {
+height: 17px;
+width: 17px;
     }
 
     #pairSearchModal .be-chip[data-be-filter-state="include"],
