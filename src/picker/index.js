@@ -145,14 +145,24 @@ function renderActiveFilterTags() {
   const container = document.querySelector('.be-active-filter-tags');
   if (!container) return;
   const fragment = document.createDocumentFragment();
-  activeFilterEntries().forEach((entry) => {
+  const entries = activeFilterEntries();
+  const included = entries.filter((entry) => entry.state === 'include');
+  const excluded = entries.filter((entry) => entry.state === 'exclude');
+  const appendOperator = (operator) => {
+    const node = document.createElement('span');
+    node.className = 'be-filter-operator';
+    node.textContent = operator;
+    node.setAttribute('aria-hidden', 'true');
+    fragment.append(node);
+  };
+  const appendTag = (entry) => {
     const tag = document.createElement('button');
     tag.className = 'be-active-filter-tag';
     tag.type = 'button';
     tag.dataset.beFilterState = entry.state;
-    tag.setAttribute('aria-label', `${text().clear}: ${entry.label}`);
+    tag.setAttribute('aria-label', `${text().clear}: ${entry.state === 'exclude' ? `! ${entry.label}` : entry.label}`);
     const label = document.createElement('span');
-    label.textContent = `${entry.state === 'exclude' ? '− ' : ''}${entry.label}`;
+    label.textContent = `${entry.state === 'exclude' ? '! ' : ''}${entry.label}`;
     const remove = document.createElement('span');
     remove.className = 'be-active-filter-tag-remove';
     remove.setAttribute('aria-hidden', 'true');
@@ -160,9 +170,33 @@ function renderActiveFilterTags() {
     tag.append(label, remove);
     tag.addEventListener('click', () => removeActiveFilter(entry));
     fragment.append(tag);
+  };
+  if (filterMatchMode === 'or' && included.length > 1) {
+    const openingParenthesis = document.createElement('span');
+    openingParenthesis.className = 'be-filter-parenthesis';
+    openingParenthesis.textContent = '(';
+    openingParenthesis.setAttribute('aria-hidden', 'true');
+    fragment.append(openingParenthesis);
+  }
+  included.forEach((entry, index) => {
+    if (index) appendOperator(filterMatchMode === 'and' ? '&' : '|');
+    appendTag(entry);
   });
+  if (filterMatchMode === 'or' && included.length > 1) {
+    const closingParenthesis = document.createElement('span');
+    closingParenthesis.className = 'be-filter-parenthesis';
+    closingParenthesis.textContent = ')';
+    closingParenthesis.setAttribute('aria-hidden', 'true');
+    fragment.append(closingParenthesis);
+  }
+  excluded.forEach((entry, index) => {
+    if (included.length || index) appendOperator('&');
+    appendTag(entry);
+  });
+  const clearButton = document.querySelector('.be-clear-button');
+  if (clearButton) fragment.append(clearButton);
   container.replaceChildren(fragment);
-  container.hidden = !container.childElementCount;
+  container.hidden = !entries.length && (!clearButton || clearButton.hidden);
 }
 
 function selectionForGroup(group) {
@@ -431,43 +465,54 @@ function currentPairs(includeUnreleased = false) {
 function pairMatches(pair, query, locale = language()) {
   const matchesQuery = normalizeSearchText(pair.name).includes(normalizeSearchText(query));
   const skillIds = selectedSkillIds.size ? pairSkillIds(pair) : null;
-  const matchesSkills = !selectedSkillIds.size || [...selectedSkillIds].every((id) => skillIds.has(id));
-  const matchesIncludedSkillCategories = !selectedSkillCategories.size
-    || [...selectedSkillCategories].every((value) => {
+  const scalarValues = [
+    [selectedTypes, String(pair.trainer.type)],
+    [selectedRoles, String(pair.trainer.role)],
+    [selectedWeaknesses, String(pair.trainer.weakness)],
+    [selectedRarities, String(pair.trainer.rarity)],
+    [selectedAcquisitions, String(pair.trainer.scoutMethod)],
+    [selectedExclusivities, pair.trainer.scoutMethod === 1 ? String(pair.trainer.exclusivity) : ''],
+    [selectedRegions, pair.region],
+    [selectedExRoles, pair.exRoleFamily],
+    [selectedRoleCombinations, pair.roleCombination],
+    [selectedSuperawakening, pair.hasSuperawakening ? 'yes' : ''],
+  ];
+  const tagValues = [
+    [selectedMoveTypes, pair.moveTypes],
+    [selectedTrainerGroups, pair.teamSkillTags],
+    [selectedFashion, pair.teamSkillTags],
+    [selectedOther, pair.teamSkillTags],
+  ];
+  const contains = (values, value) => values?.has?.(value) || values?.includes?.(value);
+  const includedMatches = [
+    ...scalarValues.flatMap(([selected, actual]) => [...selected].map((value) => value === actual)),
+    ...tagValues.flatMap(([selected, actual]) => [...selected].map((value) => contains(actual, value))),
+    ...[...selectedSkillCategories].map((value) => {
       const category = SKILL_FILTER_CATEGORIES.find((option) => option.value === value);
       return category ? pairMatchesSkillCategory(pair, category, locale) : true;
-    });
+    }),
+    ...[...selectedSkillIds].map((id) => skillIds.has(id)),
+  ];
+  const matchesIncluded = !includedMatches.length
+    || (filterMatchMode === 'and' ? includedMatches.every(Boolean) : includedMatches.some(Boolean));
   const matchesExcludedSkillCategories = [...excludedSkillCategories].every((value) => {
     const category = SKILL_FILTER_CATEGORIES.find((option) => option.value === value);
     return category ? !pairMatchesSkillCategory(pair, category, locale) : true;
   });
-  const matchesScalar = (included, group, actual) => (
-    (!included.size || included.has(actual)) && !exclusionForGroup(group).has(actual)
-  );
-  const matchesTags = (included, group, actualTags) => (
-    (!included.size || actualTags.some((tag) => included.has(tag)))
-    && !actualTags.some((tag) => exclusionForGroup(group).has(tag))
-  );
-  const matchesType = matchesScalar(selectedTypes, 'type', String(pair.trainer.type));
-  const matchesMoveType = matchesTags(selectedMoveTypes, 'moveType', [...pair.moveTypes]);
-  const matchesRole = matchesScalar(selectedRoles, 'role', String(pair.trainer.role));
-  const matchesWeakness = matchesScalar(selectedWeaknesses, 'weakness', String(pair.trainer.weakness));
-  const matchesRarity = matchesScalar(selectedRarities, 'rarity', String(pair.trainer.rarity));
-  const matchesAcquisition = matchesScalar(selectedAcquisitions, 'acquisition', String(pair.trainer.scoutMethod));
-  const exclusivity = pair.trainer.scoutMethod === 1 ? String(pair.trainer.exclusivity) : '';
-  const matchesExclusivity = matchesScalar(selectedExclusivities, 'exclusivity', exclusivity);
-  const matchesRegion = matchesScalar(selectedRegions, 'region', pair.region);
-  const matchesExRole = matchesScalar(selectedExRoles, 'exRole', pair.exRoleFamily);
-  const matchesRoleCombination = matchesScalar(selectedRoleCombinations, 'roleCombination', pair.roleCombination);
-  const matchesSuperawakening = matchesScalar(selectedSuperawakening, 'superawakening', pair.hasSuperawakening ? 'yes' : '');
-  const matchesTrainerGroup = matchesTags(selectedTrainerGroups, 'trainerGroup', pair.teamSkillTags);
-  const matchesFashion = matchesTags(selectedFashion, 'fashion', pair.teamSkillTags);
-  const matchesOther = matchesTags(selectedOther, 'other', pair.teamSkillTags);
-  return matchesQuery && matchesSkills && matchesIncludedSkillCategories && matchesExcludedSkillCategories
-    && matchesType && matchesMoveType && matchesRole && matchesWeakness && matchesRarity
-    && matchesAcquisition && matchesExclusivity && matchesRegion && matchesExRole
-    && matchesRoleCombination && matchesSuperawakening && matchesTrainerGroup
-    && matchesFashion && matchesOther;
+  const matchesExcludedScalars = [
+    ['type', String(pair.trainer.type)], ['role', String(pair.trainer.role)],
+    ['weakness', String(pair.trainer.weakness)], ['rarity', String(pair.trainer.rarity)],
+    ['acquisition', String(pair.trainer.scoutMethod)],
+    ['exclusivity', pair.trainer.scoutMethod === 1 ? String(pair.trainer.exclusivity) : ''],
+    ['region', pair.region], ['exRole', pair.exRoleFamily], ['roleCombination', pair.roleCombination],
+    ['superawakening', pair.hasSuperawakening ? 'yes' : ''],
+  ].every(([group, actual]) => !exclusionForGroup(group).has(actual));
+  const matchesExcludedTags = [
+    ['moveType', pair.moveTypes], ['trainerGroup', pair.teamSkillTags],
+    ['fashion', pair.teamSkillTags], ['other', pair.teamSkillTags],
+  ].every(([group, actual]) => ![...actual].some((value) => exclusionForGroup(group).has(value)));
+  return matchesQuery && matchesIncluded && matchesExcludedSkillCategories
+    && matchesExcludedScalars && matchesExcludedTags;
 }
 
 function sortPairs(pairs, locale) {
@@ -1491,7 +1536,28 @@ function ensurePicker() {
   activeFilterTags.className = 'be-active-filter-tags';
   activeFilterTags.setAttribute('aria-label', text().filters);
   activeFilterTags.hidden = true;
-  tools.append(filterButton, clearButton, count, activeFilterTags);
+  activeFilterTags.append(clearButton);
+  const matchModeLabel = document.createElement('label');
+  matchModeLabel.className = 'be-filter-match-mode';
+  const matchModeText = document.createElement('span');
+  matchModeText.textContent = text().filterMatch;
+  const matchMode = document.createElement('select');
+  matchMode.setAttribute('aria-label', text().filterMatch);
+  [['and', text().filterMatchAll], ['or', text().filterMatchAny]].forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    matchMode.append(option);
+  });
+  matchMode.value = filterMatchMode;
+  matchMode.addEventListener('change', () => {
+    filterMatchMode = matchMode.value;
+    savePickerPreferences();
+    renderActiveFilterTags();
+    queuePairRender();
+  });
+  matchModeLabel.append(matchModeText, matchMode);
+  tools.append(filterButton, count, matchModeLabel, activeFilterTags);
 
   const toolbar = resultsToolbar();
   const skillSearch = skillSearchField();

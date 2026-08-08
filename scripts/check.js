@@ -504,7 +504,8 @@ const spoilerProtectionSource = await readFile(path.join(projectRoot, 'src/spoil
 assert.match(configSource, /PROJECT_GITHUB_URL = 'https:\/\/github\.com\/charlie5188\/brybry-pokemas-enhancer'/, 'Project GitHub URL must remain configured centrally.');
 assert.match(spoilerProtectionSource, /contributeLink\.href = PROJECT_GITHUB_URL/, 'Settings popover must link to the project GitHub repository.');
 assert.match(spoilerProtectionSource, /contributeLink\.rel = 'noopener noreferrer'/, 'External GitHub link must isolate the opener.');
-assert.match(stylesSource, /\.be-settings-contribute\s*\{/, 'Settings GitHub contribution link must have dedicated styling.');
+assert.match(spoilerProtectionSource, /versionValue\.textContent = `v\$\{ENHANCER_VERSION\}`/, 'Settings popover must show the userscript version.');
+assert.match(stylesSource, /\.be-settings-item\s*\{/, 'Settings popover items must share the standard item styling.');
 assert.match(stylesSource, /\.be-chip--detail\s*\{/, 'Generic child filter buttons must have a distinct detail style.');
 assert.doesNotMatch(
   stylesSource,

@@ -120,12 +120,19 @@ function ensureSettingsControl() {
   switchVisual.setAttribute('aria-hidden', 'true');
   toggleRow.append(toggleCopy, checkbox, switchVisual);
   const contributeLink = document.createElement('a');
-  contributeLink.className = 'be-settings-contribute';
+  contributeLink.className = 'be-settings-item';
   contributeLink.href = PROJECT_GITHUB_URL;
   contributeLink.target = '_blank';
   contributeLink.rel = 'noopener noreferrer';
   contributeLink.textContent = copy.contributeOnGitHub;
-  popover.append(heading, toggleRow, contributeLink);
+  const version = document.createElement('div');
+  version.className = 'be-settings-item be-settings-version';
+  const versionLabel = document.createElement('span');
+  versionLabel.textContent = copy.version;
+  const versionValue = document.createElement('strong');
+  versionValue.textContent = `v${ENHANCER_VERSION}`;
+  version.append(versionLabel, versionValue);
+  popover.append(heading, toggleRow, contributeLink, version);
   wrapper.append(button, popover);
   header.append(wrapper);
 

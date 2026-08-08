@@ -135,11 +135,11 @@ margin: 0 0 10px;
 overscroll-behavior: contain;
     }
 
-    #pairSearchModal .be-active-filter-tags {
+#pairSearchModal .be-active-filter-tags {
 display: flex;
 flex: 1 0 100%;
 flex-wrap: wrap;
-gap: 6px;
+gap: 3px;
 min-width: 0;
     }
 
@@ -177,8 +177,38 @@ font-size: 15px;
 line-height: .8;
     }
 
-    #pairSearchModal .be-filter-button,
-    #pairSearchModal .be-clear-button {
+    #pairSearchModal .be-filter-operator {
+align-self: center;
+color: #51727c;
+font: 600 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    #pairSearchModal .be-filter-parenthesis {
+align-self: center;
+color: #51727c;
+font: 800 16px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-inline: -3px;
+    }
+
+    #pairSearchModal .be-filter-match-mode {
+align-items: center;
+color: #51727c;
+display: inline-flex;
+font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+gap: 5px;
+    }
+
+    #pairSearchModal .be-filter-match-mode select {
+background: #fff;
+border: 1px solid #9bc8d2;
+border-radius: 7px;
+color: #24586a;
+font: inherit;
+min-height: 30px;
+padding: 4px 7px;
+    }
+
+    #pairSearchModal .be-filter-button {
 appearance: none;
 border: 1px solid #6aafc0;
 border-radius: 999px;
@@ -188,6 +218,21 @@ cursor: pointer;
 font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 padding: 8px 12px;
     }
+
+    #pairSearchModal .be-clear-button {
+align-self: center;
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 6px;
+color: #51727c;
+cursor: pointer;
+font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-left: auto;
+padding: 7px 8px;
+    }
+
+    #pairSearchModal .be-clear-button:hover { background: rgba(44, 104, 120, .08); color: #24586a; }
 
     #pairSearchModal .be-filter-button[aria-expanded="true"] {
 color: #fff;
@@ -1114,17 +1159,39 @@ justify-content: space-between;
     .be-toggle-copy { display: grid; gap: 4px; }
     .be-toggle-copy strong { font: 750 14px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
     .be-toggle-copy small { color: #607b83; font: 500 12px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
-    .be-settings-contribute {
+    .be-settings-popover .be-settings-item {
+align-items: center;
 border-top: 1px solid #dbe6e9;
+box-sizing: border-box;
 color: #176b83;
-display: block;
+display: flex;
+float: none !important;
 font: 700 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+left: auto !important;
 margin-top: 14px;
+max-width: 100%;
+min-width: 0;
 padding-top: 12px;
+position: static !important;
+right: auto !important;
 text-decoration: none;
+transform: none !important;
+white-space: normal !important;
+width: 100% !important;
+writing-mode: horizontal-tb;
     }
-    .be-settings-contribute:hover { color: #0c4f66; text-decoration: underline; }
-    .be-settings-contribute:focus-visible { border-radius: 4px; outline: 3px solid #71b7c9; outline-offset: 3px; }
+    #headerBody .be-settings-popover a.be-settings-item {
+background: transparent !important;
+color: #176b83 !important;
+font: 700 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+height: auto !important;
+padding: 12px 0 0 !important;
+text-align: left !important;
+    }
+    #headerBody .be-settings-popover a.be-settings-item:hover { color: #0c4f66 !important; text-decoration: underline; }
+    #headerBody .be-settings-popover a.be-settings-item:focus-visible { border-radius: 4px; outline: 3px solid #71b7c9; outline-offset: 3px; }
+    .be-settings-version { color: #607b83; justify-content: space-between; }
+    .be-settings-version strong { color: #234d59; }
     .be-toggle-row input { opacity: 0; position: absolute; pointer-events: none; }
     .be-switch {
 background: #aab9bd;
