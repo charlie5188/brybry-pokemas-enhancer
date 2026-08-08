@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.33
+// @version      1.11.34
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -1315,7 +1315,7 @@ text-align: center;
     {
       value: "weather",
       group: "field",
-      labels: { en: "Weather", fr: "Météo", de: "Wetter", es: "Clima", it: "Meteo", ja: "天気", ko: "날씨", zh: "天气" },
+      labels: { en: "Weather", fr: "Météo", de: "Wetter", es: "Clima", it: "Meteo", ja: "天気", ko: "날씨", zh: "天氣" },
       patterns: {
         en: [["makes", "weather"], ["causes", "sandstorm"], ["causes", "hailstorm"], ["causes", "snow"]],
         ja: [["天気を", "にする"]],
@@ -1325,7 +1325,7 @@ text-align: center;
     {
       value: "terrain",
       group: "field",
-      labels: { en: "Terrain", fr: "Champ", de: "Feld", es: "Campo", it: "Campo", ja: "フィールド", ko: "필드", zh: "场地" },
+      labels: { en: "Terrain", fr: "Champ", de: "Feld", es: "Campo", it: "Campo", ja: "フィールド", ko: "필드", zh: "場地" },
       patterns: {
         en: [["turns", "terrain", "into"]],
         ja: [["フィールドを", "にする"]],
@@ -1335,7 +1335,7 @@ text-align: center;
     {
       value: "zone",
       group: "field",
-      labels: { en: "Zone", fr: "Zone", de: "Zone", es: "Zona", it: "Zona", ja: "ゾーン", ko: "존", zh: "领域" },
+      labels: { en: "Zone", fr: "Zone", de: "Zone", es: "Zona", it: "Zona", ja: "ゾーン", ko: "존", zh: "領域" },
       patterns: {
         en: [["turns", "zone", "into"]],
         ja: [["ゾーンを", "にする"]],
@@ -1345,19 +1345,19 @@ text-align: center;
     {
       value: "weatherEx",
       group: "field",
-      labels: { en: "EX Weather", fr: "Météo EX", de: "EX-Wetter", es: "Clima EX", it: "Meteo EX", ja: "EX天気", ko: "EX 날씨", zh: "EX天气" },
+      labels: { en: "EX Weather", fr: "Météo EX", de: "EX-Wetter", es: "Clima EX", it: "Meteo EX", ja: "EX天気", ko: "EX 날씨", zh: "EX天氣" },
       patterns: { en: [["ex sunny"], ["ex rainy"], ["ex sandstorm"], ["ex hailstorm"], ["ex snow"]] }
     },
     {
       value: "terrainEx",
       group: "field",
-      labels: { en: "EX Terrain", fr: "Champ EX", de: "EX-Feld", es: "Campo EX", it: "Campo EX", ja: "EXフィールド", ko: "EX 필드", zh: "EX场地" },
+      labels: { en: "EX Terrain", fr: "Champ EX", de: "EX-Feld", es: "Campo EX", it: "Campo EX", ja: "EXフィールド", ko: "EX 필드", zh: "EX場地" },
       patterns: { en: [["ex electric terrain"], ["ex grassy terrain"], ["ex psychic terrain"]] }
     },
     {
       value: "zoneEx",
       group: "field",
-      labels: { en: "EX Zone", fr: "Zone EX", de: "EX-Zone", es: "Zona EX", it: "Zona EX", ja: "EXゾーン", ko: "EX 존", zh: "EX领域" },
+      labels: { en: "EX Zone", fr: "Zone EX", de: "EX-Zone", es: "Zona EX", it: "Zona EX", ja: "EXゾーン", ko: "EX 존", zh: "EX領域" },
       patterns: { en: [
         ["ex normal zone"],
         ["ex ice zone"],
@@ -1378,7 +1378,7 @@ text-align: center;
       value: "circle",
       group: "field",
       iconName: "icon_circle",
-      labels: { en: "Circle", fr: "Cercle", de: "Kreis", es: "Círculo", it: "Cerchio", ja: "サークル", ko: "서클", zh: "圆环" },
+      labels: { en: "Circle", fr: "Cercle", de: "Kreis", es: "Círculo", it: "Cerchio", ja: "サークル", ko: "서클", zh: "圓環" },
       patterns: {
         en: [["applies", "circle", "allied field"]],
         ja: [["味方全体の場を", "サークル", "にする"]],
@@ -1400,19 +1400,19 @@ text-align: center;
     {
       value: "status",
       group: "utility",
-      labels: { en: "Status", fr: "Altérations", de: "Statusprobleme", es: "Problemas de estado", it: "Problemi di stato", ja: "状態異常", ko: "상태 이상", zh: "异常状态" },
+      labels: { en: "Status", fr: "Altérations", de: "Statusprobleme", es: "Problemas de estado", it: "Problemi di stato", ja: "状態異常", ko: "상태 이상", zh: "異常狀態" },
       patterns: { en: Object.values(STATUS_INFLICT_PATTERNS).flat() }
     },
     {
       value: "interference",
       group: "utility",
-      labels: { en: "Interference", fr: "Entraves", de: "Störungen", es: "Interferencias", it: "Interferenze", ja: "妨害状態", ko: "방해 상태", zh: "妨害状态" },
+      labels: { en: "Interference", fr: "Entraves", de: "Störungen", es: "Interferencias", it: "Interferenze", ja: "妨害状態", ko: "방해 상태", zh: "妨害狀態" },
       patterns: { en: Object.values(INTERFERENCE_INFLICT_PATTERNS).flat() }
     },
     {
       value: "rebuff",
       group: "utility",
-      labels: { en: "Rebuff", fr: "Résilience au type ↓", de: "Typ-Widerstand ↓", es: "Resistencia de tipo ↓", it: "Resistenza al tipo ↓", ja: "タイプ抵抗↓", ko: "타입 저항↓", zh: "属性抵抗↓" },
+      labels: { en: "Rebuff", fr: "Résilience au type ↓", de: "Typ-Widerstand ↓", es: "Resistencia de tipo ↓", it: "Resistenza al tipo ↓", ja: "タイプ抵抗↓", ko: "타입 저항↓", zh: "屬性抵抗↓" },
       patterns: { en: [["type rebuff"], ["rebuff"]], ja: [["タイプ抵抗"]], zh: [["屬性抵抗"], ["属性抵抗"]] }
     },
     {
@@ -1420,7 +1420,7 @@ text-align: center;
       group: "utility",
       iconName: "icon_master",
       masterPassiveType: "all",
-      labels: { en: "Master Passive", fr: "Talent Maître", de: "Meister-Passivfähigkeit", es: "Habilidad maestra", it: "Abilità Master", ja: "マスターパッシブ", ko: "마스터 패시브", zh: "大师被动" }
+      labels: { en: "Master Passive", fr: "Talent Maître", de: "Meister-Passivfähigkeit", es: "Habilidad maestra", it: "Abilità Master", ja: "マスターパッシブ", ko: "마스터 패시브", zh: "大師被動" }
     }
   ];
   const SKILL_FILTER_DETAILS = [
@@ -1428,68 +1428,68 @@ text-align: center;
     ["rainyWeather", "weather", "Rain", "雨", "下雨", [["makes the weather rainy"]]],
     ["sandstormWeather", "weather", "Sandstorm", "すなあらし", "沙暴", [["causes a sandstorm"]]],
     ["hailWeather", "weather", "Hailstorm", "あられ", "冰雹", [["causes a hailstorm"]]],
-    ["electricTerrain", "terrain", "Electric", "エレキ", "电气", [["terrain into electric terrain"]]],
+    ["electricTerrain", "terrain", "Electric", "エレキ", "電氣", [["terrain into electric terrain"]]],
     ["grassyTerrain", "terrain", "Grassy", "グラス", "青草", [["terrain into grassy terrain"]]],
     ["psychicTerrain", "terrain", "Psychic", "サイコ", "精神", [["terrain into psychic terrain"]]],
     ["normalZone", "zone", "Normal", "ノーマル", "一般", [["zone into a normal zone"], ["zone into an normal zone"]]],
     ["iceZone", "zone", "Ice", "こおり", "冰", [["zone into an ice zone"], ["zone into a ice zone"]]],
-    ["fightingZone", "zone", "Fighting", "かくとう", "格斗", [["zone into a fighting zone"]]],
+    ["fightingZone", "zone", "Fighting", "かくとう", "格鬥", [["zone into a fighting zone"]]],
     ["poisonZone", "zone", "Poison", "どく", "毒", [["zone into a poison zone"]]],
     ["groundZone", "zone", "Ground", "じめん", "地面", [["zone into a ground zone"]]],
-    ["flyingZone", "zone", "Flying", "ひこう", "飞行", [["zone into a flying zone"]]],
-    ["bugZone", "zone", "Bug", "むし", "虫", [["zone into a bug zone"]]],
+    ["flyingZone", "zone", "Flying", "ひこう", "飛行", [["zone into a flying zone"]]],
+    ["bugZone", "zone", "Bug", "むし", "蟲", [["zone into a bug zone"]]],
     ["rockZone", "zone", "Rock", "いわ", "岩石", [["zone into a rock zone"]]],
-    ["ghostZone", "zone", "Ghost", "ゴースト", "幽灵", [["zone into a ghost zone"]]],
-    ["dragonZone", "zone", "Dragon", "ドラゴン", "龙", [["zone into a dragon zone"]]],
-    ["darkZone", "zone", "Dark", "あく", "恶", [["zone into a dark zone"]]],
-    ["steelZone", "zone", "Steel", "はがね", "钢", [["zone into a steel zone"]]],
+    ["ghostZone", "zone", "Ghost", "ゴースト", "幽靈", [["zone into a ghost zone"]]],
+    ["dragonZone", "zone", "Dragon", "ドラゴン", "龍", [["zone into a dragon zone"]]],
+    ["darkZone", "zone", "Dark", "あく", "惡", [["zone into a dark zone"]]],
+    ["steelZone", "zone", "Steel", "はがね", "鋼", [["zone into a steel zone"]]],
     ["fairyZone", "zone", "Fairy", "フェアリー", "妖精", [["zone into a fairy zone"]]],
     ["exSunnyWeather", "weatherEx", "EX Sunny", "EX晴れ", "EX晴天", [["ex sunny"]]],
     ["exRainyWeather", "weatherEx", "EX Rain", "EX雨", "EX下雨", [["ex rainy"]]],
     ["exSandstormWeather", "weatherEx", "EX Sandstorm", "EXすなあらし", "EX沙暴", [["ex sandstorm"]]],
     ["exHailWeather", "weatherEx", "EX Hailstorm", "EXあられ", "EX冰雹", [["ex hailstorm"]]],
-    ["exElectricTerrain", "terrainEx", "EX Electric", "EXエレキ", "EX电气", [["ex electric terrain"]]],
+    ["exElectricTerrain", "terrainEx", "EX Electric", "EXエレキ", "EX電氣", [["ex electric terrain"]]],
     ["exGrassyTerrain", "terrainEx", "EX Grassy", "EXグラス", "EX青草", [["ex grassy terrain"]]],
     ["exPsychicTerrain", "terrainEx", "EX Psychic", "EXサイコ", "EX精神", [["ex psychic terrain"]]],
     ["exNormalZone", "zoneEx", "EX Normal", "EXノーマル", "EX一般", [["ex normal zone"]]],
     ["exIceZone", "zoneEx", "EX Ice", "EXこおり", "EX冰", [["ex ice zone"]]],
-    ["exFightingZone", "zoneEx", "EX Fighting", "EXかくとう", "EX格斗", [["ex fighting zone"]]],
+    ["exFightingZone", "zoneEx", "EX Fighting", "EXかくとう", "EX格鬥", [["ex fighting zone"]]],
     ["exPoisonZone", "zoneEx", "EX Poison", "EXどく", "EX毒", [["ex poison zone"]]],
     ["exGroundZone", "zoneEx", "EX Ground", "EXじめん", "EX地面", [["ex ground zone"]]],
-    ["exFlyingZone", "zoneEx", "EX Flying", "EXひこう", "EX飞行", [["ex flying zone"]]],
-    ["exBugZone", "zoneEx", "EX Bug", "EXむし", "EX虫", [["ex bug zone"]]],
+    ["exFlyingZone", "zoneEx", "EX Flying", "EXひこう", "EX飛行", [["ex flying zone"]]],
+    ["exBugZone", "zoneEx", "EX Bug", "EXむし", "EX蟲", [["ex bug zone"]]],
     ["exRockZone", "zoneEx", "EX Rock", "EXいわ", "EX岩石", [["ex rock zone"]]],
-    ["exGhostZone", "zoneEx", "EX Ghost", "EXゴースト", "EX幽灵", [["ex ghost zone"]]],
-    ["exDragonZone", "zoneEx", "EX Dragon", "EXドラゴン", "EX龙", [["ex dragon zone"]]],
-    ["exDarkZone", "zoneEx", "EX Dark", "EXあく", "EX恶", [["ex dark zone"]]],
-    ["exSteelZone", "zoneEx", "EX Steel", "EXはがね", "EX钢", [["ex steel zone"]]],
+    ["exGhostZone", "zoneEx", "EX Ghost", "EXゴースト", "EX幽靈", [["ex ghost zone"]]],
+    ["exDragonZone", "zoneEx", "EX Dragon", "EXドラゴン", "EX龍", [["ex dragon zone"]]],
+    ["exDarkZone", "zoneEx", "EX Dark", "EXあく", "EX惡", [["ex dark zone"]]],
+    ["exSteelZone", "zoneEx", "EX Steel", "EXはがね", "EX鋼", [["ex steel zone"]]],
     ["exFairyZone", "zoneEx", "EX Fairy", "EXフェアリー", "EX妖精", [["ex fairy zone"]]],
     ["circlePhysical", "circle", "Physical", "物理", "物理", [["circle (physical)"]]],
     ["circleSpecial", "circle", "Special", "特殊", "特殊", [["circle (special)"]]],
     ["circleDefensive", "circle", "Defensive", "防御", "防御", [["circle (defensive)"]]],
-    ["attackUp", "statUp", "Attack ↑", "攻撃↑", "攻击↑", [["raises", "attack", "stat rank"]]],
+    ["attackUp", "statUp", "Attack ↑", "攻撃↑", "攻擊↑", [["raises", "attack", "stat rank"]]],
     ["spAttackUp", "statUp", "Sp. Atk ↑", "特攻↑", "特攻↑", [["raises", "sp. atk", "stat rank"]]],
     ["defenseUp", "statUp", "Defense ↑", "防御↑", "防御↑", [["raises", "defense", "stat rank"]]],
     ["spDefenseUp", "statUp", "Sp. Def ↑", "特防↑", "特防↑", [["raises", "sp. def", "stat rank"]]],
     ["speedUp", "statUp", "Speed ↑", "素早さ↑", "速度↑", [["raises", "speed", "stat rank"]]],
     ["accuracyUp", "statUp", "Accuracy ↑", "命中率↑", "命中率↑", [["raises", "accuracy", "stat rank"]]],
-    ["evasionUp", "statUp", "Evasiveness ↑", "回避率↑", "闪避率↑", [["raises", "evasiveness", "stat rank"]]],
+    ["evasionUp", "statUp", "Evasiveness ↑", "回避率↑", "閃避率↑", [["raises", "evasiveness", "stat rank"]]],
     ["criticalUp", "statUp", "Critical rate ↑", "急所率↑", "要害率↑", [["raises", "critical-hit rate"]]],
-    ["attackDown", "statDown", "Attack ↓", "攻撃↓", "攻击↓", [["lowers", "attack", "stat rank"]]],
+    ["attackDown", "statDown", "Attack ↓", "攻撃↓", "攻擊↓", [["lowers", "attack", "stat rank"]]],
     ["spAttackDown", "statDown", "Sp. Atk ↓", "特攻↓", "特攻↓", [["lowers", "sp. atk", "stat rank"]]],
     ["defenseDown", "statDown", "Defense ↓", "防御↓", "防御↓", [["lowers", "defense", "stat rank"]]],
     ["spDefenseDown", "statDown", "Sp. Def ↓", "特防↓", "特防↓", [["lowers", "sp. def", "stat rank"]]],
     ["speedDown", "statDown", "Speed ↓", "素早さ↓", "速度↓", [["lowers", "speed", "stat rank"]]],
     ["accuracyDown", "statDown", "Accuracy ↓", "命中率↓", "命中率↓", [["lowers", "accuracy", "stat rank"]]],
-    ["evasionDown", "statDown", "Evasiveness ↓", "回避率↓", "闪避率↓", [["lowers", "evasiveness", "stat rank"]]],
+    ["evasionDown", "statDown", "Evasiveness ↓", "回避率↓", "閃避率↓", [["lowers", "evasiveness", "stat rank"]]],
     ["poison", "status", "Poison", "どく", "中毒", STATUS_INFLICT_PATTERNS.poison],
-    ["burn", "status", "Burn", "やけど", "灼伤", STATUS_INFLICT_PATTERNS.burn],
-    ["paralysis", "status", "Paralysis", "まひ", "麻痹", STATUS_INFLICT_PATTERNS.paralysis],
+    ["burn", "status", "Burn", "やけど", "灼傷", STATUS_INFLICT_PATTERNS.burn],
+    ["paralysis", "status", "Paralysis", "まひ", "麻痺", STATUS_INFLICT_PATTERNS.paralysis],
     ["sleep", "status", "Sleep", "ねむり", "睡眠", STATUS_INFLICT_PATTERNS.sleep],
-    ["freeze", "status", "Freeze", "こおり", "冰冻", STATUS_INFLICT_PATTERNS.freeze],
-    ["flinch", "interference", "Flinch", "ひるみ", "畏缩", INTERFERENCE_INFLICT_PATTERNS.flinch],
+    ["freeze", "status", "Freeze", "こおり", "冰凍", STATUS_INFLICT_PATTERNS.freeze],
+    ["flinch", "interference", "Flinch", "ひるみ", "畏縮", INTERFERENCE_INFLICT_PATTERNS.flinch],
     ["confusion", "interference", "Confusion", "こんらん", "混乱", INTERFERENCE_INFLICT_PATTERNS.confusion],
-    ["trap", "interference", "Trap", "バインド", "束缚", INTERFERENCE_INFLICT_PATTERNS.trap],
+    ["trap", "interference", "Trap", "バインド", "束縛", INTERFERENCE_INFLICT_PATTERNS.trap],
     ["masterPhysical", "masterPassive", "Physical", "物理", "物理", [], "physical"],
     ["masterSpecial", "masterPassive", "Special", "特殊", "特殊", [], "special"],
     ["masterGeneral", "masterPassive", "General", "汎用", "泛用", [], "general"]
@@ -1898,58 +1898,58 @@ text-align: center;
       empty: "조건에 맞는 버디즈가 없습니다."
     },
     zh: {
-      filter: "筛选",
-      filters: "筛选",
+      filter: "篩選",
+      filters: "篩選",
       clear: "清除",
-      close: "关闭",
+      close: "關閉",
       include: "包含",
       exclude: "排除",
-      nameSearch: "名称",
-      nameSearchPlaceholder: "搜索名称…",
-      skillSearch: "被动技能搜索",
-      skillSearchPlaceholder: "搜索被动名称或效果…",
-      skillFieldEffects: "场地效果",
-      skillBattleUtility: "战斗功能",
-      skillStatChanges: "能力变化",
-      skillConditions: "状态效果",
+      nameSearch: "名稱",
+      nameSearchPlaceholder: "搜尋名稱…",
+      skillSearch: "被動技能搜尋",
+      skillSearchPlaceholder: "搜尋被動名稱或效果…",
+      skillFieldEffects: "場地效果",
+      skillBattleUtility: "戰鬥功能",
+      skillStatChanges: "能力變化",
+      skillConditions: "狀態效果",
       skillSpecialAbilities: "特殊能力",
-      damagingMoveType: "攻击招式属性",
-      loading: "正在更新结果…",
+      damagingMoveType: "攻擊招式屬性",
+      loading: "正在更新結果…",
       multiplier: "倍率：+{value}%",
       multiplierCap: "倍率上限：+{value}%",
       requiredMoveLevel: "所需招式等級：{value}/5",
-      skillNoResults: "没有匹配的技能",
+      skillNoResults: "沒有符合的技能",
       removeSkill: "移除",
-      type: "属性",
+      type: "屬性",
       role: "定位",
-      weakness: "弱点",
-      rarity: "初始星级",
-      acquisition: "获取方式",
-      exclusivity: "限定类型",
-      region: "地区",
+      weakness: "弱點",
+      rarity: "初始星級",
+      acquisition: "獲得方式",
+      exclusivity: "限定類型",
+      region: "地區",
       exRole: "EX 定位",
-      roleCombination: "定位组合",
-      trainerGroup: "训练家分组",
-      fashion: "服装",
-      other: "其他标签",
-      superawakening: "超级觉醒",
+      roleCombination: "定位組合",
+      trainerGroup: "訓練家分組",
+      fashion: "服裝",
+      other: "其他標籤",
+      superawakening: "超級覺醒",
       sort: "排序",
-      sortUpdated: "更新时间",
-      sortRelease: "实装时间",
-      sortSyncDex: "拍组图鉴 #",
-      sortPokemonDex: "宝可梦图鉴 #",
-      sortName: "名称",
-      sortRarity: "初始星级",
-      ascending: "升序",
-      descending: "降序",
-      listView: "列表视图",
-      iconView: "图标视图",
-      settings: "设置",
-      spoilerProtection: "防剧透",
-      spoilerDescription: "隐藏尚未实装的拍组。",
-      spoilerBanner: "为了防止剧透，已从尚未实装的拍组自动跳转。",
-      results: (count) => `${count} 组拍组`,
-      empty: "没有符合条件的拍组。"
+      sortUpdated: "更新時間",
+      sortRelease: "實裝時間",
+      sortSyncDex: "拍組圖鑑 #",
+      sortPokemonDex: "寶可夢圖鑑 #",
+      sortName: "名稱",
+      sortRarity: "初始星級",
+      ascending: "升冪",
+      descending: "降冪",
+      listView: "列表檢視",
+      iconView: "圖示檢視",
+      settings: "設定",
+      spoilerProtection: "防雷",
+      spoilerDescription: "隱藏尚未實裝的拍組。",
+      spoilerBanner: "為了防止劇透，已從尚未實裝的拍組自動跳轉。",
+      results: (count) => `${count} 組拍組`,
+      empty: "沒有符合條件的拍組。"
     }
   };
   const TYPE_NAMES = {
@@ -1960,7 +1960,7 @@ text-align: center;
     it: ["Normale", "Fuoco", "Acqua", "Elettro", "Erba", "Ghiaccio", "Lotta", "Veleno", "Terra", "Volante", "Psico", "Coleottero", "Roccia", "Spettro", "Drago", "Buio", "Acciaio", "Folletto"],
     ja: ["ノーマル", "ほのお", "みず", "でんき", "くさ", "こおり", "かくとう", "どく", "じめん", "ひこう", "エスパー", "むし", "いわ", "ゴースト", "ドラゴン", "あく", "はがね", "フェアリー"],
     ko: ["노말", "불꽃", "물", "전기", "풀", "얼음", "격투", "독", "땅", "비행", "에스퍼", "벌레", "바위", "고스트", "드래곤", "악", "강철", "페어리"],
-    zh: ["一般", "火", "水", "电", "草", "冰", "格斗", "毒", "地面", "飞行", "超能力", "虫", "岩石", "幽灵", "龙", "恶", "钢", "妖精"]
+    zh: ["一般", "火", "水", "電", "草", "冰", "格鬥", "毒", "地面", "飛行", "超能力", "蟲", "岩石", "幽靈", "龍", "惡", "鋼", "妖精"]
   };
   const ROLE_NAMES = {
     en: ["Strike (Physical)", "Strike (Special)", "Support", "Tech", "Sprint", "Field", "Multi"],
@@ -1970,45 +1970,45 @@ text-align: center;
     it: ["Attaccante (fisico)", "Attaccante (speciale)", "Supporto", "Tecnico", "Sprint", "Campo", "Multi"],
     ja: ["アタッカー（物理）", "アタッカー（特殊）", "サポート", "テクニカル", "スピード", "フィールド", "マルチ"],
     ko: ["어태커(물리)", "어태커(특수)", "서포트", "테크니컬", "스피드", "필드", "멀티"],
-    zh: ["攻击（物理）", "攻击（特殊）", "辅助", "技术", "速度", "场地", "全能"]
+    zh: ["攻擊（物理）", "攻擊（特殊）", "輔助", "技術", "速度", "場地", "全能"]
   };
   const ROLE_FAMILIES = [
-    { value: "strike", icon: "strike", roles: [0, 1], en: "Strike", fr: "Attaquant", de: "Angreifer", es: "Atacante", it: "Attaccante", ja: "アタッカー", ko: "어태커", zh: "攻击" },
-    { value: "support", icon: "support", roles: [2], en: "Support", fr: "Soutien", de: "Helfer", es: "Apoyo", it: "Supporto", ja: "サポート", ko: "서포트", zh: "辅助" },
-    { value: "tech", icon: "tech", roles: [3], en: "Tech", fr: "Tacticien", de: "Taktiker", es: "Técnico", it: "Tecnico", ja: "テクニカル", ko: "테크니컬", zh: "技术" },
+    { value: "strike", icon: "strike", roles: [0, 1], en: "Strike", fr: "Attaquant", de: "Angreifer", es: "Atacante", it: "Attaccante", ja: "アタッカー", ko: "어태커", zh: "攻擊" },
+    { value: "support", icon: "support", roles: [2], en: "Support", fr: "Soutien", de: "Helfer", es: "Apoyo", it: "Supporto", ja: "サポート", ko: "서포트", zh: "輔助" },
+    { value: "tech", icon: "tech", roles: [3], en: "Tech", fr: "Tacticien", de: "Taktiker", es: "Técnico", it: "Tecnico", ja: "テクニカル", ko: "테크니컬", zh: "技術" },
     { value: "sprint", icon: "sprint", roles: [4], en: "Sprint", fr: "Accélérateur", de: "Sprint", es: "Velocidad", it: "Sprint", ja: "スピード", ko: "스피드", zh: "速度" },
-    { value: "field", icon: "field", roles: [5], en: "Field", fr: "Environnement", de: "Feld", es: "Campo", it: "Campo", ja: "フィールド", ko: "필드", zh: "场地" },
+    { value: "field", icon: "field", roles: [5], en: "Field", fr: "Environnement", de: "Feld", es: "Campo", it: "Campo", ja: "フィールド", ko: "필드", zh: "場地" },
     { value: "multi", icon: "multi", roles: [6], en: "Multi", fr: "Multi", de: "Multi", es: "Multi", it: "Multi", ja: "マルチ", ko: "멀티", zh: "全能" }
   ];
   const REGION_OPTIONS = [
-    { value: "20020001", iconUrl: "https://archives.bulbagarden.net/media/upload/9/97/Let%27s_Go_icon_HOME.png", en: "Kanto", fr: "Kanto", de: "Kanto", es: "Kanto", it: "Kanto", ja: "カントー", ko: "관동", zh: "关都" },
+    { value: "20020001", iconUrl: "https://archives.bulbagarden.net/media/upload/9/97/Let%27s_Go_icon_HOME.png", en: "Kanto", fr: "Kanto", de: "Kanto", es: "Kanto", it: "Kanto", ja: "カントー", ko: "관동", zh: "關都" },
     { value: "20020002", en: "Johto", fr: "Johto", de: "Johto", es: "Johto", it: "Johto", ja: "ジョウト", ko: "성도", zh: "城都" },
-    { value: "20020003", en: "Hoenn", fr: "Hoenn", de: "Hoenn", es: "Hoenn", it: "Hoenn", ja: "ホウエン", ko: "호연", zh: "丰缘" },
-    { value: "20020004", iconUrl: "https://archives.bulbagarden.net/media/upload/0/0a/BDSP_icon_HOME.png", en: "Sinnoh", fr: "Sinnoh", de: "Sinnoh", es: "Sinnoh", it: "Sinnoh", ja: "シンオウ", ko: "신오", zh: "神奥" },
-    { value: "20020005", iconText: "◑", en: "Unova", fr: "Unys", de: "Einall", es: "Teselia", it: "Unima", ja: "イッシュ", ko: "하나", zh: "合众" },
+    { value: "20020003", en: "Hoenn", fr: "Hoenn", de: "Hoenn", es: "Hoenn", it: "Hoenn", ja: "ホウエン", ko: "호연", zh: "豐緣" },
+    { value: "20020004", iconUrl: "https://archives.bulbagarden.net/media/upload/0/0a/BDSP_icon_HOME.png", en: "Sinnoh", fr: "Sinnoh", de: "Sinnoh", es: "Sinnoh", it: "Sinnoh", ja: "シンオウ", ko: "신오", zh: "神奧" },
+    { value: "20020005", iconText: "◑", en: "Unova", fr: "Unys", de: "Einall", es: "Teselia", it: "Unima", ja: "イッシュ", ko: "하나", zh: "合眾" },
     { value: "20020006", iconUrl: "https://archives.bulbagarden.net/media/upload/d/d2/Blue_pentagon_HOME.png", en: "Kalos", fr: "Kalos", de: "Kalos", es: "Kalos", it: "Kalos", ja: "カロス", ko: "칼로스", zh: "卡洛斯" },
-    { value: "20020007", iconUrl: "https://archives.bulbagarden.net/media/upload/0/04/Black_clover_HOME.png", en: "Alola", fr: "Alola", de: "Alola", es: "Alola", it: "Alola", ja: "アローラ", ko: "알로라", zh: "阿罗拉" },
-    { value: "20020008", iconUrl: "https://archives.bulbagarden.net/media/upload/6/6e/Galar_symbol_HOME.png", en: "Galar", fr: "Galar", de: "Galar", es: "Galar", it: "Galar", ja: "ガラル", ko: "가라르", zh: "伽勒尔" },
-    { value: "20020009", iconUrl: "https://archives.bulbagarden.net/media/upload/f/fe/Paldea_icon_HOME.png", en: "Paldea", fr: "Paldea", de: "Paldea", es: "Paldea", it: "Paldea", ja: "パルデア", ko: "팔데아", zh: "帕底亚" },
-    { value: "20020020", en: "Pasio", fr: "Passio", de: "Passio", es: "Passio", it: "Pasio", ja: "パシオ", ko: "파시오", zh: "帕希欧" }
+    { value: "20020007", iconUrl: "https://archives.bulbagarden.net/media/upload/0/04/Black_clover_HOME.png", en: "Alola", fr: "Alola", de: "Alola", es: "Alola", it: "Alola", ja: "アローラ", ko: "알로라", zh: "阿羅拉" },
+    { value: "20020008", iconUrl: "https://archives.bulbagarden.net/media/upload/6/6e/Galar_symbol_HOME.png", en: "Galar", fr: "Galar", de: "Galar", es: "Galar", it: "Galar", ja: "ガラル", ko: "가라르", zh: "伽勒爾" },
+    { value: "20020009", iconUrl: "https://archives.bulbagarden.net/media/upload/f/fe/Paldea_icon_HOME.png", en: "Paldea", fr: "Paldea", de: "Paldea", es: "Paldea", it: "Paldea", ja: "パルデア", ko: "팔데아", zh: "帕底亞" },
+    { value: "20020020", en: "Pasio", fr: "Passio", de: "Passio", es: "Passio", it: "Pasio", ja: "パシオ", ko: "파시오", zh: "帕希歐" }
   ];
   const TYPE_COLORS = ["#9ca3af", "#ef5350", "#42a5f5", "#f6c447", "#66bb6a", "#8fd6e8", "#e57373", "#a871cc", "#bc9368", "#7399e8", "#ec78ad", "#9fbe45", "#b9a47b", "#876b9b", "#577dcc", "#735a7b", "#8590a5", "#ea8fb7"];
   const TYPE_ICON_NAMES = ["normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
   const ROLE_ICON_NAMES = ["strike", "strike", "support", "tech", "sprint", "field", "multi"];
   const ACQUISITION_OPTIONS = [
     { value: "1", icon: "icon_gem", en: "Scout", fr: "Appel Duo", de: "Gefährtensuche", es: "Reclutamiento", it: "Ricerca Unità", ja: "スカウト", ko: "버디즈서치", zh: "卡池" },
-    { value: "2", icon: "icon_event", en: "Free / Exchange", fr: "Gratuit / Échange", de: "Gratis / Tausch", es: "Gratis / Canje", it: "Gratis / Scambio", ja: "配布・交換", ko: "무료 / 교환", zh: "免费／兑换" },
-    { value: "4", icon: "icon_gymscout", en: "Gym Scout", fr: "Appel Arène", de: "Arenasuche", es: "Reclutamiento de Gimnasio", it: "Ricerca Palestra", ja: "ジムスカウト", ko: "체육관서치", zh: "道馆精选" },
-    { value: "5", icon: "icon_academy", en: "Academy", fr: "Académie", de: "Akademie", es: "Academia", it: "Accademia", ja: "アカデミー", ko: "아카데미", zh: "学院" }
+    { value: "2", icon: "icon_event", en: "Free / Exchange", fr: "Gratuit / Échange", de: "Gratis / Tausch", es: "Gratis / Canje", it: "Gratis / Scambio", ja: "配布・交換", ko: "무료 / 교환", zh: "免費／兌換" },
+    { value: "4", icon: "icon_gymscout", en: "Gym Scout", fr: "Appel Arène", de: "Arenasuche", es: "Reclutamiento de Gimnasio", it: "Ricerca Palestra", ja: "ジムスカウト", ko: "체육관서치", zh: "道館精選" },
+    { value: "5", icon: "icon_academy", en: "Academy", fr: "Académie", de: "Akademie", es: "Academia", it: "Accademia", ja: "アカデミー", ko: "아카데미", zh: "學院" }
   ];
   const EXCLUSIVITY_OPTIONS = [
-    { value: "1", icon: "icon_genpool", en: "General Pool", fr: "Permanent", de: "Standard", es: "Permanente", it: "Standard", ja: "恒常", ko: "통상", zh: "常驻" },
-    { value: "2", icon: "icon_pokefair", en: "Fair", fr: "Festival", de: "Festival", es: "Festival", it: "Festival", ja: "フェス", ko: "페스티벌", zh: "庆典" },
-    { value: "3", icon: "icon_seasonal", en: "Seasonal", fr: "Saisonnier", de: "Saisonal", es: "Temporada", it: "Stagionale", ja: "季節限定", ko: "시즌 한정", zh: "季节限定" },
-    { value: "4", icon: "icon_alt", en: "Special Costume", fr: "Costume spécial", de: "Spezialkostüm", es: "Traje especial", it: "Costume speciale", ja: "スペシャルコス", ko: "스페셜 코스튬", zh: "特别服装" },
-    { value: "5", icon: "icon_gem", en: "Variety", fr: "Variété", de: "Variety", es: "Variedad", it: "Varietà", ja: "バラエティ", ko: "버라이어티", zh: "多样" },
+    { value: "1", icon: "icon_genpool", en: "General Pool", fr: "Permanent", de: "Standard", es: "Permanente", it: "Standard", ja: "恒常", ko: "통상", zh: "常駐" },
+    { value: "2", icon: "icon_pokefair", en: "Fair", fr: "Festival", de: "Festival", es: "Festival", it: "Festival", ja: "フェス", ko: "페스티벌", zh: "慶典" },
+    { value: "3", icon: "icon_seasonal", en: "Seasonal", fr: "Saisonnier", de: "Saisonal", es: "Temporada", it: "Stagionale", ja: "季節限定", ko: "시즌 한정", zh: "季節限定" },
+    { value: "4", icon: "icon_alt", en: "Special Costume", fr: "Costume spécial", de: "Spezialkostüm", es: "Traje especial", it: "Costume speciale", ja: "スペシャルコス", ko: "스페셜 코스튬", zh: "特別服裝" },
+    { value: "5", icon: "icon_gem", en: "Variety", fr: "Variété", de: "Variety", es: "Variedad", it: "Varietà", ja: "バラエティ", ko: "버라이어티", zh: "多樣" },
     { value: "6", icon: "icon_rotate", en: "Mix", fr: "Mix", de: "Mix", es: "Mix", it: "Mix", ja: "ミックス", ko: "믹스", zh: "混合" },
-    { value: "7", icon: "icon_masterex", en: "EX Fair", fr: "Festival EX", de: "EX-Festival", es: "Festival EX", it: "Festival EX", ja: "EXフェス", ko: "EX페스티벌", zh: "EX庆典" }
+    { value: "7", icon: "icon_masterex", en: "EX Fair", fr: "Festival EX", de: "EX-Festival", es: "Festival EX", it: "Festival EX", ja: "EXフェス", ko: "EX페스티벌", zh: "EX慶典" }
   ];
   const TRAINER_MOVE_LABELS = {
     en: "Trainer move",
