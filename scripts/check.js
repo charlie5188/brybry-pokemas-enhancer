@@ -250,6 +250,18 @@ assert.equal(
   '能力↑',
   'Direct parent labels such as statUp must not be treated as derived detail labels.',
 );
+for (const value of ['statReductionImmunity', 'allStatReductionImmunity']) {
+  assert.equal(
+    configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === value)?.tooltipNotes?.zh,
+    '也包含将能力下降转为等量提升的效果。',
+    `${value} must disclose the stat-reversal inclusion rule in its tooltip.`,
+  );
+}
+assert.equal(
+  configRuntime.skillFilterCategoriesForCheck.find((category) => category.value === 'sureHitNext')?.tooltipNotes?.zh,
+  '包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。',
+  'Guaranteed Hit must disclose every included hit-guarantee mechanism in its tooltip.',
+);
 assert.match(configSource, /FILTER_RENDER_DELAY_MS = 500/, 'Filter rendering must wait through a normal double-click window.');
 assert.match(configSource, /\['exFairyZone', 'zoneEx'/, 'EX Zone child filters must be declared.');
 assert.match(configSource, /value: 'circle', group: 'field',\s*\n\s*labels:/, 'Circle parent filter must remain text-only.');
@@ -317,9 +329,10 @@ assert.match(pickerSource, /button\.removeAttribute\('title'\)/, 'Filter buttons
 assert.doesNotMatch(pickerSource, /button\.title = tooltip/, 'Filter buttons must rely on the custom tooltip only.');
 assert.match(
   pickerSource,
-  /button\.matches\('\.be-chip--icon-only, \.be-skill-category-chip--icon-only, \.be-skill-category-chip--compact-label'\)/,
-  'Icon-only and compact-label filter buttons should receive custom tooltips.',
+  /button\.matches\('\.be-chip--icon-only, \.be-skill-category-chip--icon-only, \.be-skill-category-chip--compact-label, \.be-skill-category-chip--has-note'\)/,
+  'Icon-only, compact-label, and explanatory filter buttons should receive custom tooltips.',
 );
+assert.match(pickerSource, /category\.tooltipNotes\?\.\[locale\]/, 'Filter tooltip notes must follow the active UI language.');
 assert.match(pickerSource, /else delete button\.dataset\.beTooltip/, 'Fully labeled filter buttons must not retain redundant tooltips.');
 for (const immunityParent of ['statusImmunity', 'statReductionImmunity', 'interferenceImmunity', 'criticalHitImmunity']) {
   assert.match(configSource, new RegExp(`value: '${immunityParent}', group: 'utility'`), `${immunityParent} must remain a top-level capability filter.`);
@@ -336,6 +349,11 @@ assert.match(
   configSource,
   /allStatReductionImmunity: IMMUNITY_FILTER_PATTERNS\.statReductionImmunity/,
   'All Stat Reduction Immunity must remain an exact child of Stat Reduction Immunity.',
+);
+assert.match(
+  configSource,
+  /\['stats would be lowered', 'raises that stat', 'same amount instead'\]/,
+  'Stat-reduction reversal must count as Stat Reduction Immunity.',
 );
 assert.match(configSource, /allStatusImmunity: IMMUNITY_FILTER_PATTERNS\.statusImmunity/, 'All Status Immunity must remain an exact child of Status Immunity.');
 assert.match(configSource, /allInterferenceImmunity: IMMUNITY_FILTER_PATTERNS\.interferenceImmunity/, 'All Interference Immunity must remain an exact child of Interference Immunity.');
@@ -506,6 +524,7 @@ for (const [name, patterns, document] of fieldDetailPatternChecks) {
 const immunityPatternChecks = [
   ['Status Immunity', [['prevents', 'getting', 'status condition']], 'Prevents the user from getting a status condition.'],
   ['Stat Reduction Immunity', [['prevents', 'stats', 'being lowered']], 'Prevents the user’s stats from being lowered.'],
+  ['Stat Reduction Reversal', [['stats would be lowered', 'raises that stat', 'same amount instead']], 'When any of the user’s stats would be lowered, raises that stat by the same amount instead.'],
   ['Interference Immunity', [['prevents', 'flinching', 'becoming confused', 'trapped']], 'Prevents the user from flinching, becoming confused, or becoming trapped.'],
   ['Critical-Hit Immunity', [['protects', 'against critical hits']], 'Protects the user against critical hits.'],
 ];

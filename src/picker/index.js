@@ -231,7 +231,7 @@ function expandedDirectionLabel(label, locale) {
 
 function updateFilterButtonState(button, state, label) {
   const tooltip = filterTooltip(label, state);
-  const needsTooltip = button.matches('.be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label');
+  const needsTooltip = button.matches('.be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label, .be-skill-category-chip--has-note');
   button.dataset.beFilterState = state;
   if (needsTooltip) button.dataset.beTooltip = tooltip;
   else delete button.dataset.beTooltip;
@@ -693,9 +693,11 @@ function refreshSkillSearchSuggestions() {
 
 function createSkillCategoryChip(category, locale) {
   const categoryLabel = category.labels[locale] || category.labels.en;
-  const tooltipLabel = expandedDirectionLabel(categoryLabel, locale);
+  const tooltipNote = category.tooltipNotes?.[locale] || category.tooltipNotes?.en;
+  const tooltipLabel = [expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(' — ');
   const button = document.createElement('button');
   button.className = 'be-skill-category-chip';
+  if (tooltipNote) button.classList.add('be-skill-category-chip--has-note');
   if (category.detailOf) button.classList.add('be-skill-category-chip--detail');
   if (category.compactLabels) button.classList.add('be-skill-category-chip--compact-label');
   if (category.rebuffDirection) button.classList.add('be-skill-category-chip--directional-icon');

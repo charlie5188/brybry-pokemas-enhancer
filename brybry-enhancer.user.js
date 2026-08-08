@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.84
+// @version      1.11.87
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -1427,7 +1427,8 @@ text-align: center;
     ],
     statReductionImmunity: [
       ["prevents", "stats", "being lowered"],
-      ["stats cannot be lowered"]
+      ["stats cannot be lowered"],
+      ["stats would be lowered", "raises that stat", "same amount instead"]
     ],
     interferenceImmunity: [
       ["prevents", "flinching", "confused", "trapped"],
@@ -1691,6 +1692,26 @@ text-align: center;
     masterSpecial: { en: "Special", fr: "Spécial", de: "Spezial", es: "Especial", it: "Speciale", ja: "特殊", ko: "특수", zh: "特殊" },
     masterGeneral: { en: "General", fr: "Général", de: "Allgemein", es: "General", it: "Generale", ja: "汎用", ko: "범용", zh: "泛用" }
   };
+  const STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES = {
+    en: "Also includes effects that turn stat reductions into equal stat increases.",
+    fr: "Inclut aussi les effets qui transforment les baisses de stats en hausses équivalentes.",
+    de: "Enthält auch Effekte, die Wertesenkungen in gleich hohe Erhöhungen umkehren.",
+    es: "También incluye efectos que convierten las reducciones de características en aumentos equivalentes.",
+    it: "Include anche gli effetti che trasformano le riduzioni delle statistiche in aumenti equivalenti.",
+    ja: "能力がさがる代わりに同じ分だけあがる効果も含みます。",
+    ko: "능력치 하락을 같은 수치의 상승으로 바꾸는 효과도 포함합니다.",
+    zh: "也包含将能力下降转为等量提升的效果。"
+  };
+  const SURE_HIT_TOOLTIP_NOTES = {
+    en: "Includes Sure Hit Next, moves that never miss, and unconditional or conditional effects that make moves never miss.",
+    fr: "Inclut Prochaine capacité immanquable, les capacités qui n’échouent jamais et les effets conditionnels ou non qui les rendent immanquables.",
+    de: "Enthält Garantierter Treffer (Nächste), Attacken, die nie verfehlen, sowie bedingte oder unbedingte Effekte, durch die Attacken nie verfehlen.",
+    es: "Incluye Golpe certero siguiente, movimientos que nunca fallan y efectos condicionales o incondicionales que hacen que los movimientos nunca fallen.",
+    it: "Include Colpo sicuro prossimo, mosse che non falliscono mai ed effetti condizionati o incondizionati che rendono le mosse infallibili.",
+    ja: "必中状態の付与・必ず命中する技・無条件または特定条件で技が必ず命中する効果を含みます。",
+    ko: "필중 차례 효과, 반드시 명중하는 기술, 조건부 또는 무조건으로 기술이 반드시 명중하는 효과를 포함합니다.",
+    zh: "包含赋予必中状态、招式自身必定命中，以及无条件或特定条件下招式必定命中的效果。"
+  };
   function skillFilterLabels(value) {
     const directLabels = SKILL_FILTER_TRANSLATIONS[value];
     if (directLabels) return directLabels;
@@ -1844,11 +1865,12 @@ text-align: center;
       value: "sureHitNext",
       group: "utility",
       labels: skillFilterLabels("sureHitNext"),
+      tooltipNotes: SURE_HIT_TOOLTIP_NOTES,
       patterns: { en: [["sure hit next effect"], ["never miss"]] }
     },
     { value: "statusImmunity", group: "utility", labels: skillFilterLabels("statusImmunity"), patterns: { en: Object.values(STATUS_IMMUNITY_DETAIL_PATTERNS).flat() } },
     { value: "interferenceImmunity", group: "utility", labels: skillFilterLabels("interferenceImmunity"), patterns: { en: Object.values(INTERFERENCE_IMMUNITY_DETAIL_PATTERNS).flat() } },
-    { value: "statReductionImmunity", group: "utility", labels: skillFilterLabels("statReductionImmunity"), patterns: { en: Object.values(STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS).flat() } },
+    { value: "statReductionImmunity", group: "utility", labels: skillFilterLabels("statReductionImmunity"), tooltipNotes: STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES, patterns: { en: Object.values(STAT_REDUCTION_IMMUNITY_DETAIL_PATTERNS).flat() } },
     { value: "criticalHitImmunity", group: "utility", labels: skillFilterLabels("criticalHitImmunity"), patterns: { en: IMMUNITY_FILTER_PATTERNS.criticalHitImmunity } },
     {
       value: "rebuff",
@@ -1964,6 +1986,7 @@ text-align: center;
     group: SKILL_FILTER_CATEGORIES.find((category) => category.value === detailOf)?.group || "utility",
     labels: skillFilterLabels(value),
     patterns: { en: patterns },
+    ...value === "allStatReductionImmunity" ? { tooltipNotes: STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES } : {},
     ...(() => {
       const baseValue = value.startsWith("ex") ? `${value[2].toLowerCase()}${value.slice(3)}` : value;
       const icon = FIELD_DETAIL_ICON_CONFIG[baseValue];
@@ -4292,7 +4315,7 @@ text-align: center;
   }
   function updateFilterButtonState(button, state, label) {
     const tooltip = filterTooltip(label, state);
-    const needsTooltip = button.matches(".be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label");
+    const needsTooltip = button.matches(".be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label, .be-skill-category-chip--has-note");
     button.dataset.beFilterState = state;
     if (needsTooltip) button.dataset.beTooltip = tooltip;
     else delete button.dataset.beTooltip;
@@ -4692,9 +4715,11 @@ text-align: center;
   }
   function createSkillCategoryChip(category, locale) {
     const categoryLabel = category.labels[locale] || category.labels.en;
-    const tooltipLabel = expandedDirectionLabel(categoryLabel, locale);
+    const tooltipNote = category.tooltipNotes?.[locale] || category.tooltipNotes?.en;
+    const tooltipLabel = [expandedDirectionLabel(categoryLabel, locale), tooltipNote].filter(Boolean).join(" — ");
     const button = document.createElement("button");
     button.className = "be-skill-category-chip";
+    if (tooltipNote) button.classList.add("be-skill-category-chip--has-note");
     if (category.detailOf) button.classList.add("be-skill-category-chip--detail");
     if (category.compactLabels) button.classList.add("be-skill-category-chip--compact-label");
     if (category.rebuffDirection) button.classList.add("be-skill-category-chip--directional-icon");
