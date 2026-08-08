@@ -20,3 +20,14 @@
 - Preserve userscript metadata, storage keys, URL parameters, Brybry data URLs, DOM selectors and defaults unless a task explicitly requests a behavior change.
 - The repository-root userscript must remain directly installable and directly injectable for browser debugging.
 - A pull request that changes `src/` must also include the rebuilt `brybry-enhancer.user.js`.
+
+## Versioning
+
+- Every user-visible behavior change or bug fix must increment the patch version in both `src/metadata.txt` and `package.json`. Keep the two versions identical.
+- Documentation-only, test-only and development-infrastructure changes do not require a version bump unless they alter the generated userscript.
+
+## Verification and resilience
+
+- When a change depends on Brybry DOM structure, live data or browser interaction, verify it against the real page when practical. Static checks alone are not proof that the installed userscript works in the browser; state clearly when live verification was not performed.
+- Treat Brybry page markup and remote data as external inputs. Missing elements, changed response shapes and failed requests must degrade gracefully without breaking the original page.
+- Prefer extending `npm run check` with focused regression coverage for deterministic parsing, migration or compatibility behavior when fixing a reproducible bug.
