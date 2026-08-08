@@ -133,6 +133,7 @@ const PASSIVE_SKILL_SEARCH_URLS = {
 
 const FILTER_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
 const MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
+const PROJECT_GITHUB_URL = 'https://github.com/charlie5188/brybry-pokemas-enhancer';
 const MASTER_PASSIVE_ICON_URLS = {
   physical: 'https://pomasters.github.io/SyncPairEditor/images/category_physical.png',
   special: 'https://pomasters.github.io/SyncPairEditor/images/category_special.png',

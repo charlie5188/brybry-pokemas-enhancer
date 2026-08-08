@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Brybry Pokemas Enhancer
 // @namespace    https://pokemon.brybry.ch/
-// @version      1.11.54
+// @version      1.11.58
 // @description  Adds readable sync-grid labels, persistent builds, sorting and skill filters to the Sync Pair picker.
 // @match        https://pokemon.brybry.ch/masters/duo.html*
 // @homepageURL  https://github.com/charlie5188/brybry-pokemas-enhancer
@@ -1065,6 +1065,17 @@ justify-content: space-between;
     .be-toggle-copy { display: grid; gap: 4px; }
     .be-toggle-copy strong { font: 750 14px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
     .be-toggle-copy small { color: #607b83; font: 500 12px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+    .be-settings-contribute {
+border-top: 1px solid #dbe6e9;
+color: #176b83;
+display: block;
+font: 700 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-top: 14px;
+padding-top: 12px;
+text-decoration: none;
+    }
+    .be-settings-contribute:hover { color: #0c4f66; text-decoration: underline; }
+    .be-settings-contribute:focus-visible { border-radius: 4px; outline: 3px solid #71b7c9; outline-offset: 3px; }
     .be-toggle-row input { opacity: 0; position: absolute; pointer-events: none; }
     .be-switch {
 background: #aab9bd;
@@ -1345,6 +1356,7 @@ text-align: center;
   };
   const FILTER_ICON_BASE = "https://pomasters.github.io/SyncPairsTracker/images/";
   const MOVE_LEVEL_ICON_BASE = "https://pomasters.github.io/SyncPairsTracker/images/";
+  const PROJECT_GITHUB_URL = "https://github.com/charlie5188/brybry-pokemas-enhancer";
   const MASTER_PASSIVE_ICON_URLS = {
     physical: "https://pomasters.github.io/SyncPairEditor/images/category_physical.png",
     special: "https://pomasters.github.io/SyncPairEditor/images/category_special.png"
@@ -1734,6 +1746,7 @@ text-align: center;
       settings: "Settings",
       spoilerProtection: "Spoiler protection",
       spoilerDescription: "Hide sync pairs that are not released yet.",
+      contributeOnGitHub: "View source and contribute on GitHub ↗",
       spoilerBanner: "Spoiler protection redirected you from an unreleased sync pair.",
       results: (count) => `${count} sync pairs`,
       empty: "No sync pairs match these filters."
@@ -1790,6 +1803,7 @@ text-align: center;
       settings: "Paramètres",
       spoilerProtection: "Protection anti-spoiler",
       spoilerDescription: "Masquer les Duos qui ne sont pas encore sortis.",
+      contributeOnGitHub: "Voir le code et contribuer sur GitHub ↗",
       spoilerBanner: "La protection anti-spoiler vous a redirigé depuis un Duo inédit.",
       results: (count) => `${count} Duos`,
       empty: "Aucun Duo ne correspond à ces filtres."
@@ -1846,6 +1860,7 @@ text-align: center;
       settings: "Einstellungen",
       spoilerProtection: "Spoilerschutz",
       spoilerDescription: "Noch nicht veröffentlichte Gefährten ausblenden.",
+      contributeOnGitHub: "Quellcode ansehen und auf GitHub mitwirken ↗",
       spoilerBanner: "Der Spoilerschutz hat dich von einem unveröffentlichten Gefährten weitergeleitet.",
       results: (count) => `${count} Gefährten`,
       empty: "Keine Gefährten entsprechen diesen Filtern."
@@ -1902,6 +1917,7 @@ text-align: center;
       settings: "Ajustes",
       spoilerProtection: "Protección contra spoilers",
       spoilerDescription: "Oculta las parejas de compis aún no disponibles.",
+      contributeOnGitHub: "Ver el código y colaborar en GitHub ↗",
       spoilerBanner: "La protección contra spoilers te ha redirigido desde una pareja aún no disponible.",
       results: (count) => `${count} parejas`,
       empty: "Ninguna pareja coincide con estos filtros."
@@ -1958,6 +1974,7 @@ text-align: center;
       settings: "Impostazioni",
       spoilerProtection: "Protezione spoiler",
       spoilerDescription: "Nasconde le Unità non ancora disponibili.",
+      contributeOnGitHub: "Vedi il codice e contribuisci su GitHub ↗",
       spoilerBanner: "La protezione spoiler ti ha reindirizzato da un’Unità non ancora disponibile.",
       results: (count) => `${count} Unità`,
       empty: "Nessuna Unità corrisponde a questi filtri."
@@ -2014,6 +2031,7 @@ text-align: center;
       settings: "設定",
       spoilerProtection: "ネタバレ防止",
       spoilerDescription: "未実装のバディーズを非表示にします。",
+      contributeOnGitHub: "ソースを見る・GitHubで貢献 ↗",
       spoilerBanner: "ネタバレ防止のため、未実装のバディーズから自動的に移動しました。",
       results: (count) => `${count} 組`,
       empty: "条件に合うバディーズがいません。"
@@ -2070,6 +2088,7 @@ text-align: center;
       settings: "설정",
       spoilerProtection: "스포일러 방지",
       spoilerDescription: "아직 출시되지 않은 버디즈를 숨깁니다.",
+      contributeOnGitHub: "소스 보기 및 GitHub에서 기여하기 ↗",
       spoilerBanner: "스포일러 방지를 위해 아직 출시되지 않은 버디즈에서 이동했습니다.",
       results: (count) => `${count} 버디즈`,
       empty: "조건에 맞는 버디즈가 없습니다."
@@ -2126,6 +2145,7 @@ text-align: center;
       settings: "設定",
       spoilerProtection: "防雷",
       spoilerDescription: "隱藏尚未實裝的拍組。",
+      contributeOnGitHub: "查看原始碼並在 GitHub 參與貢獻 ↗",
       spoilerBanner: "為了防止劇透，已從尚未實裝的拍組自動跳轉。",
       results: (count) => `${count} 組拍組`,
       empty: "沒有符合條件的拍組。"
@@ -2547,7 +2567,13 @@ text-align: center;
     switchVisual.className = "be-switch";
     switchVisual.setAttribute("aria-hidden", "true");
     toggleRow.append(toggleCopy, checkbox, switchVisual);
-    popover.append(heading, toggleRow);
+    const contributeLink = document.createElement("a");
+    contributeLink.className = "be-settings-contribute";
+    contributeLink.href = PROJECT_GITHUB_URL;
+    contributeLink.target = "_blank";
+    contributeLink.rel = "noopener noreferrer";
+    contributeLink.textContent = copy.contributeOnGitHub;
+    popover.append(heading, toggleRow, contributeLink);
     wrapper.append(button, popover);
     header.append(wrapper);
     const setOpen = (open) => {
@@ -3930,9 +3956,11 @@ text-align: center;
   }
   function updateFilterButtonState(button, state, label) {
     const tooltip = filterTooltip(label, state);
+    const needsTooltip = button.matches(".be-chip--icon-only, .be-skill-category-chip--icon-only");
     button.dataset.beFilterState = state;
-    button.dataset.beTooltip = tooltip;
-    button.title = tooltip;
+    if (needsTooltip) button.dataset.beTooltip = tooltip;
+    else delete button.dataset.beTooltip;
+    button.removeAttribute("title");
     button.setAttribute("aria-pressed", state === "exclude" ? "mixed" : String(state === "include"));
     button.setAttribute("aria-label", tooltip);
     const marker = button.querySelector(".be-filter-state-mark");
@@ -4026,7 +4054,7 @@ text-align: center;
     resultList.addEventListener("scroll", hidePairTooltip, { passive: true });
   }
   function bindFilterTooltips(panel) {
-    const tooltipButton = (target) => target.closest?.(".be-chip, .be-skill-category-chip");
+    const tooltipButton = (target) => target.closest?.(".be-chip, .be-skill-category-chip, .be-sort-direction, .be-view-button");
     panel.addEventListener("pointerover", (event) => showFilterTooltip(tooltipButton(event.target)));
     panel.addEventListener("pointerout", (event) => {
       const button = tooltipButton(event.target);
@@ -4171,7 +4199,8 @@ text-align: center;
       directionButton.dataset.direction = sortDirection;
       const label = sortDirection === "asc" ? copy.ascending : copy.descending;
       directionButton.setAttribute("aria-label", label);
-      directionButton.title = label;
+      directionButton.dataset.beTooltip = label;
+      directionButton.removeAttribute("title");
     };
     updateDirectionLabel();
     directionButton.addEventListener("click", () => {
@@ -4194,7 +4223,8 @@ text-align: center;
       button.dataset.beView = value;
       button.setAttribute("aria-label", label);
       button.setAttribute("aria-pressed", String(viewMode === value));
-      button.title = label;
+      button.dataset.beTooltip = label;
+      button.removeAttribute("title");
       button.innerHTML = VIEW_ICONS[value];
       button.addEventListener("click", () => {
         viewMode = value;
@@ -5000,6 +5030,7 @@ text-align: center;
     const panel = filterPanel();
     mountPickerLayout(body, input, skillSearch, resultList, toolbar, tools, panel);
     bindFilterTooltips(panel);
+    bindFilterTooltips(toolbar);
     bindPairTooltips(resultList);
     pickerAvatarObserver?.disconnect();
     pickerAvatarObserver = new MutationObserver(() => {

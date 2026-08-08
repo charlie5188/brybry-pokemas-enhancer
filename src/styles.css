@@ -1048,6 +1048,17 @@ justify-content: space-between;
     .be-toggle-copy { display: grid; gap: 4px; }
     .be-toggle-copy strong { font: 750 14px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
     .be-toggle-copy small { color: #607b83; font: 500 12px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+    .be-settings-contribute {
+border-top: 1px solid #dbe6e9;
+color: #176b83;
+display: block;
+font: 700 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin-top: 14px;
+padding-top: 12px;
+text-decoration: none;
+    }
+    .be-settings-contribute:hover { color: #0c4f66; text-decoration: underline; }
+    .be-settings-contribute:focus-visible { border-radius: 4px; outline: 3px solid #71b7c9; outline-offset: 3px; }
     .be-toggle-row input { opacity: 0; position: absolute; pointer-events: none; }
     .be-switch {
 background: #aab9bd;
