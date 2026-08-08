@@ -214,9 +214,24 @@ function filterTooltip(label, state) {
   return label;
 }
 
+function expandedDirectionLabel(label, locale) {
+  const directionWords = {
+    en: { '↑': 'Increase', '↓': 'Decrease' },
+    fr: { '↑': 'en hausse', '↓': 'en baisse' },
+    de: { '↑': 'erhöht', '↓': 'gesenkt' },
+    es: { '↑': 'aumentado', '↓': 'reducido' },
+    it: { '↑': 'aumentata', '↓': 'ridotta' },
+    ja: { '↑': '上昇', '↓': '低下' },
+    ko: { '↑': '상승', '↓': '하락' },
+    zh: { '↑': '上升', '↓': '下降' },
+  };
+  const words = directionWords[locale] || directionWords.en;
+  return label.replace(/[↑↓]/g, (direction) => words[direction]).replace(/\s+/g, ' ').trim();
+}
+
 function updateFilterButtonState(button, state, label) {
   const tooltip = filterTooltip(label, state);
-  const needsTooltip = button.matches('.be-chip--icon-only, .be-skill-category-chip--icon-only');
+  const needsTooltip = button.matches('.be-chip--icon-only, .be-skill-category-chip--icon-only, .be-skill-category-chip--compact-label');
   button.dataset.beFilterState = state;
   if (needsTooltip) button.dataset.beTooltip = tooltip;
   else delete button.dataset.beTooltip;
@@ -678,15 +693,19 @@ function refreshSkillSearchSuggestions() {
 
 function createSkillCategoryChip(category, locale) {
   const categoryLabel = category.labels[locale] || category.labels.en;
+  const tooltipLabel = expandedDirectionLabel(categoryLabel, locale);
   const button = document.createElement('button');
   button.className = 'be-skill-category-chip';
   if (category.detailOf) button.classList.add('be-skill-category-chip--detail');
+  if (category.compactLabels) button.classList.add('be-skill-category-chip--compact-label');
+  if (category.rebuffDirection) button.classList.add('be-skill-category-chip--directional-icon');
   if (category.iconOnly) button.classList.add('be-skill-category-chip--icon-only');
   if (category.exVariant) button.classList.add('be-skill-category-chip--ex-detail');
   if (category.detailOf === 'statUp' || category.detailOf === 'statDown') {
     button.classList.add('be-skill-category-chip--stat-direction');
   }
   button.type = 'button';
+  button.setAttribute('aria-label', categoryLabel);
   button.dataset.beSkillCategory = category.value;
   if (category.iconName) {
     const icon = document.createElement('img');
@@ -730,9 +749,16 @@ function createSkillCategoryChip(category, locale) {
     direction.textContent = category.detailOf === 'statUp' ? '↑' : '↓';
     button.append(direction);
   }
+  if (category.rebuffDirection || category.attributeDirection) {
+    const direction = document.createElement('span');
+    direction.className = 'be-stat-direction';
+    direction.setAttribute('aria-hidden', 'true');
+    direction.textContent = category.rebuffDirection || category.attributeDirection;
+    button.append(direction);
+  }
   const label = document.createElement('span');
   label.className = 'be-skill-category-label';
-  label.textContent = categoryLabel;
+  label.textContent = category.compactLabels?.[locale] || category.compactLabels?.en || categoryLabel;
   button.append(label);
   const marker = document.createElement('span');
   marker.className = 'be-filter-state-mark';
@@ -743,7 +769,7 @@ function createSkillCategoryChip(category, locale) {
     if (excludedSkillCategories.has(category.value)) return 'exclude';
     return 'off';
   };
-  updateFilterButtonState(button, categoryState(), categoryLabel);
+  updateFilterButtonState(button, categoryState(), tooltipLabel);
   button.addEventListener('click', () => {
     if (selectedSkillCategories.has(category.value)) {
       selectedSkillCategories.delete(category.value);
@@ -753,7 +779,7 @@ function createSkillCategoryChip(category, locale) {
     } else {
       selectedSkillCategories.add(category.value);
     }
-    updateFilterButtonState(button, categoryState(), categoryLabel);
+    updateFilterButtonState(button, categoryState(), tooltipLabel);
     queuePairRender(FILTER_RENDER_DELAY_MS);
   });
   return button;
@@ -937,8 +963,8 @@ function skillSearchField() {
   battleGrid.className = 'be-skill-battle-grid';
   [
     [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField']],
-    [copy.skillStatChanges, ['statUp', 'statDown', 'rebuff']],
-    [copy.skillConditions, ['status', 'interference', 'immunity']],
+    [copy.skillStatChanges, ['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff']],
+    [copy.skillConditions, ['status', 'interference', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity']],
     [SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale]
       || 'Master Passive', ['masterPassive']],
   ].forEach(([title, parentValues]) => {
