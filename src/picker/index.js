@@ -171,24 +171,10 @@ function renderActiveFilterTags() {
     tag.addEventListener('click', () => removeActiveFilter(entry));
     fragment.append(tag);
   };
-  if (filterMatchMode === 'or' && included.length > 1) {
-    const openingParenthesis = document.createElement('span');
-    openingParenthesis.className = 'be-filter-parenthesis';
-    openingParenthesis.textContent = '(';
-    openingParenthesis.setAttribute('aria-hidden', 'true');
-    fragment.append(openingParenthesis);
-  }
   included.forEach((entry, index) => {
     if (index) appendOperator(filterMatchMode === 'and' ? '&' : '|');
     appendTag(entry);
   });
-  if (filterMatchMode === 'or' && included.length > 1) {
-    const closingParenthesis = document.createElement('span');
-    closingParenthesis.className = 'be-filter-parenthesis';
-    closingParenthesis.textContent = ')';
-    closingParenthesis.setAttribute('aria-hidden', 'true');
-    fragment.append(closingParenthesis);
-  }
   excluded.forEach((entry, index) => {
     if (included.length || index) appendOperator('&');
     appendTag(entry);
@@ -1560,7 +1546,7 @@ function ensurePicker() {
     queuePairRender();
   });
   matchModeLabel.append(matchModeText, matchMode);
-  tools.append(filterButton, count, matchModeLabel, activeFilterTags);
+  tools.append(count, filterButton, matchModeLabel, activeFilterTags);
 
   const toolbar = resultsToolbar();
   const skillSearch = skillSearchField();

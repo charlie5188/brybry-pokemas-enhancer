@@ -183,19 +183,13 @@ color: #51727c;
 font: 600 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    #pairSearchModal .be-filter-parenthesis {
-align-self: center;
-color: #51727c;
-font: 800 16px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-margin-inline: -3px;
-    }
-
     #pairSearchModal .be-filter-match-mode {
 align-items: center;
 color: #51727c;
 display: inline-flex;
 font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 gap: 5px;
+margin-left: auto;
     }
 
     #pairSearchModal .be-filter-match-mode select {
@@ -228,7 +222,6 @@ border-radius: 6px;
 color: #51727c;
 cursor: pointer;
 font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-margin-left: auto;
 padding: 7px 8px;
     }
 
@@ -258,7 +251,6 @@ outline-offset: 2px;
     }
 
     #pairSearchModal .be-filter-count {
-margin-left: auto;
 color: #51727c;
 font: 700 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 font-variant-numeric: tabular-nums;
@@ -1331,7 +1323,7 @@ text-align: center;
 
     @media (max-width: 600px) {
 #pairSearchModal .be-picker-tools { align-items: stretch; flex-wrap: wrap; }
-#pairSearchModal .be-filter-count { align-self: center; margin-left: 0; }
+#pairSearchModal .be-filter-count { align-self: center; }
 #pairSearchModal .be-chip { min-height: 36px; }
 #pairSearchModal .be-results-toolbar { gap: 8px; }
 #pairSearchModal .be-sort-label { display: none; }

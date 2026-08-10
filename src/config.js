@@ -427,9 +427,9 @@ const SKILL_FILTER_TRANSLATIONS = {
   speedReductionImmunity: { en: 'Speed ↓ Immunity', fr: 'Immunité Vitesse ↓', de: 'Initiative ↓ Immunität', es: 'Inmunidad Velocidad ↓', it: 'Immunità Velocità ↓', ja: '素早さ↓無効', ko: '스피드↓ 무효', zh: '速度↓免疫' },
   accuracyReductionImmunity: { en: 'Accuracy ↓ Immunity', fr: 'Immunité Précision ↓', de: 'Genauigkeit ↓ Immunität', es: 'Inmunidad Precisión ↓', it: 'Immunità Precisione ↓', ja: '命中率↓無効', ko: '명중률↓ 무효', zh: '命中率↓免疫' },
   evasionReductionImmunity: { en: 'Evasiveness ↓ Immunity', fr: 'Immunité Esquive ↓', de: 'Fluchtwert ↓ Immunität', es: 'Inmunidad Evasión ↓', it: 'Immunità Elusione ↓', ja: '回避率↓無効', ko: '회피율↓ 무효', zh: '閃避率↓免疫' },
-  masterPhysical: { en: 'Physical', fr: 'Physique', de: 'Physisch', es: 'Físico', it: 'Fisico', ja: '物理', ko: '물리', zh: '物理' },
-  masterSpecial: { en: 'Special', fr: 'Spécial', de: 'Spezial', es: 'Especial', it: 'Speciale', ja: '特殊', ko: '특수', zh: '特殊' },
-  masterGeneral: { en: 'General', fr: 'Général', de: 'Allgemein', es: 'General', it: 'Generale', ja: '汎用', ko: '범용', zh: '泛用' },
+  masterPhysical: { en: 'Physical', fr: 'Physique', de: 'Physisch', es: 'Físico', it: 'Fisico', ja: '物理マスター', ko: '물리', zh: '物理' },
+  masterSpecial: { en: 'Special', fr: 'Spécial', de: 'Spezial', es: 'Especial', it: 'Speciale', ja: '特殊マスター', ko: '특수', zh: '特殊' },
+  masterGeneral: { en: 'General', fr: 'Général', de: 'Allgemein', es: 'General', it: 'Generale', ja: '汎用マスター', ko: '범용', zh: '泛用' },
 };
 
 const STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES = {
@@ -769,7 +769,7 @@ const SKILL_FILTER_DETAILS = [
       attributeDirection: STAT_DECREASE_ICON_URLS[iconKey] ? '↓' : '',
     } : {};
   })(),
-  ...(masterPassiveType ? { masterPassiveType } : {}),
+  ...(masterPassiveType ? { masterPassiveType, compactLabels: { ja: 'マスター' } } : {}),
   ...(value === 'masterPhysical' ? {
     iconSrcs: [MASTER_PASSIVE_ICON_URLS.physical],
   } : value === 'masterSpecial' ? {

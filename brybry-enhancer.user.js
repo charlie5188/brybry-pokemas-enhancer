@@ -200,19 +200,13 @@ color: #51727c;
 font: 600 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    #pairSearchModal .be-filter-parenthesis {
-align-self: center;
-color: #51727c;
-font: 800 16px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-margin-inline: -3px;
-    }
-
     #pairSearchModal .be-filter-match-mode {
 align-items: center;
 color: #51727c;
 display: inline-flex;
 font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 gap: 5px;
+margin-left: auto;
     }
 
     #pairSearchModal .be-filter-match-mode select {
@@ -245,7 +239,6 @@ border-radius: 6px;
 color: #51727c;
 cursor: pointer;
 font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-margin-left: auto;
 padding: 7px 8px;
     }
 
@@ -275,7 +268,6 @@ outline-offset: 2px;
     }
 
     #pairSearchModal .be-filter-count {
-margin-left: auto;
 color: #51727c;
 font: 700 13px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 font-variant-numeric: tabular-nums;
@@ -1348,7 +1340,7 @@ text-align: center;
 
     @media (max-width: 600px) {
 #pairSearchModal .be-picker-tools { align-items: stretch; flex-wrap: wrap; }
-#pairSearchModal .be-filter-count { align-self: center; margin-left: 0; }
+#pairSearchModal .be-filter-count { align-self: center; }
 #pairSearchModal .be-chip { min-height: 36px; }
 #pairSearchModal .be-results-toolbar { gap: 8px; }
 #pairSearchModal .be-sort-label { display: none; }
@@ -1799,9 +1791,9 @@ text-align: center;
     speedReductionImmunity: { en: "Speed ↓ Immunity", fr: "Immunité Vitesse ↓", de: "Initiative ↓ Immunität", es: "Inmunidad Velocidad ↓", it: "Immunità Velocità ↓", ja: "素早さ↓無効", ko: "스피드↓ 무효", zh: "速度↓免疫" },
     accuracyReductionImmunity: { en: "Accuracy ↓ Immunity", fr: "Immunité Précision ↓", de: "Genauigkeit ↓ Immunität", es: "Inmunidad Precisión ↓", it: "Immunità Precisione ↓", ja: "命中率↓無効", ko: "명중률↓ 무효", zh: "命中率↓免疫" },
     evasionReductionImmunity: { en: "Evasiveness ↓ Immunity", fr: "Immunité Esquive ↓", de: "Fluchtwert ↓ Immunität", es: "Inmunidad Evasión ↓", it: "Immunità Elusione ↓", ja: "回避率↓無効", ko: "회피율↓ 무효", zh: "閃避率↓免疫" },
-    masterPhysical: { en: "Physical", fr: "Physique", de: "Physisch", es: "Físico", it: "Fisico", ja: "物理", ko: "물리", zh: "物理" },
-    masterSpecial: { en: "Special", fr: "Spécial", de: "Spezial", es: "Especial", it: "Speciale", ja: "特殊", ko: "특수", zh: "特殊" },
-    masterGeneral: { en: "General", fr: "Général", de: "Allgemein", es: "General", it: "Generale", ja: "汎用", ko: "범용", zh: "泛用" }
+    masterPhysical: { en: "Physical", fr: "Physique", de: "Physisch", es: "Físico", it: "Fisico", ja: "物理マスター", ko: "물리", zh: "物理" },
+    masterSpecial: { en: "Special", fr: "Spécial", de: "Spezial", es: "Especial", it: "Speciale", ja: "特殊マスター", ko: "특수", zh: "特殊" },
+    masterGeneral: { en: "General", fr: "Général", de: "Allgemein", es: "General", it: "Generale", ja: "汎用マスター", ko: "범용", zh: "泛用" }
   };
   const STAT_REDUCTION_IMMUNITY_TOOLTIP_NOTES = {
     en: "Also includes effects that turn stat reductions into equal stat increases.",
@@ -2164,7 +2156,7 @@ text-align: center;
         attributeDirection: STAT_DECREASE_ICON_URLS[iconKey] ? "↓" : ""
       } : {};
     })(),
-    ...masterPassiveType ? { masterPassiveType } : {},
+    ...masterPassiveType ? { masterPassiveType, compactLabels: { ja: "マスター" } } : {},
     ...value === "masterPhysical" ? {
       iconSrcs: [MASTER_PASSIVE_ICON_URLS.physical]
     } : value === "masterSpecial" ? {
@@ -4568,24 +4560,10 @@ text-align: center;
       tag.addEventListener("click", () => removeActiveFilter(entry));
       fragment.append(tag);
     };
-    if (filterMatchMode === "or" && included.length > 1) {
-      const openingParenthesis = document.createElement("span");
-      openingParenthesis.className = "be-filter-parenthesis";
-      openingParenthesis.textContent = "(";
-      openingParenthesis.setAttribute("aria-hidden", "true");
-      fragment.append(openingParenthesis);
-    }
     included.forEach((entry, index) => {
       if (index) appendOperator(filterMatchMode === "and" ? "&" : "|");
       appendTag(entry);
     });
-    if (filterMatchMode === "or" && included.length > 1) {
-      const closingParenthesis = document.createElement("span");
-      closingParenthesis.className = "be-filter-parenthesis";
-      closingParenthesis.textContent = ")";
-      closingParenthesis.setAttribute("aria-hidden", "true");
-      fragment.append(closingParenthesis);
-    }
     excluded.forEach((entry, index) => {
       if (included.length || index) appendOperator("&");
       appendTag(entry);
@@ -5841,7 +5819,7 @@ text-align: center;
       queuePairRender();
     });
     matchModeLabel.append(matchModeText, matchMode);
-    tools.append(filterButton, count, matchModeLabel, activeFilterTags);
+    tools.append(count, filterButton, matchModeLabel, activeFilterTags);
     const toolbar = resultsToolbar();
     const skillSearch = skillSearchField();
     const panel = filterPanel();
