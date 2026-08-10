@@ -1,4 +1,5 @@
 const ROOT_ID = 'brybry-enhancer-root';
+const ENHANCER_NAME = 'Brybry Pokemas Enhancer';
 const ENHANCER_VERSION = '1.11.120';
 const TILE_LABEL_CLASS = 'brybry-tile-label';
 // Keep result rendering outside the browser's normal double-click window so

@@ -1145,6 +1145,7 @@ z-index: 110;
     .be-settings-popover[hidden] { display: none; }
     .be-settings-heading {
 font: 800 15px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+letter-spacing: -.01em;
 margin: 0 0 12px;
     }
 

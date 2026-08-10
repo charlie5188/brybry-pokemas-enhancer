@@ -100,9 +100,9 @@ function ensureSettingsControl() {
   popover.className = 'be-settings-popover';
   popover.hidden = true;
   button.setAttribute('aria-controls', popover.id);
-  const heading = document.createElement('p');
+  const heading = document.createElement('h2');
   heading.className = 'be-settings-heading';
-  heading.textContent = copy.settings;
+  heading.textContent = ENHANCER_NAME;
   const toggleRow = document.createElement('label');
   toggleRow.className = 'be-toggle-row';
   const toggleCopy = document.createElement('span');

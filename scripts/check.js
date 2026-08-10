@@ -781,7 +781,12 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel;`, gridContext);
+assert.equal(
+  gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
+  'T技:威力+25(強) !',
+  'Grid labels must render Latin text, spaces, and ASCII punctuation at half width.',
+);
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 25 }, 'ja'), 'B技: 威力+25');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: true, abilityValue: 40 }, 'en'), 'Sync: Power +40');
 assert.equal(gridContext.syncPowerTileLabelForCheck({ isSyncPowerBoost: false, abilityValue: 25 }, 'ja'), '');

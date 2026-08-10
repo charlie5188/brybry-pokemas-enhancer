@@ -1,5 +1,11 @@
+function normalizeGridLabel(value) {
+  return String(value || '')
+    .replace(/\u3000/g, ' ')
+    .replace(/[\uff01-\uff5e]/g, (character) => String.fromCharCode(character.charCodeAt(0) - 0xfee0));
+}
+
 function conciseTileName(name) {
-  const compact = (name || '').replace(/\s+/g, ' ').trim();
+  const compact = normalizeGridLabel(name).replace(/\s+/g, ' ').trim();
   if (!compact) return '';
 
   const isCjk = /[\u3040-\u30ff\u3400-\u9fff]/.test(compact);
@@ -72,34 +78,35 @@ function pomaTileAbbreviation(ability, locale = language()) {
   const skill = pomaTemplateValue(skillTemplate, passiveId);
   const moveId = Number(ability.moveId);
   if (Number(ability.type) !== 8 || moveId <= 0 || moveId > 30000) return skill;
-  if (moveId > 9999 && moveId < 18500) return `${TRAINER_MOVE_LABELS[locale]}${locale === 'ja' || locale === 'zh' ? '：' : ': '}${skill}`;
+  if (moveId > 9999 && moveId < 18500) return `${TRAINER_MOVE_LABELS[locale]}: ${skill}`;
 
   const move = POMATOOLS_MOVE_ABBR[locale]?.[String(moveId)]
     || moveNameByLocale[locale]?.get(String(moveId));
-  return move ? `${move}${locale === 'ja' || locale === 'zh' ? '：' : ': '}${skill}` : skill;
+  return move ? `${move}: ${skill}` : skill;
 }
 
 function syncPowerTileLabel(moveInfo, locale = language()) {
   if (!moveInfo?.isSyncPowerBoost || !Number.isFinite(moveInfo.abilityValue)) return '';
   const template = SYNC_POWER_TILE_LABELS[locale] || SYNC_POWER_TILE_LABELS.en;
-  return template.replace('{value}', String(moveInfo.abilityValue));
+  return normalizeGridLabel(template.replace('{value}', String(moveInfo.abilityValue)));
 }
 
 function displayTileName(tile, fullName) {
+  const normalizedFullName = normalizeGridLabel(fullName);
   const syncPowerLabel = syncPowerTileLabel(moveInfoByCellId.get(String(tile.dataset.cellId)));
   if (syncPowerLabel) return syncPowerLabel;
-  const abbreviated = tileAbbreviationByCellId.get(String(tile.dataset.cellId));
-  if (!abbreviated || abbreviated === fullName) return fullName;
+  const abbreviated = normalizeGridLabel(tileAbbreviationByCellId.get(String(tile.dataset.cellId)));
+  if (!abbreviated || abbreviated === normalizedFullName) return normalizedFullName;
 
-  const normalized = String(fullName || '').replace(/\s+/g, ' ').trim();
-  const fullLines = wrapTileName(fullName);
+  const normalized = normalizedFullName.replace(/\s+/g, ' ').trim();
+  const fullLines = wrapTileName(normalizedFullName);
   const abbreviatedLines = wrapTileName(abbreviated);
-  const originalWasTruncated = conciseTileName(fullName) !== normalized;
+  const originalWasTruncated = conciseTileName(normalizedFullName) !== normalized;
   const materiallyImprovesLayout = fullLines.length >= 3
     && abbreviatedLines.length < fullLines.length;
   return originalWasTruncated || fullLines.length >= 4 || materiallyImprovesLayout
     ? abbreviated
-    : fullName;
+    : normalizedFullName;
 }
 
 const LINE_LAYOUTS = {
@@ -124,7 +131,7 @@ function addTileLabels() {
   document.querySelectorAll('g[data-cell-id]').forEach((tile) => {
     if (tile.querySelector(`.${TILE_LABEL_CLASS}`)) return;
 
-    const fullName = tile.dataset.tileName;
+    const fullName = normalizeGridLabel(tile.dataset.tileName);
     const lines = wrapTileName(displayTileName(tile, fullName));
     if (!lines.length) return;
 
