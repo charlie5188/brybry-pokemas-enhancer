@@ -258,15 +258,30 @@ function appendRelatedMoveDescription(tooltip, moveInfo) {
     ? window.getMoveDescr
     : (typeof getMoveDescr === 'function' ? getMoveDescr : null);
   const description = moveDescriptionResolver?.(Number(moveInfo.moveId));
-  if (!description || description === 'undefined') return;
+  const moveName = moveNameByLocale[language()].get(moveInfo.moveId) || moveInfo.moveId;
+  const copy = text();
+  const stats = [
+    moveInfo.movePower > 0 ? copy.movePower.replace('{value}', String(moveInfo.movePower)) : '',
+    moveInfo.moveAccuracy > 0 ? copy.moveAccuracy.replace('{value}', String(moveInfo.moveAccuracy)) : '',
+  ].filter(Boolean);
 
   const block = document.createElement('p');
   block.className = 'be-related-move';
   const name = document.createElement('strong');
-  name.textContent = moveNameByLocale[language()].get(moveInfo.moveId) || moveInfo.moveId;
-  const detail = document.createElement('span');
-  detail.textContent = description;
-  block.append(name, detail);
+  name.textContent = copy.relatedMove.replace('{name}', moveName);
+  if (description && description !== 'undefined') {
+    const detail = document.createElement('span');
+    detail.textContent = description;
+    block.append(name, detail);
+  } else {
+    block.append(name);
+  }
+  if (stats.length) {
+    const statLine = document.createElement('span');
+    statLine.className = 'be-related-move-stats';
+    statLine.textContent = stats.join(' · ');
+    block.append(statLine);
+  }
   tooltip.append(block);
 }
 

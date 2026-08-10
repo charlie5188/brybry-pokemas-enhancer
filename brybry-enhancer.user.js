@@ -102,6 +102,11 @@ margin-bottom: 2px;
     }
 
     .tooltip .be-related-move span { display: block; }
+    .tooltip .be-related-move .be-related-move-stats {
+color: rgba(255, 255, 255, .72);
+font-weight: 700;
+margin-top: 3px;
+    }
 
     .tooltip .be-power-multiplier,
     .tooltip .be-field-duration {
@@ -2193,6 +2198,9 @@ text-align: center;
       fieldDurationBase: "Field effect duration: about {value} sec (normal speed)",
       fieldDurationExtension: "Extension from this skill: about +{value} sec",
       requiredMoveLevel: "Required move level: {value}/5",
+      relatedMove: "Related move: {name}",
+      movePower: "Power {value}",
+      moveAccuracy: "Accuracy {value}%",
       skillNoResults: "No matching skills",
       removeSkill: "Remove",
       type: "Type",
@@ -2255,6 +2263,9 @@ text-align: center;
       fieldDurationBase: "Durée de l’effet de terrain : environ {value} s (vitesse normale)",
       fieldDurationExtension: "Prolongation par ce talent : environ +{value} s",
       requiredMoveLevel: "Niveau de capacité requis : {value}/5",
+      relatedMove: "Capacité liée : {name}",
+      movePower: "Puissance {value}",
+      moveAccuracy: "Précision {value} %",
       skillNoResults: "Aucun talent correspondant",
       removeSkill: "Retirer",
       type: "Type",
@@ -2317,6 +2328,9 @@ text-align: center;
       fieldDurationBase: "Dauer des Feldeffekts: ca. {value} Sek. (normales Tempo)",
       fieldDurationExtension: "Verlängerung durch diese Fähigkeit: ca. +{value} Sek.",
       requiredMoveLevel: "Benötigtes Attackenlevel: {value}/5",
+      relatedMove: "Zugehörige Attacke: {name}",
+      movePower: "Stärke {value}",
+      moveAccuracy: "Genauigkeit {value} %",
       skillNoResults: "Keine passenden Fähigkeiten",
       removeSkill: "Entfernen",
       type: "Typ",
@@ -2379,6 +2393,9 @@ text-align: center;
       fieldDurationBase: "Duración del efecto de campo: unos {value} s (velocidad normal)",
       fieldDurationExtension: "Extensión de esta habilidad: unos +{value} s",
       requiredMoveLevel: "Nivel de movimiento requerido: {value}/5",
+      relatedMove: "Movimiento relacionado: {name}",
+      movePower: "Potencia {value}",
+      moveAccuracy: "Precisión {value} %",
       skillNoResults: "No hay habilidades coincidentes",
       removeSkill: "Quitar",
       type: "Tipo",
@@ -2441,6 +2458,9 @@ text-align: center;
       fieldDurationBase: "Durata effetto campo: circa {value} s (velocità normale)",
       fieldDurationExtension: "Estensione da questa abilità: circa +{value} s",
       requiredMoveLevel: "Livello mossa richiesto: {value}/5",
+      relatedMove: "Mossa correlata: {name}",
+      movePower: "Potenza {value}",
+      moveAccuracy: "Precisione {value}%",
       skillNoResults: "Nessuna abilità corrispondente",
       removeSkill: "Rimuovi",
       type: "Tipo",
@@ -2503,6 +2523,9 @@ text-align: center;
       fieldDurationBase: "場の効果時間: 約{value}秒（通常速度）",
       fieldDurationExtension: "このスキルによる延長: 約+{value}秒",
       requiredMoveLevel: "必要わざレベル: {value}/5",
+      relatedMove: "対象わざ: {name}",
+      movePower: "威力 {value}",
+      moveAccuracy: "命中率 {value}%",
       skillNoResults: "一致するスキルがありません",
       removeSkill: "削除",
       type: "タイプ",
@@ -2565,6 +2588,9 @@ text-align: center;
       fieldDurationBase: "필드 효과 시간: 약 {value}초 (보통 속도)",
       fieldDurationExtension: "이 스킬의 연장 시간: 약 +{value}초",
       requiredMoveLevel: "필요 기술 레벨: {value}/5",
+      relatedMove: "대상 기술: {name}",
+      movePower: "위력 {value}",
+      moveAccuracy: "명중률 {value}%",
       skillNoResults: "일치하는 스킬이 없습니다",
       removeSkill: "삭제",
       type: "타입",
@@ -2627,6 +2653,9 @@ text-align: center;
       fieldDurationBase: "場地效果時間：約 {value} 秒（一般速度）",
       fieldDurationExtension: "此技能延長：約 +{value} 秒",
       requiredMoveLevel: "所需招式等級：{value}/5",
+      relatedMove: "相關招式：{name}",
+      movePower: "威力 {value}",
+      moveAccuracy: "命中率 {value}%",
       skillNoResults: "沒有符合的技能",
       removeSkill: "移除",
       type: "屬性",
@@ -3346,14 +3375,29 @@ text-align: center;
     if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11 || tooltip.querySelector(".be-related-move")) return;
     const moveDescriptionResolver = typeof window.getMoveDescr === "function" ? window.getMoveDescr : typeof getMoveDescr === "function" ? getMoveDescr : null;
     const description = moveDescriptionResolver?.(Number(moveInfo.moveId));
-    if (!description || description === "undefined") return;
+    const moveName = moveNameByLocale[language()].get(moveInfo.moveId) || moveInfo.moveId;
+    const copy = text();
+    const stats = [
+      moveInfo.movePower > 0 ? copy.movePower.replace("{value}", String(moveInfo.movePower)) : "",
+      moveInfo.moveAccuracy > 0 ? copy.moveAccuracy.replace("{value}", String(moveInfo.moveAccuracy)) : ""
+    ].filter(Boolean);
     const block = document.createElement("p");
     block.className = "be-related-move";
     const name = document.createElement("strong");
-    name.textContent = moveNameByLocale[language()].get(moveInfo.moveId) || moveInfo.moveId;
-    const detail = document.createElement("span");
-    detail.textContent = description;
-    block.append(name, detail);
+    name.textContent = copy.relatedMove.replace("{name}", moveName);
+    if (description && description !== "undefined") {
+      const detail = document.createElement("span");
+      detail.textContent = description;
+      block.append(name, detail);
+    } else {
+      block.append(name);
+    }
+    if (stats.length) {
+      const statLine = document.createElement("span");
+      statLine.className = "be-related-move-stats";
+      statLine.textContent = stats.join(" · ");
+      block.append(statLine);
+    }
     tooltip.append(block);
   }
   function appendGridTooltipDetails(tile, moveInfo) {
@@ -4135,6 +4179,8 @@ text-align: center;
         passiveId: Number(ability.passiveId),
         abilityType: Number(ability.type),
         abilityValue: Number(ability.value),
+        movePower: Number(move?.power),
+        moveAccuracy: Number(move?.accuracy),
         isSyncPowerBoost: Number(ability.type) === 9 && move?.group === "Sync",
         powerMultiplier: powerMultiplierForPassiveId(ability.passiveId)
       }]];
