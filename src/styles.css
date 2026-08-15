@@ -1251,9 +1251,29 @@ padding: 0;
 width: 40px;
     }
 
+    /* On phones, the Grid is the primary task. Keep the settings below it so
+       their fixed-width controls cannot collapse the Grid into an unusable sliver. */
+    .be-grid-picker {
+align-items: flex-start;
+flex-wrap: wrap !important;
+width: 100%;
+    }
+
+    .be-grid-wrapper {
+flex: 1 0 100% !important;
+max-width: 100% !important;
+width: 100%;
+    }
+
+    .be-grid-picker > :not(.be-grid-wrapper) {
+margin: 12px auto 0 !important;
+max-width: 100%;
+    }
+
     @media (min-width: 960px) {
 .be-grid-picker { flex-wrap: nowrap !important; width: 100%; }
 .be-grid-wrapper { flex: 1 1 0 !important; max-width: none !important; }
+.be-grid-picker > :not(.be-grid-wrapper) { margin: auto 25px !important; }
     }
 
     @media (min-width: 860px) {
