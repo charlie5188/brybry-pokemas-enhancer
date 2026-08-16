@@ -14,7 +14,7 @@ A plain-JavaScript userscript that improves the Sync Pair page at `pokemon.brybr
 - Adds readable labels directly to Grid tiles and makes better use of the screen.
 - Shows Move Level requirements and useful move details in tooltips; unavailable tiles are clearly dimmed.
 - Reveals otherwise hidden effect details in tooltips, including actual power multipliers, multiplier caps, field-effect durations and duration extensions when verified values are available. ![Sync Grid tooltip showing a verified multiplier cap](docs/images/grid-multiplier-cap-tooltip.png) ![Sync Grid tooltip showing a verified field-effect duration and extension](docs/images/grid-field-duration-tooltip.png)
-- Remembers selected tiles, Move Level and Max Energy Cap for each Sync Pair.
+- Remembers selected tiles, Move Level and Max Energy Cap for each Sync Pair; starts empty builds and resets with 0-Energy tiles selected.
 
 ### A faster Sync Pair picker
 

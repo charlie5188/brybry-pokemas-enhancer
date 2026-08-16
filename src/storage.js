@@ -107,6 +107,23 @@ function selectRememberedGridCell(cell, grid) {
   polygon?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 }
 
+function selectZeroEnergyGridCells(grid) {
+  grid?.querySelectorAll('g[data-cell-id][data-energy="0"]:not([selected])').forEach((cell) => {
+    selectRememberedGridCell(cell, grid);
+  });
+}
+
+function setupZeroEnergyReset(grid) {
+  const resetButton = document.querySelector('#resetCell button');
+  if (!resetButton || resetButton.dataset.beZeroEnergyBound === 'true') return;
+  resetButton.dataset.beZeroEnergyBound = 'true';
+  resetButton.addEventListener('click', () => {
+    // Brybry clears its selection in the same click event. Run afterward so
+    // free tiles remain selected in the fresh build without spending Energy.
+    setTimeout(() => selectZeroEnergyGridCells(grid));
+  });
+}
+
 function restoreGridControls(remembered) {
   if (remembered.moveLevel) {
     document.querySelector(`[data-sync-level="${Math.min(5, remembered.moveLevel)}"]`)?.click();
@@ -136,8 +153,11 @@ function setupGridBuildMemory() {
         selectRememberedGridCell(cell, grid);
       }
     });
+    if (!remembered.selectedCellIds.length) selectZeroEnergyGridCells(grid);
     restoringGridBuild = false;
   }
+
+  setupZeroEnergyReset(grid);
 
   if (!document.documentElement.dataset.beGridControlMemory) {
     document.documentElement.dataset.beGridControlMemory = 'true';
