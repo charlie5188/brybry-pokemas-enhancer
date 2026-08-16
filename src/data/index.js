@@ -280,6 +280,7 @@ async function loadTrainerData() {
       abilityValue: Number(ability.value),
       movePower: Number(move?.power),
       moveAccuracy: Number(move?.accuracy),
+      moveUses: Number(move?.uses),
       isSyncPowerBoost: Number(ability.type) === 9 && move?.group === 'Sync',
       powerMultiplier: powerMultiplierForPassiveId(ability.passiveId),
     }]];

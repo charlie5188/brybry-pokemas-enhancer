@@ -263,24 +263,22 @@ function appendRelatedMoveDescription(tooltip, moveInfo) {
   const stats = [
     moveInfo.movePower > 0 ? copy.movePower.replace('{value}', String(moveInfo.movePower)) : '',
     moveInfo.moveAccuracy > 0 ? copy.moveAccuracy.replace('{value}', String(moveInfo.moveAccuracy)) : '',
+    moveInfo.moveUses > 0 ? copy.moveUses.replace('{value}', String(moveInfo.moveUses)) : '',
   ].filter(Boolean);
 
   const block = document.createElement('p');
   block.className = 'be-related-move';
   const name = document.createElement('strong');
-  name.textContent = copy.relatedMove.replace('{name}', moveName);
+  name.textContent = [
+    copy.relatedMove.replace('{name}', moveName),
+    ...stats,
+  ].join(' · ');
   if (description && description !== 'undefined') {
     const detail = document.createElement('span');
     detail.textContent = description;
     block.append(name, detail);
   } else {
     block.append(name);
-  }
-  if (stats.length) {
-    const statLine = document.createElement('span');
-    statLine.className = 'be-related-move-stats';
-    statLine.textContent = stats.join(' · ');
-    block.append(statLine);
   }
   tooltip.append(block);
 }

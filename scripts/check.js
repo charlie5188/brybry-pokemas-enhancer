@@ -854,5 +854,16 @@ assert.equal(
 );
 assert.match(gridSource, /appendFieldDuration\(tooltip, moveInfo\)/, 'Grid tooltips must append verified field-duration details.');
 assert.match(stylesSource, /\.be-field-duration/, 'Field-duration tooltip details must have dedicated styling.');
+assert.match(dataIndexSource, /moveUses: Number\(move\?\.uses\)/, 'Grid move metadata must retain finite move uses.');
+assert.match(
+  gridSource,
+  /moveInfo\.moveUses > 0 \? copy\.moveUses\.replace\('\{value\}', String\(moveInfo\.moveUses\)\) : ''/,
+  'Related move tooltips must display finite move uses.',
+);
+assert.match(
+  gridSource,
+  /copy\.relatedMove\.replace\('\{name\}', moveName\),\s*\.\.\.stats,/s,
+  'Related move power, accuracy, and uses must follow the move name.',
+);
 
 console.log('Check passed: build, metadata, syntax and committed artifact are valid.');

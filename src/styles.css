@@ -85,11 +85,6 @@ margin-bottom: 2px;
     }
 
     .tooltip .be-related-move span { display: block; }
-    .tooltip .be-related-move .be-related-move-stats {
-color: rgba(255, 255, 255, .72);
-font-weight: 700;
-margin-top: 3px;
-    }
 
     .tooltip .be-power-multiplier,
     .tooltip .be-field-duration {
