@@ -856,14 +856,71 @@ assert.match(gridSource, /appendFieldDuration\(tooltip, moveInfo\)/, 'Grid toolt
 assert.match(stylesSource, /\.be-field-duration/, 'Field-duration tooltip details must have dedicated styling.');
 assert.match(dataIndexSource, /moveUses: Number\(move\?\.uses\)/, 'Grid move metadata must retain finite move uses.');
 assert.match(
+  dataIndexSource,
+  /function relatedMoveIdsForAbilityPanel\(panel, ability\)/,
+  'Grid move metadata must resolve related moves when the ability does not directly carry one.',
+);
+assert.match(
+  dataIndexSource,
+  /skillTemplate\.includes\('T技'\)/,
+  'Generic passives that explicitly target a Trainer move must resolve that move.',
+);
+assert.match(
+  dataIndexSource,
+  /targetsTrainerMove && user === 'Trainer'/,
+  'Generic Trainer-move passives must identify the actual Trainer move from pair data.',
+);
+assert.match(
+  dataIndexSource,
+  /skillTemplate\.includes\('P技'\)/,
+  'Generic passives that explicitly target Pokemon moves must resolve every Pokemon move.',
+);
+const relatedMoveResolverSource = dataIndexSource.match(
+  /function relatedMoveIdsForAbilityPanel\(panel, ability\) \{[\s\S]*?\n\}\n\nfunction buildPairSkillIndex/,
+)?.[0]?.replace(/\nfunction buildPairSkillIndex$/, '');
+if (!relatedMoveResolverSource) throw new Error('Related-move resolver source is missing.');
+const relatedMoveContext = {
+  POMATOOLS_SKILL_ABBR: { ja: { 1902950: 'T技後 場に ゲージ加速{{value}}' } },
+  trainerById: new Map([['10367000000', { move1Id: 6216, move2Id: 8216, move3Id: 6217, move4Id: 13670 }]]),
+  moveById: new Map([
+    ['6216', { user: 'Pokemon' }], ['8216', { user: 'Pokemon' }],
+    ['6217', { user: 'Pokemon' }], ['13670', { user: 'Trainer' }],
+  ]),
+};
+vm.createContext(relatedMoveContext);
+vm.runInContext(`${relatedMoveResolverSource}\nthis.relatedMoveIdsForCheck = relatedMoveIdsForAbilityPanel;`, relatedMoveContext);
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['13670'],
+  'A generic T-move passive must resolve Urbain’s Trainer move even without a direct moveId.',
+);
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = 'P技使用時 ゲージ加速{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['6216', '8216', '6217'],
+  'A generic P-move passive must resolve every Pokemon move of the pair.',
+);
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 6216 },
+  )],
+  ['6216'],
+  'A direct ability moveId must take priority over inferred Trainer moves.',
+);
+assert.match(
   gridSource,
-  /moveInfo\.moveUses > 0 \? copy\.moveUses\.replace\('\{value\}', String\(moveInfo\.moveUses\)\) : ''/,
+  /relatedMove\.moveUses > 0 \? copy\.moveUses\.replace\('\{value\}', String\(relatedMove\.moveUses\)\) : ''/,
   'Related move tooltips must display finite move uses.',
 );
 assert.match(
   gridSource,
-  /copy\.relatedMove\.replace\('\{name\}', moveName\),\s*\.\.\.stats,/s,
+  /name\.textContent = \[copy\.relatedMove\.replace\('\{name\}', moveName\), \.\.\.stats\]\.join/,
   'Related move power, accuracy, and uses must follow the move name.',
 );
+assert.match(gridSource, /relatedMoves\.forEach/, 'Tooltips must show every related Pokemon move for generic P-move passives.');
 
 console.log('Check passed: build, metadata, syntax and committed artifact are valid.');

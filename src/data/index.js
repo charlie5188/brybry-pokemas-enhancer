@@ -34,6 +34,29 @@ function addMoveEntry(index, trainerId, moveId, availableDate = 0) {
   index.set(String(trainerId), pairMoves);
 }
 
+function relatedMoveIdsForAbilityPanel(panel, ability) {
+  const directMoveId = Number(ability?.moveId);
+  if (directMoveId > 0) return [String(directMoveId)];
+
+  // Some generic passive-grid abilities do not store a moveId. When their
+  // passive explicitly names P技 or T技, resolve the relevant moves from the
+  // pair's move data instead of guessing a fixed move slot.
+  const passiveId = Number(ability?.passiveId);
+  const skillTemplate = POMATOOLS_SKILL_ABBR.ja?.[String(Math.floor(passiveId / 10))];
+  if (!skillTemplate) return [];
+
+  const trainer = trainerById.get(String(panel?.trainerId));
+  const moveIds = [1, 2, 3, 4]
+    .map((slot) => String(trainer?.[`move${slot}Id`] || ''))
+    .filter((moveId) => moveById.has(moveId));
+  const targetsTrainerMove = skillTemplate.includes('T技');
+  const targetsPokemonMove = skillTemplate.includes('P技');
+  return moveIds.filter((moveId) => {
+    const user = moveById.get(moveId)?.user;
+    return (targetsTrainerMove && user === 'Trainer') || (targetsPokemonMove && user === 'Pokemon');
+  });
+}
+
 function buildPairSkillIndex(trainers, monsterVariations, abilityPanels, abilityById, superawakenings) {
   const index = new Map();
   const syncCountdownIndex = new Map();
@@ -270,18 +293,24 @@ async function loadTrainerData() {
   }));
   moveInfoByCellId = new Map((abilityPanels.entries || []).flatMap((panel) => {
     const ability = abilityById.get(String(panel.abilityId));
-    const moveId = String(ability?.moveId || '');
-    const move = moveById.get(moveId);
     if (!ability) return [];
+    const relatedMoves = relatedMoveIdsForAbilityPanel(panel, ability).map((moveId) => {
+      const move = moveById.get(moveId);
+      return {
+        moveId,
+        movePower: Number(move?.power),
+        moveAccuracy: Number(move?.accuracy),
+        moveUses: Number(move?.uses),
+      };
+    });
+    const [relatedMove = {}] = relatedMoves;
     return [[String(panel.cellId), {
-      moveId,
+      ...relatedMove,
+      relatedMoves,
       passiveId: Number(ability.passiveId),
       abilityType: Number(ability.type),
       abilityValue: Number(ability.value),
-      movePower: Number(move?.power),
-      moveAccuracy: Number(move?.accuracy),
-      moveUses: Number(move?.uses),
-      isSyncPowerBoost: Number(ability.type) === 9 && move?.group === 'Sync',
+      isSyncPowerBoost: Number(ability.type) === 9 && moveById.get(relatedMove.moveId)?.group === 'Sync',
       powerMultiplier: powerMultiplierForPassiveId(ability.passiveId),
     }]];
   }));

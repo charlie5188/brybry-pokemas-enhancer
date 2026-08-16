@@ -251,36 +251,38 @@ function appendRequiredMoveLevel(tooltip, tile) {
 }
 
 function appendRelatedMoveDescription(tooltip, moveInfo) {
-  if (!tooltip || !moveInfo?.moveId || moveInfo.abilityType === 11
+  if (!tooltip || !moveInfo || moveInfo.abilityType === 11
     || tooltip.querySelector('.be-related-move')) return;
+
+  const relatedMoves = moveInfo.relatedMoves?.length ? moveInfo.relatedMoves : [moveInfo];
+  if (!relatedMoves.some((relatedMove) => relatedMove.moveId)) return;
 
   const moveDescriptionResolver = typeof window.getMoveDescr === 'function'
     ? window.getMoveDescr
     : (typeof getMoveDescr === 'function' ? getMoveDescr : null);
-  const description = moveDescriptionResolver?.(Number(moveInfo.moveId));
-  const moveName = moveNameByLocale[language()].get(moveInfo.moveId) || moveInfo.moveId;
   const copy = text();
-  const stats = [
-    moveInfo.movePower > 0 ? copy.movePower.replace('{value}', String(moveInfo.movePower)) : '',
-    moveInfo.moveAccuracy > 0 ? copy.moveAccuracy.replace('{value}', String(moveInfo.moveAccuracy)) : '',
-    moveInfo.moveUses > 0 ? copy.moveUses.replace('{value}', String(moveInfo.moveUses)) : '',
-  ].filter(Boolean);
+  relatedMoves.forEach((relatedMove) => {
+    const description = moveDescriptionResolver?.(Number(relatedMove.moveId));
+    const moveName = moveNameByLocale[language()].get(relatedMove.moveId) || relatedMove.moveId;
+    const stats = [
+      relatedMove.movePower > 0 ? copy.movePower.replace('{value}', String(relatedMove.movePower)) : '',
+      relatedMove.moveAccuracy > 0 ? copy.moveAccuracy.replace('{value}', String(relatedMove.moveAccuracy)) : '',
+      relatedMove.moveUses > 0 ? copy.moveUses.replace('{value}', String(relatedMove.moveUses)) : '',
+    ].filter(Boolean);
 
-  const block = document.createElement('p');
-  block.className = 'be-related-move';
-  const name = document.createElement('strong');
-  name.textContent = [
-    copy.relatedMove.replace('{name}', moveName),
-    ...stats,
-  ].join(' · ');
-  if (description && description !== 'undefined') {
-    const detail = document.createElement('span');
-    detail.textContent = description;
-    block.append(name, detail);
-  } else {
-    block.append(name);
-  }
-  tooltip.append(block);
+    const block = document.createElement('p');
+    block.className = 'be-related-move';
+    const name = document.createElement('strong');
+    name.textContent = [copy.relatedMove.replace('{name}', moveName), ...stats].join(' · ');
+    if (description && description !== 'undefined') {
+      const detail = document.createElement('span');
+      detail.textContent = description;
+      block.append(name, detail);
+    } else {
+      block.append(name);
+    }
+    tooltip.append(block);
+  });
 }
 
 function appendGridTooltipDetails(tile, moveInfo) {
