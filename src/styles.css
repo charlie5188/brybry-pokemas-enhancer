@@ -87,6 +87,7 @@ margin-bottom: 2px;
     .tooltip .be-related-move span { display: block; }
 
     .tooltip .be-power-multiplier,
+    .tooltip .be-damage-reduction,
     .tooltip .be-field-duration {
 background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);

@@ -223,6 +223,20 @@ function appendFieldDuration(tooltip, moveInfo) {
   tooltip.append(line);
 }
 
+function appendDamageReduction(tooltip, moveInfo) {
+  const description = passiveSkillDetails(moveInfo?.passiveId, 'en')?.description;
+  const reduction = Number.isFinite(moveInfo?.damageReduction)
+    ? moveInfo.damageReduction
+    : damageReductionForPassiveId(moveInfo?.passiveId, description);
+  if (!tooltip || !Number.isFinite(reduction) || tooltip.querySelector('.be-damage-reduction')) return;
+  const template = text().damageReduction;
+  if (!template) return;
+  const line = document.createElement('span');
+  line.className = 'be-damage-reduction';
+  line.textContent = template.replace('{value}', String(reduction));
+  tooltip.append(line);
+}
+
 function requiredMoveLevel(tile) {
   return Math.max(1, Number(tile?.dataset.level) || 1);
 }
@@ -290,6 +304,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+  appendDamageReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo);
   repositionGridTooltip(tooltip, tile);

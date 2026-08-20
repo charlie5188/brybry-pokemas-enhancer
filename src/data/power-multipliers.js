@@ -89,3 +89,25 @@ function powerMultiplierForPassiveId(passiveId) {
   if (MULTI_STAT_MOVE_MULTIPLIERS.has(id)) return { kind: 'cap', value: 110 };
   return null;
 }
+
+// Type Guard skills use stable passive families. The normal version reduces
+// damage by 10%, while the group version ("Guard G") reduces it by 30%.
+function damageReductionForPassiveId(passiveId, englishDescription = '') {
+  const id = Number(passiveId);
+  const family = Math.floor(id / 10);
+  if (family >= 240101 && family <= 240118) return 10;
+  if (family >= 240120 && family <= 240129) return 30;
+
+  // Most conditional reduction families state their verified rate in the
+  // resolved description (for example, "10% per rank"). Use the passive's
+  // final digit as the rank only when the description explicitly says so.
+  const description = String(englishDescription || '').normalize('NFKC');
+  const perRank = description.match(/(?:reduce|reduced|reduction)[^.]*damage[^.]*by\s+(\d+)%\s+per\s+rank/i);
+  if (perRank) {
+    const rank = Math.abs(id) % 10;
+    return rank > 0 ? Number(perRank[1]) * rank : null;
+  }
+  const fixed = description.match(/(?:reduce|reduced|reduction)[^.]*damage[^.]*by\s+(\d+)%/i);
+  if (fixed) return Number(fixed[1]);
+  return null;
+}
