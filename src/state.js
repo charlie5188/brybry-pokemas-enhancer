@@ -67,6 +67,9 @@ let spoilerProtectionEnabled = false;
 let lastSafePairId = '';
 let openFilterAccordions = new Set();
 let closedFilterAccordions = new Set();
+// Stores the user's preferred order for the filter accordion sections.
+let filterSectionOrder = [];
+let filterSectionsReordering = false;
 let refreshQueued = false;
 let responsiveGrid = null;
 let gridResizeObserver = null;

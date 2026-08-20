@@ -670,6 +670,19 @@ function accordionSection(group, title, contentNode, { defaultOpen = false, acti
     || (defaultOpen && !closedFilterAccordions.has(group));
   const summary = document.createElement('summary');
   summary.className = 'be-filter-title be-accordion-trigger';
+  const reorderHandle = document.createElement('button');
+  reorderHandle.className = 'be-filter-section-handle';
+  reorderHandle.type = 'button';
+  reorderHandle.draggable = true;
+  reorderHandle.dataset.beFilterSectionHandle = group;
+  reorderHandle.setAttribute('aria-label', text().moveFilterSection.replace('{name}', title));
+  reorderHandle.title = reorderHandle.getAttribute('aria-label');
+  reorderHandle.innerHTML = '<svg aria-hidden="true" viewBox="0 0 16 16"><circle cx="5" cy="3" r="1.2"/><circle cx="11" cy="3" r="1.2"/><circle cx="5" cy="8" r="1.2"/><circle cx="11" cy="8" r="1.2"/><circle cx="5" cy="13" r="1.2"/><circle cx="11" cy="13" r="1.2"/></svg>';
+  reorderHandle.addEventListener('click', (event) => {
+    // The handle sits in a summary, so it must not also toggle the accordion.
+    event.preventDefault();
+    event.stopPropagation();
+  });
   const heading = document.createElement('span');
   heading.className = 'be-accordion-heading';
   if (iconSrc) {
@@ -687,12 +700,13 @@ function accordionSection(group, title, contentNode, { defaultOpen = false, acti
   chevron.setAttribute('aria-hidden', 'true');
   chevron.setAttribute('viewBox', '0 0 24 24');
   chevron.innerHTML = '<path d="m6 9 6 6 6-6"/>';
-  summary.append(heading, chevron);
+  summary.append(reorderHandle, heading, chevron);
   const content = document.createElement('div');
   content.className = 'be-accordion-content';
   content.append(contentNode);
   section.append(summary, content);
   section.addEventListener('toggle', () => {
+    if (filterSectionsReordering) return;
     if (section.open) {
       openFilterAccordions.add(group);
       closedFilterAccordions.delete(group);
@@ -703,6 +717,94 @@ function accordionSection(group, title, contentNode, { defaultOpen = false, acti
     savePickerPreferences();
   });
   return section;
+}
+
+function orderedFilterSections(panel) {
+  return [...panel.querySelectorAll(':scope > details.be-filter-section')];
+}
+
+const DEFAULT_FILTER_SECTION_ORDER = [
+  'type', 'weakness', 'moveType', 'role', 'exRole', 'roleCombination', 'rarity',
+  'superawakening', 'acquisition', 'region', 'trainerGroup', 'fashion', 'other',
+];
+
+function saveFilterSectionOrder(panel) {
+  filterSectionOrder = orderedFilterSections(panel).map((section) => section.dataset.beGroup);
+  savePickerPreferences();
+}
+
+function applyFilterSectionOrder(panel) {
+  const sections = orderedFilterSections(panel);
+  const byGroup = new Map(sections.map((section) => [section.dataset.beGroup, section]));
+  const savedGroups = filterSectionOrder.filter((group, index, values) => byGroup.has(group) && values.indexOf(group) === index);
+  const defaultGroups = DEFAULT_FILTER_SECTION_ORDER.filter((group) => byGroup.has(group) && !savedGroups.includes(group));
+  const unknownGroups = sections.map((section) => section.dataset.beGroup)
+    .filter((group) => !savedGroups.includes(group) && !defaultGroups.includes(group));
+  [...savedGroups, ...defaultGroups, ...unknownGroups].forEach((group) => panel.append(byGroup.get(group)));
+}
+
+function bindFilterSectionSorting(panel) {
+  let draggedGroup = '';
+  let openSectionsBeforeDrag = new Map();
+  const clearDropTargets = () => panel.querySelectorAll('.be-filter-section--drop-target')
+    .forEach((section) => section.classList.remove('be-filter-section--drop-target'));
+  const restoreSectionsAfterDrag = () => {
+    if (!openSectionsBeforeDrag.size) return;
+    orderedFilterSections(panel).forEach((section) => {
+      section.open = openSectionsBeforeDrag.get(section.dataset.beGroup) === true;
+    });
+    openSectionsBeforeDrag = new Map();
+    // Let the temporary details toggles settle before preferences can be saved again.
+    window.setTimeout(() => { filterSectionsReordering = false; }, 0);
+  };
+
+  panel.addEventListener('dragstart', (event) => {
+    const handle = event.target.closest('.be-filter-section-handle');
+    if (!handle) return;
+    draggedGroup = handle.dataset.beFilterSectionHandle;
+    filterSectionsReordering = true;
+    openSectionsBeforeDrag = new Map(orderedFilterSections(panel)
+      .map((section) => [section.dataset.beGroup, section.open]));
+    // A compact list makes the intended drop position clear even for long filter groups.
+    orderedFilterSections(panel).forEach((section) => { section.open = false; });
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', draggedGroup);
+    handle.closest('.be-filter-section')?.classList.add('be-filter-section--dragging');
+  });
+  panel.addEventListener('dragover', (event) => {
+    const target = event.target.closest('details.be-filter-section');
+    if (!target || target.dataset.beGroup === draggedGroup) return;
+    event.preventDefault();
+    clearDropTargets();
+    target.classList.add('be-filter-section--drop-target');
+  });
+  panel.addEventListener('drop', (event) => {
+    const target = event.target.closest('details.be-filter-section');
+    const source = panel.querySelector(`details.be-filter-section[data-be-group="${draggedGroup}"]`);
+    if (!target || !source || target === source) return;
+    event.preventDefault();
+    target.before(source);
+    saveFilterSectionOrder(panel);
+  });
+  panel.addEventListener('dragend', () => {
+    panel.querySelector('.be-filter-section--dragging')?.classList.remove('be-filter-section--dragging');
+    clearDropTargets();
+    draggedGroup = '';
+    restoreSectionsAfterDrag();
+  });
+  panel.addEventListener('keydown', (event) => {
+    const handle = event.target.closest('.be-filter-section-handle');
+    if (!handle || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    const sections = orderedFilterSections(panel);
+    const section = handle.closest('.be-filter-section');
+    const index = sections.indexOf(section);
+    const nextIndex = index + (event.key === 'ArrowUp' ? -1 : 1);
+    if (nextIndex < 0 || nextIndex >= sections.length) return;
+    event.preventDefault();
+    if (event.key === 'ArrowUp') sections[nextIndex].before(section);
+    else sections[nextIndex].after(section);
+    saveFilterSectionOrder(panel);
+  });
 }
 
 function teamTagOptions(prefix, locale) {
@@ -1299,6 +1401,18 @@ function filterPanel() {
     fashionSection,
     otherSection,
   );
+  applyFilterSectionOrder(panel);
+  const resetOrder = document.createElement('button');
+  resetOrder.className = 'be-reset-filter-order';
+  resetOrder.type = 'button';
+  resetOrder.textContent = text().resetFilterOrder;
+  resetOrder.addEventListener('click', () => {
+    filterSectionOrder = [];
+    applyFilterSectionOrder(panel);
+    savePickerPreferences();
+  });
+  panel.append(resetOrder);
+  bindFilterSectionSorting(panel);
   return panel;
 }
 
