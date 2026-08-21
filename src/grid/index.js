@@ -188,12 +188,12 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
-function appendStatusChanceMultiplier(tooltip, multiplier) {
-  if (!tooltip || !multiplier || tooltip.querySelector('.be-status-chance-multiplier')) return;
-  const template = text().statusChanceMultiplier;
+function appendAdditionalEffectChanceMultiplier(tooltip, multiplier) {
+  if (!tooltip || !multiplier || tooltip.querySelector('.be-additional-effect-chance-multiplier')) return;
+  const template = text().additionalEffectChanceMultiplier;
   if (!template) return;
   const line = document.createElement('span');
-  line.className = 'be-status-chance-multiplier';
+  line.className = 'be-additional-effect-chance-multiplier';
   line.textContent = template.replace('{value}', String(multiplier));
   tooltip.append(line);
 }
@@ -314,7 +314,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
-  appendStatusChanceMultiplier(tooltip, moveInfo?.statusChanceMultiplier);
+  appendAdditionalEffectChanceMultiplier(tooltip, moveInfo?.additionalEffectChanceMultiplier);
   appendDamageReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo);

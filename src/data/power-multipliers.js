@@ -34,12 +34,21 @@ const HIGH_HP_POWER_MULTIPLIER_FAMILIES = new Set([130110]);
 const LOW_HP_POWER_MULTIPLIER_FAMILIES = new Set([130136]);
 const MOVE_GAUGE_POWER_MULTIPLIER_FAMILIES = new Set([130105]);
 
-// Hostile Environment repeats a move's original additional-effect chance once
-// per rank, so rank 1 doubles it and rank 9 multiplies it by ten. This is not
-// an additive percentage-point bonus.
-function statusChanceMultiplierForPassiveId(passiveId) {
+// These chance-up skill families repeat a move's original additional-effect
+// chance once per rank, so rank 1 doubles it and rank 9 multiplies it by ten.
+// This is not an additive percentage-point bonus.
+const ADDITIONAL_EFFECT_CHANCE_MULTIPLIER_FAMILIES = new Set([
+  220101, // Hostile Environment
+  220102, // Aggravation
+  220103, // On a Roll
+  220104, // Critical Sting
+  220105, // Swag Bag
+  220106, // Super Interference
+]);
+
+function additionalEffectChanceMultiplierForPassiveId(passiveId) {
   const id = Number(passiveId);
-  if (Math.floor(id / 100) !== 220101) return null;
+  if (!ADDITIONAL_EFFECT_CHANCE_MULTIPLIER_FAMILIES.has(Math.floor(id / 100))) return null;
   const rank = id % 10;
   return rank > 0 ? rank + 1 : null;
 }
