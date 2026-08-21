@@ -717,7 +717,7 @@ const gridSource = await readFile(path.join(projectRoot, 'src/grid/index.js'), '
 const multiplierSource = await readFile(path.join(projectRoot, 'src/data/power-multipliers.js'), 'utf8');
 const multiplierContext = {};
 vm.createContext(multiplierContext);
-vm.runInContext(`${multiplierSource}\nthis.powerMultiplierForCheck = powerMultiplierForPassiveId;`, multiplierContext);
+vm.runInContext(`${multiplierSource}\nthis.powerMultiplierForCheck = powerMultiplierForPassiveId; this.statusChanceMultiplierForCheck = statusChanceMultiplierForPassiveId;`, multiplierContext);
 assert.deepEqual(
   { ...multiplierContext.powerMultiplierForCheck(16010601) },
   { kind: 'cap', value: 100 },
@@ -767,6 +767,21 @@ assert.deepEqual(
   { ...multiplierContext.powerMultiplierForCheck(13085301) },
   { kind: 'fixed', value: 100 },
   'Explicit two-times power effects must not derive +10% from the ID suffix.',
+);
+assert.equal(
+  multiplierContext.statusChanceMultiplierForCheck(22010101),
+  2,
+  'Hostile Environment 1 must double a move’s original additional-effect chance.',
+);
+assert.equal(
+  multiplierContext.statusChanceMultiplierForCheck(22010109),
+  10,
+  'Hostile Environment 9 must multiply a move’s original additional-effect chance by ten.',
+);
+assert.equal(
+  multiplierContext.statusChanceMultiplierForCheck(22010201),
+  null,
+  'Interference chance effects must not be presented as a status-condition multiplier.',
 );
 assert.equal(multiplierContext.powerMultiplierForCheck(99999999), null, 'Unknown effects must not guess a multiplier.');
 const gridContext = {
@@ -854,6 +869,8 @@ assert.equal(
 );
 assert.match(gridSource, /appendFieldDuration\(tooltip, moveInfo\)/, 'Grid tooltips must append verified field-duration details.');
 assert.match(stylesSource, /\.be-field-duration/, 'Field-duration tooltip details must have dedicated styling.');
+assert.match(gridSource, /appendStatusChanceMultiplier\(tooltip, moveInfo\?\.statusChanceMultiplier\)/, 'Grid tooltips must append status-chance multipliers.');
+assert.match(stylesSource, /\.be-status-chance-multiplier/, 'Status-chance multipliers must have dedicated tooltip styling.');
 assert.match(dataIndexSource, /moveUses: Number\(move\?\.uses\)/, 'Grid move metadata must retain finite move uses.');
 assert.match(
   dataIndexSource,

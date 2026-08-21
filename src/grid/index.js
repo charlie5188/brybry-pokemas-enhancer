@@ -188,6 +188,16 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
+function appendStatusChanceMultiplier(tooltip, multiplier) {
+  if (!tooltip || !multiplier || tooltip.querySelector('.be-status-chance-multiplier')) return;
+  const template = text().statusChanceMultiplier;
+  if (!template) return;
+  const line = document.createElement('span');
+  line.className = 'be-status-chance-multiplier';
+  line.textContent = template.replace('{value}', String(multiplier));
+  tooltip.append(line);
+}
+
 function fieldDurationInfo(passiveId, englishDescription) {
   const description = String(englishDescription || '').normalize('NFKC');
   const extendsDuration = /extends the duration/i.test(description);
@@ -304,6 +314,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+  appendStatusChanceMultiplier(tooltip, moveInfo?.statusChanceMultiplier);
   appendDamageReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo);

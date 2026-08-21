@@ -34,6 +34,16 @@ const HIGH_HP_POWER_MULTIPLIER_FAMILIES = new Set([130110]);
 const LOW_HP_POWER_MULTIPLIER_FAMILIES = new Set([130136]);
 const MOVE_GAUGE_POWER_MULTIPLIER_FAMILIES = new Set([130105]);
 
+// Hostile Environment repeats a move's original additional-effect chance once
+// per rank, so rank 1 doubles it and rank 9 multiplies it by ten. This is not
+// an additive percentage-point bonus.
+function statusChanceMultiplierForPassiveId(passiveId) {
+  const id = Number(passiveId);
+  if (Math.floor(id / 100) !== 220101) return null;
+  const rank = id % 10;
+  return rank > 0 ? rank + 1 : null;
+}
+
 // The localized name says "2×"; its passive ID level is not the multiplier.
 const EXACT_POWER_MULTIPLIERS = new Map([
   [13085301, { kind: 'fixed', value: 100 }],

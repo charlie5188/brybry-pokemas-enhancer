@@ -312,6 +312,7 @@ async function loadTrainerData() {
       abilityValue: Number(ability.value),
       isSyncPowerBoost: Number(ability.type) === 9 && moveById.get(relatedMove.moveId)?.group === 'Sync',
       powerMultiplier: powerMultiplierForPassiveId(ability.passiveId),
+      statusChanceMultiplier: statusChanceMultiplierForPassiveId(ability.passiveId),
       damageReduction: damageReductionForPassiveId(ability.passiveId),
     }]];
   }));
