@@ -807,7 +807,18 @@ function applyFilterSectionOrder(panel) {
 
 function bindFilterSectionSorting(panel) {
   let draggedGroup = '';
+  let draggedSection = null;
+  let draggedSectionTop = null;
   let openSectionsBeforeDrag = new Map();
+  const scrollContainer = () => panel.closest('.be-filter-sidebar');
+  const preserveDraggedSectionPosition = () => {
+    if (!draggedSection || draggedSectionTop === null) return;
+    const offset = draggedSection.getBoundingClientRect().top - draggedSectionTop;
+    if (!offset) return;
+    const sidebar = scrollContainer();
+    if (sidebar) sidebar.scrollTop += offset;
+    else window.scrollBy(0, offset);
+  };
   const clearDropTargets = () => panel.querySelectorAll('.be-filter-section--drop-target')
     .forEach((section) => section.classList.remove('be-filter-section--drop-target'));
   const restoreSectionsAfterDrag = () => {
@@ -815,7 +826,10 @@ function bindFilterSectionSorting(panel) {
     orderedFilterSections(panel).forEach((section) => {
       section.open = openSectionsBeforeDrag.get(section.dataset.beGroup) === true;
     });
+    preserveDraggedSectionPosition();
     openSectionsBeforeDrag = new Map();
+    draggedSectionTop = null;
+    draggedSection = null;
     // Let the temporary details toggles settle before preferences can be saved again.
     window.setTimeout(() => { filterSectionsReordering = false; }, 0);
   };
@@ -824,14 +838,19 @@ function bindFilterSectionSorting(panel) {
     const handle = event.target.closest('.be-filter-section-handle');
     if (!handle) return;
     draggedGroup = handle.dataset.beFilterSectionHandle;
+    draggedSection = handle.closest('.be-filter-section');
+    draggedSectionTop = draggedSection?.getBoundingClientRect().top ?? null;
     filterSectionsReordering = true;
     openSectionsBeforeDrag = new Map(orderedFilterSections(panel)
       .map((section) => [section.dataset.beGroup, section.open]));
     // A compact list makes the intended drop position clear even for long filter groups.
     orderedFilterSections(panel).forEach((section) => { section.open = false; });
+    // Closing sections above the source changes its document position. Compensate
+    // the sidebar scroll so the handle stays under the user's pointer while dragging.
+    preserveDraggedSectionPosition();
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', draggedGroup);
-    handle.closest('.be-filter-section')?.classList.add('be-filter-section--dragging');
+    draggedSection?.classList.add('be-filter-section--dragging');
   });
   panel.addEventListener('dragover', (event) => {
     const target = event.target.closest('details.be-filter-section');
@@ -846,6 +865,7 @@ function bindFilterSectionSorting(panel) {
     if (!target || !source || target === source) return;
     event.preventDefault();
     target.before(source);
+    preserveDraggedSectionPosition();
     saveFilterSectionOrder(panel);
   });
   panel.addEventListener('dragend', () => {

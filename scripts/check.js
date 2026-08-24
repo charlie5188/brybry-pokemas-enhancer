@@ -329,6 +329,16 @@ assert.match(
 );
 assert.match(
   pickerSource,
+  /draggedSectionTop = draggedSection\?\.getBoundingClientRect\(\)\.top \?\? null[\s\S]{0,700}preserveDraggedSectionPosition\(\);/,
+  'Collapsing filter groups during drag must preserve the source section’s viewport position.',
+);
+assert.match(
+  pickerSource,
+  /orderedFilterSections\(panel\)\.forEach\([\s\S]{0,180}preserveDraggedSectionPosition\(\);[\s\S]{0,180}draggedSectionTop = null/,
+  'Restoring accordions after drag must preserve the source section’s viewport position.',
+);
+assert.match(
+  pickerSource,
   /accordionSection\('region', text\(\)\.region, regionRow, \{[\s\S]{0,80}defaultOpen: true/,
   'Region filters must be expanded by default.',
 );
