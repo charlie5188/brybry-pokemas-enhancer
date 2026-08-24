@@ -785,8 +785,9 @@ function orderedFilterSections(panel) {
 }
 
 const DEFAULT_FILTER_SECTION_ORDER = [
-  'type', 'weakness', 'moveType', 'role', 'exRole', 'roleCombination', 'rarity',
-  'superawakening', 'acquisition', 'region', 'trainerGroup', 'fashion', 'other',
+  'rarity', 'type', 'role', 'exRole', 'moveType',
+  'skill-statUp', 'skill-status', 'skill-weather', 'weakness', 'roleCombination',
+  'skill-masterPassive', 'superawakening', 'acquisition', 'region', 'trainerGroup', 'fashion', 'other',
 ];
 
 function saveFilterSectionOrder(panel) {
@@ -1202,10 +1203,7 @@ function skillSearchField() {
   combobox.append(tokenField, suggestions);
   renderTokens();
 
-  const categories = document.createElement('div');
-  categories.className = 'be-skill-category-groups';
-  const battleGrid = document.createElement('div');
-  battleGrid.className = 'be-skill-battle-grid';
+  const categorySections = [];
   SKILL_FILTER_LOGIC_GROUPS.forEach(({ key, parentValues }) => {
     const title = key === 'skillMasterPassive'
       ? SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale] || 'Master Passive'
@@ -1238,12 +1236,11 @@ function skillSearchField() {
       .map((category) => category.value));
     const active = [...categoryValues]
       .some((value) => selectedSkillCategories.has(value) || excludedSkillCategories.has(value));
-    battleGrid.append(accordionSection(`skill-${parentValues[0]}`, title, row, { defaultOpen: true, active }));
+    categorySections.push(accordionSection(`skill-${parentValues[0]}`, title, row, { defaultOpen: true, active }));
   });
-  categories.append(battleGrid);
 
-  skillSearchSection.append(skillSearchLabel, combobox, categories);
-  return skillSearchSection;
+  skillSearchSection.append(skillSearchLabel, combobox);
+  return { section: skillSearchSection, categorySections };
 }
 
 function nameSearchField(input) {
@@ -1258,7 +1255,7 @@ function nameSearchField(input) {
   return section;
 }
 
-function filterPanel() {
+function filterPanel(skillCategorySections) {
   const locale = language();
   const panel = document.createElement('form');
   panel.className = 'be-filter-panel be-filter-form';
@@ -1445,13 +1442,14 @@ function filterPanel() {
   });
 
   panel.append(
+    raritySection,
     typeSection,
-    weaknessSection,
-    moveTypeSection,
     roleSection,
     exRoleSection,
+    moveTypeSection,
+    ...skillCategorySections,
+    weaknessSection,
     roleCombinationSection,
-    raritySection,
     superawakeningSection,
     acquisitionSection,
     regionSection,
@@ -1650,7 +1648,7 @@ function mountPickerLayout(body, input, skillSearch, resultList, toolbar, tools,
   }
   loading.querySelector('.be-loading-text').textContent = text().loading;
   resultsColumn.append(toolbar, resultList, loading);
-  panel.prepend(nameSearchField(input), skillSearch);
+  panel.prepend(nameSearchField(input), skillSearch.section);
   filterSidebar.append(tools, panel);
 }
 
@@ -1702,7 +1700,7 @@ function ensurePicker() {
 
   const toolbar = resultsToolbar();
   const skillSearch = skillSearchField();
-  const panel = filterPanel();
+  const panel = filterPanel(skillSearch.categorySections);
   mountPickerLayout(body, input, skillSearch, resultList, toolbar, tools, panel);
   bindFilterTooltips(panel);
   bindFilterTooltips(toolbar);

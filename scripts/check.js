@@ -319,8 +319,13 @@ const idealPartyMaximum = idealPartyText.match(/maximum reduction is\s+(one|two|
 assert.equal(({ one: 1, two: 2, three: 3 }[idealPartyMaximum] || Number(idealPartyMaximum)), 3, 'Ideal-party countdown totals must use the stated maximum.');
 assert.match(
   pickerSource,
-  /panel\.append\(\s*typeSection,\s*weaknessSection,\s*moveTypeSection,/,
-  'Damaging move type must appear immediately after weakness filters.',
+  /DEFAULT_FILTER_SECTION_ORDER = \[\s*'rarity', 'type', 'role', 'exRole', 'moveType',\s*'skill-statUp', 'skill-status', 'skill-weather', 'weakness', 'roleCombination',\s*'skill-masterPassive', 'superawakening', 'acquisition', 'region', 'trainerGroup', 'fashion', 'other',/,
+  'The default filter order must place skill categories alongside their related pair filters.',
+);
+assert.match(
+  pickerSource,
+  /panel\.append\(\s*raritySection,\s*typeSection,\s*roleSection,\s*exRoleSection,\s*moveTypeSection,\s*\.\.\.skillCategorySections,/,
+  'Skill category accordions must participate in the same sortable filter list.',
 );
 assert.match(
   pickerSource,
