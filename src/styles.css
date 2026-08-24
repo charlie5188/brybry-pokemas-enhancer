@@ -154,7 +154,7 @@ background: rgba(39, 117, 139, .1);
 border: 1px solid rgba(39, 117, 139, .38);
 border-radius: 999px;
 color: #225f70;
-cursor: pointer;
+cursor: grab;
 display: inline-flex;
 font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 gap: 5px;
@@ -661,11 +661,11 @@ animation: be-filter-jump-highlight 1.35s ease-out;
 100% { box-shadow: 0 0 0 3px rgba(37, 132, 157, 0); }
     }
 
-    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger {
+#pairSearchModal details.be-filter-section > summary.be-accordion-trigger {
 align-items: center;
 border-radius: 6px;
 color: #285b6a;
-cursor: pointer;
+cursor: grab;
 display: flex;
 font: 750 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 justify-content: space-between;
@@ -678,6 +678,7 @@ text-transform: none;
     }
 
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger::-webkit-details-marker { display: none; }
+    #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:active { cursor: grabbing; }
 
     #pairSearchModal .be-filter-section-handle {
 align-items: center;

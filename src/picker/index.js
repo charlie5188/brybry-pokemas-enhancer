@@ -731,6 +731,8 @@ function accordionSection(group, title, contentNode, { defaultOpen = false, acti
     || (defaultOpen && !closedFilterAccordions.has(group));
   const summary = document.createElement('summary');
   summary.className = 'be-filter-title be-accordion-trigger';
+  // A short click still uses the native details toggle; dragging the title starts reordering.
+  summary.draggable = true;
   const reorderHandle = document.createElement('button');
   reorderHandle.className = 'be-filter-section-handle';
   reorderHandle.type = 'button';
@@ -835,10 +837,11 @@ function bindFilterSectionSorting(panel) {
   };
 
   panel.addEventListener('dragstart', (event) => {
-    const handle = event.target.closest('.be-filter-section-handle');
-    if (!handle) return;
-    draggedGroup = handle.dataset.beFilterSectionHandle;
-    draggedSection = handle.closest('.be-filter-section');
+    const trigger = event.target.closest('summary.be-accordion-trigger');
+    if (!trigger || !panel.contains(trigger)) return;
+    draggedSection = trigger.closest('.be-filter-section');
+    draggedGroup = draggedSection?.dataset.beGroup || '';
+    if (!draggedGroup) return;
     draggedSectionTop = draggedSection?.getBoundingClientRect().top ?? null;
     filterSectionsReordering = true;
     openSectionsBeforeDrag = new Map(orderedFilterSections(panel)

@@ -337,6 +337,12 @@ assert.match(
   /orderedFilterSections\(panel\)\.forEach\([\s\S]{0,180}preserveDraggedSectionPosition\(\);[\s\S]{0,180}draggedSectionTop = null/,
   'Restoring accordions after drag must preserve the source section’s viewport position.',
 );
+assert.match(pickerSource, /summary\.draggable = true/, 'A filter title must be draggable without requiring its handle.');
+assert.match(
+  pickerSource,
+  /event\.target\.closest\('summary\.be-accordion-trigger'\)/,
+  'Dragging a filter title must enter the section-ordering flow.',
+);
 assert.match(
   pickerSource,
   /accordionSection\('region', text\(\)\.region, regionRow, \{[\s\S]{0,80}defaultOpen: true/,
