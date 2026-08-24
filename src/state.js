@@ -54,7 +54,6 @@ let selectedTrainerGroups = new Set();
 let selectedFashion = new Set();
 let selectedOther = new Set();
 let filterIsOpen = false;
-let filterMatchMode = 'and';
 let skillSearchQuery = '';
 let selectedSkillIds = new Set();
 let selectedSkillCategories = new Set();

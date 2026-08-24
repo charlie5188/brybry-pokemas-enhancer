@@ -2,6 +2,52 @@ function roleFamily(role) {
   return ROLE_FAMILIES.find((family) => family.roles.includes(Number(role)))?.value || '';
 }
 
+// The visible accordion sections are the only logical nesting supported by the
+// picker: alternatives inside one section are ORed, while sections are ANDed.
+const SKILL_FILTER_LOGIC_GROUPS = [
+  {
+    key: 'skillFieldEffects',
+    parentValues: ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField'],
+  },
+  {
+    key: 'skillStatChanges',
+    parentValues: ['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff'],
+  },
+  {
+    key: 'skillConditions',
+    parentValues: ['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'],
+  },
+  { key: 'skillMasterPassive', parentValues: ['masterPassive'] },
+];
+
+function skillCategoryLogicGroup(value) {
+  const category = SKILL_FILTER_CATEGORIES.find((candidate) => candidate.value === value);
+  const parentValue = category?.detailOf || category?.value || value;
+  return SKILL_FILTER_LOGIC_GROUPS.find((group) => group.parentValues.includes(parentValue))?.key
+    || `skillCategory:${parentValue}`;
+}
+
+function filterLogicGroup(group, value) {
+  if (group === 'exclusivity') return 'acquisition';
+  if (group === 'skillCategory') return skillCategoryLogicGroup(value);
+  return group;
+}
+
+function groupIncludedFilterEntries(entries) {
+  const groups = [];
+  const groupByKey = new Map();
+  entries.forEach((entry) => {
+    const key = entry.logicGroup || filterLogicGroup(entry.group, entry.value);
+    if (!groupByKey.has(key)) {
+      const groupedEntries = [];
+      groupByKey.set(key, groupedEntries);
+      groups.push(groupedEntries);
+    }
+    groupByKey.get(key).push(entry);
+  });
+  return groups;
+}
+
 function roleCombination(baseRole, exRole) {
   const order = ROLE_FAMILIES.map((family) => family.value);
   return [roleFamily(baseRole), roleFamily(exRole)]
@@ -107,7 +153,9 @@ function activeFilterEntries() {
     fashion: selectedFashion,
     other: selectedOther,
   }).forEach(([group, values]) => {
-    values.forEach((value) => entries.push({ group, value, state: 'include', label: chipLabel(group, value) }));
+    values.forEach((value) => entries.push({
+      group, value, state: 'include', label: chipLabel(group, value), logicGroup: filterLogicGroup(group, value),
+    }));
     excludedFilters.get(group)?.forEach((value) => {
       entries.push({ group, value, state: 'exclude', label: chipLabel(group, value) });
     });
@@ -118,13 +166,13 @@ function activeFilterEntries() {
     return category?.labels[locale] || category?.labels.en || value;
   };
   selectedSkillCategories.forEach((value) => entries.push({
-    group: 'skillCategory', value, state: 'include', label: categoryLabel(value),
+    group: 'skillCategory', value, state: 'include', label: categoryLabel(value), logicGroup: skillCategoryLogicGroup(value),
   }));
   excludedSkillCategories.forEach((value) => entries.push({
     group: 'skillCategory', value, state: 'exclude', label: categoryLabel(value),
   }));
   selectedSkillIds.forEach((value) => entries.push({
-    group: 'skill', value, state: 'include', label: passiveSkillDetails(value, locale)?.name || value,
+    group: 'skill', value, state: 'include', label: passiveSkillDetails(value, locale)?.name || value, logicGroup: 'skill',
   }));
   return entries;
 }
@@ -171,9 +219,12 @@ function renderActiveFilterTags() {
     tag.addEventListener('click', () => removeActiveFilter(entry));
     fragment.append(tag);
   };
-  included.forEach((entry, index) => {
-    if (index) appendOperator(filterMatchMode === 'and' ? '&' : '|');
-    appendTag(entry);
+  groupIncludedFilterEntries(included).forEach((groupEntries, groupIndex) => {
+    if (groupIndex) appendOperator('&');
+    groupEntries.forEach((entry, entryIndex) => {
+      if (entryIndex) appendOperator('|');
+      appendTag(entry);
+    });
   });
   excluded.forEach((entry, index) => {
     if (included.length || index) appendOperator('&');
@@ -453,35 +504,45 @@ function pairMatches(pair, query, locale = language()) {
   const matchesQuery = normalizeSearchText(pair.name).includes(normalizeSearchText(query));
   const skillIds = selectedSkillIds.size ? pairSkillIds(pair) : null;
   const scalarValues = [
-    [selectedTypes, String(pair.trainer.type)],
-    [selectedRoles, String(pair.trainer.role)],
-    [selectedWeaknesses, String(pair.trainer.weakness)],
-    [selectedRarities, String(pair.trainer.rarity)],
-    [selectedAcquisitions, String(pair.trainer.scoutMethod)],
-    [selectedExclusivities, pair.trainer.scoutMethod === 1 ? String(pair.trainer.exclusivity) : ''],
-    [selectedRegions, pair.region],
-    [selectedExRoles, pair.exRoleFamily],
-    [selectedRoleCombinations, pair.roleCombination],
-    [selectedSuperawakening, pair.hasSuperawakening ? 'yes' : ''],
+    ['type', selectedTypes, String(pair.trainer.type)],
+    ['role', selectedRoles, String(pair.trainer.role)],
+    ['weakness', selectedWeaknesses, String(pair.trainer.weakness)],
+    ['rarity', selectedRarities, String(pair.trainer.rarity)],
+    ['acquisition', selectedAcquisitions, String(pair.trainer.scoutMethod)],
+    ['exclusivity', selectedExclusivities, pair.trainer.scoutMethod === 1 ? String(pair.trainer.exclusivity) : ''],
+    ['region', selectedRegions, pair.region],
+    ['exRole', selectedExRoles, pair.exRoleFamily],
+    ['roleCombination', selectedRoleCombinations, pair.roleCombination],
+    ['superawakening', selectedSuperawakening, pair.hasSuperawakening ? 'yes' : ''],
   ];
   const tagValues = [
-    [selectedMoveTypes, pair.moveTypes],
-    [selectedTrainerGroups, pair.teamSkillTags],
-    [selectedFashion, pair.teamSkillTags],
-    [selectedOther, pair.teamSkillTags],
+    ['moveType', selectedMoveTypes, pair.moveTypes],
+    ['trainerGroup', selectedTrainerGroups, pair.teamSkillTags],
+    ['fashion', selectedFashion, pair.teamSkillTags],
+    ['other', selectedOther, pair.teamSkillTags],
   ];
   const contains = (values, value) => values?.has?.(value) || values?.includes?.(value);
-  const includedMatches = [
-    ...scalarValues.flatMap(([selected, actual]) => [...selected].map((value) => value === actual)),
-    ...tagValues.flatMap(([selected, actual]) => [...selected].map((value) => contains(actual, value))),
-    ...[...selectedSkillCategories].map((value) => {
-      const category = SKILL_FILTER_CATEGORIES.find((option) => option.value === value);
-      return category ? pairMatchesSkillCategory(pair, category, locale) : true;
-    }),
-    ...[...selectedSkillIds].map((id) => skillIds.has(id)),
-  ];
-  const matchesIncluded = !includedMatches.length
-    || (filterMatchMode === 'and' ? includedMatches.every(Boolean) : includedMatches.some(Boolean));
+  const includedMatchesByGroup = new Map();
+  const addIncludedMatches = (logicGroup, selected, matches) => {
+    if (!selected.size) return;
+    const groupMatches = includedMatchesByGroup.get(logicGroup) || [];
+    selected.forEach((value) => groupMatches.push(Boolean(matches(value))));
+    includedMatchesByGroup.set(logicGroup, groupMatches);
+  };
+  scalarValues.forEach(([group, selected, actual]) => {
+    addIncludedMatches(filterLogicGroup(group), selected, (value) => value === actual);
+  });
+  tagValues.forEach(([group, selected, actual]) => {
+    addIncludedMatches(filterLogicGroup(group), selected, (value) => contains(actual, value));
+  });
+  selectedSkillCategories.forEach((value) => {
+    const category = SKILL_FILTER_CATEGORIES.find((option) => option.value === value);
+    addIncludedMatches(skillCategoryLogicGroup(value), new Set([value]), () => (
+      category ? pairMatchesSkillCategory(pair, category, locale) : true
+    ));
+  });
+  addIncludedMatches('skill', selectedSkillIds, (id) => skillIds.has(id));
+  const matchesIncluded = [...includedMatchesByGroup.values()].every((matches) => matches.some(Boolean));
   const matchesExcludedSkillCategories = [...excludedSkillCategories].every((value) => {
     const category = SKILL_FILTER_CATEGORIES.find((option) => option.value === value);
     return category ? !pairMatchesSkillCategory(pair, category, locale) : true;
@@ -1145,13 +1206,10 @@ function skillSearchField() {
   categories.className = 'be-skill-category-groups';
   const battleGrid = document.createElement('div');
   battleGrid.className = 'be-skill-battle-grid';
-  [
-    [copy.skillFieldEffects, ['weather', 'terrain', 'zone', 'weatherEx', 'terrainEx', 'zoneEx', 'circle', 'alliedField', 'opponentField']],
-    [copy.skillStatChanges, ['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff']],
-    [copy.skillConditions, ['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity']],
-    [SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale]
-      || 'Master Passive', ['masterPassive']],
-  ].forEach(([title, parentValues]) => {
+  SKILL_FILTER_LOGIC_GROUPS.forEach(({ key, parentValues }) => {
+    const title = key === 'skillMasterPassive'
+      ? SKILL_FILTER_CATEGORIES.find((category) => category.value === 'masterPassive')?.labels?.[locale] || 'Master Passive'
+      : copy[key];
     const row = document.createElement('div');
     row.className = 'be-skill-category-row';
     const groupByParent = parentValues[0] === 'weather'
@@ -1640,27 +1698,7 @@ function ensurePicker() {
   activeFilterTags.setAttribute('aria-label', text().filters);
   activeFilterTags.hidden = true;
   activeFilterTags.append(clearButton);
-  const matchModeLabel = document.createElement('label');
-  matchModeLabel.className = 'be-filter-match-mode';
-  const matchModeText = document.createElement('span');
-  matchModeText.textContent = text().filterMatch;
-  const matchMode = document.createElement('select');
-  matchMode.setAttribute('aria-label', text().filterMatch);
-  [['and', text().filterMatchAll], ['or', text().filterMatchAny]].forEach(([value, label]) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = label;
-    matchMode.append(option);
-  });
-  matchMode.value = filterMatchMode;
-  matchMode.addEventListener('change', () => {
-    filterMatchMode = matchMode.value;
-    savePickerPreferences();
-    renderActiveFilterTags();
-    queuePairRender();
-  });
-  matchModeLabel.append(matchModeText, matchMode);
-  tools.append(count, filterButton, matchModeLabel, activeFilterTags);
+  tools.append(count, filterButton, activeFilterTags);
 
   const toolbar = resultsToolbar();
   const skillSearch = skillSearchField();

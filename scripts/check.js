@@ -195,6 +195,100 @@ assert.match(
   'Capability filters must only evaluate directly owned passives, not implementation child effects.',
 );
 const pickerSource = await readFile(path.join(projectRoot, 'src/picker/index.js'), 'utf8');
+assert.doesNotMatch(pickerSource, /filterMatchMode|be-filter-match-mode/, 'The removed global match-mode setting must not return.');
+assert.match(
+  pickerSource,
+  /groupIncludedFilterEntries\(included\)[\s\S]{0,240}appendOperator\('&'\)[\s\S]{0,180}appendOperator\('\|'\)/,
+  'Active filters must show AND between groups and OR inside a group.',
+);
+
+const pickerLogicContext = {};
+new vm.Script(`
+  const ROLE_FAMILIES = [];
+  const SKILL_FILTER_CATEGORIES = [
+    { value: 'weather' }, { value: 'zone' }, { value: 'sunnyWeather', detailOf: 'weather' },
+    { value: 'statUp' }, { value: 'status' }, { value: 'masterPassive' },
+  ];
+  let selectedTypes = new Set();
+  let selectedMoveTypes = new Set();
+  let selectedRoles = new Set();
+  let selectedWeaknesses = new Set();
+  let selectedRarities = new Set();
+  let selectedAcquisitions = new Set();
+  let selectedExclusivities = new Set();
+  let selectedRegions = new Set();
+  let selectedExRoles = new Set();
+  let selectedRoleCombinations = new Set();
+  let selectedSuperawakening = new Set();
+  let selectedTrainerGroups = new Set();
+  let selectedFashion = new Set();
+  let selectedOther = new Set();
+  let selectedSkillIds = new Set();
+  let selectedSkillCategories = new Set();
+  let excludedFilters = new Map();
+  let excludedSkillCategories = new Set();
+  const normalizeSearchText = (value) => String(value || '').toLowerCase();
+  const pairSkillIds = (pair) => new Set(pair.skillIds || []);
+  const pairMatchesSkillCategory = (pair, category) => (pair.skillCategories || []).includes(category.value);
+  ${pickerSource}
+  globalThis.setFiltersForCheck = (filters = {}) => {
+    selectedTypes = new Set(filters.type || []);
+    selectedMoveTypes = new Set(filters.moveType || []);
+    selectedRoles = new Set(filters.role || []);
+    selectedWeaknesses = new Set(filters.weakness || []);
+    selectedRarities = new Set(filters.rarity || []);
+    selectedAcquisitions = new Set(filters.acquisition || []);
+    selectedExclusivities = new Set(filters.exclusivity || []);
+    selectedRegions = new Set(filters.region || []);
+    selectedExRoles = new Set(filters.exRole || []);
+    selectedRoleCombinations = new Set(filters.roleCombination || []);
+    selectedSuperawakening = new Set(filters.superawakening || []);
+    selectedTrainerGroups = new Set(filters.trainerGroup || []);
+    selectedFashion = new Set(filters.fashion || []);
+    selectedOther = new Set(filters.other || []);
+    selectedSkillIds = new Set(filters.skill || []);
+    selectedSkillCategories = new Set(filters.skillCategory || []);
+    excludedFilters = new Map(Object.entries(filters.excluded || {}).map(([group, values]) => [group, new Set(values)]));
+    excludedSkillCategories = new Set(filters.excludedSkillCategory || []);
+  };
+  globalThis.pairMatchesForCheck = (pair) => pairMatches(pair, '', 'en');
+  globalThis.groupEntriesForCheck = (entries) => groupIncludedFilterEntries(entries)
+    .map((group) => group.map((entry) => entry.value));
+`, { filename: 'picker-logic-check.js' }).runInNewContext(pickerLogicContext);
+
+const pairForFilterLogicCheck = {
+  name: 'Test Pair',
+  trainer: { type: 1, role: 3, weakness: 2, rarity: 5, scoutMethod: 1, exclusivity: 2 },
+  region: 'kanto',
+  exRoleFamily: 'support',
+  roleCombination: 'support-sprint',
+  hasSuperawakening: true,
+  moveTypes: ['1'],
+  teamSkillTags: ['group-a'],
+  skillIds: ['skill-b'],
+  skillCategories: ['weather'],
+};
+pickerLogicContext.setFiltersForCheck({ type: ['1', '2'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), true, 'Values inside Type must use OR.');
+pickerLogicContext.setFiltersForCheck({ type: ['1', '2'], role: ['2'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), false, 'Different filter groups must use AND.');
+pickerLogicContext.setFiltersForCheck({ acquisition: ['2'], exclusivity: ['2'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), true, 'Acquisition choices shown in one section must use OR.');
+pickerLogicContext.setFiltersForCheck({ skillCategory: ['weather', 'zone'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), true, 'Skill filters in one accordion must use OR.');
+pickerLogicContext.setFiltersForCheck({ skillCategory: ['weather', 'zone', 'statUp'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), false, 'Separate skill accordions must use AND.');
+pickerLogicContext.setFiltersForCheck({ skill: ['skill-a', 'skill-b'] });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), true, 'Selected passive skills must use OR inside their group.');
+pickerLogicContext.setFiltersForCheck({ excluded: { type: ['1'] } });
+assert.equal(pickerLogicContext.pairMatchesForCheck(pairForFilterLogicCheck), false, 'Excluded values must remain mandatory exclusions.');
+assert.equal(
+  JSON.stringify(pickerLogicContext.groupEntriesForCheck([
+    { group: 'type', value: '1' }, { group: 'role', value: '3' }, { group: 'type', value: '2' },
+  ])),
+  JSON.stringify([['1', '2'], ['3']]),
+  'Active filter tags must stay grouped even when selections were made in an interleaved order.',
+);
 assert.match(pickerSource, /\['sync-countdown-reduction', copy\.sortSyncCountdownReduction\]/, 'Sync countdown reduction must be available as a sort option.');
 const syncCountdownReductionSource = await readFile(path.join(projectRoot, 'src/data/index.js'), 'utf8');
 assert.match(syncCountdownReductionSource, /function pairSyncCountdownReduction\(pair\)/, 'Sync countdown reduction must be calculated from pair skills.');
@@ -500,12 +594,12 @@ assert.match(pickerSource, /region\.labels\[locale\]/, 'Region filters must read
 assert.match(pickerSource, /option\.labels\[locale\]/, 'Acquisition filters must read the unified labels shape.');
 assert.match(
   pickerSource,
-  /\[copy\.skillConditions, \['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'\]\]/,
+  /key: 'skillConditions',[\s\S]{0,80}parentValues: \['status', 'interference', 'sureHitNext', 'statusImmunity', 'interferenceImmunity', 'criticalHitImmunity'\]/,
   'Status and interference immunity filters must remain grouped under Status effects.',
 );
 assert.match(
   pickerSource,
-  /\[copy\.skillStatChanges, \['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff'\]\]/,
+  /key: 'skillStatChanges',[\s\S]{0,80}parentValues: \['statUp', 'statDown', 'statReductionImmunity', 'rebuffUp', 'rebuff'\]/,
   'Stat Reduction Immunity must remain grouped under Stat changes.',
 );
 assert.match(pickerSource, /directionButton\.dataset\.beTooltip = label/, 'Sort direction control must use the custom tooltip.');

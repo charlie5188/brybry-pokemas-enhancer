@@ -5,7 +5,6 @@ const COPY = {
     clear: 'Clear',
     close: 'Close',
     include: 'Include', exclude: 'Exclude',
-    filterMatch: 'Match', filterMatchAll: 'All (&)', filterMatchAny: 'Any (|)',
     moveFilterSection: 'Move {name}', resetFilterOrder: 'Reset filter order',
     nameSearch: 'Name', nameSearchPlaceholder: 'Search names…',
     skillSearch: 'Passive skill search',
@@ -60,7 +59,6 @@ const COPY = {
   fr: {
     filter: 'Filtrer', filters: 'Filtres', clear: 'Réinitialiser', close: 'Fermer',
     include: 'Inclure', exclude: 'Exclure',
-    filterMatch: 'Correspondance', filterMatchAll: 'Tous (&)', filterMatchAny: 'Un au moins (|)',
     moveFilterSection: 'Déplacer {name}', resetFilterOrder: 'Réinitialiser l’ordre des filtres',
     nameSearch: 'Nom', nameSearchPlaceholder: 'Rechercher un nom…',
     skillSearch: 'Recherche de talents passifs', skillSearchPlaceholder: 'Rechercher par nom ou effet…',
@@ -89,7 +87,6 @@ const COPY = {
   de: {
     filter: 'Filter', filters: 'Filter', clear: 'Zurücksetzen', close: 'Schließen',
     include: 'Einschließen', exclude: 'Ausschließen',
-    filterMatch: 'Treffer', filterMatchAll: 'Alle (&)', filterMatchAny: 'Beliebige (|)',
     moveFilterSection: '{name} verschieben', resetFilterOrder: 'Filterreihenfolge zurücksetzen',
     nameSearch: 'Name', nameSearchPlaceholder: 'Namen suchen…',
     skillSearch: 'Passivfähigkeitssuche', skillSearchPlaceholder: 'Name oder Effekt suchen…',
@@ -118,7 +115,6 @@ const COPY = {
   es: {
     filter: 'Filtrar', filters: 'Filtros', clear: 'Restablecer', close: 'Cerrar',
     include: 'Incluir', exclude: 'Excluir',
-    filterMatch: 'Coincidir', filterMatchAll: 'Todas (&)', filterMatchAny: 'Cualquiera (|)',
     moveFilterSection: 'Mover {name}', resetFilterOrder: 'Restablecer orden de filtros',
     nameSearch: 'Nombre', nameSearchPlaceholder: 'Buscar nombres…',
     skillSearch: 'Buscar habilidades pasivas', skillSearchPlaceholder: 'Buscar por nombre o efecto…',
@@ -147,7 +143,6 @@ const COPY = {
   it: {
     filter: 'Filtra', filters: 'Filtri', clear: 'Reimposta', close: 'Chiudi',
     include: 'Includi', exclude: 'Escludi',
-    filterMatch: 'Corrispondenza', filterMatchAll: 'Tutti (&)', filterMatchAny: 'Uno qualsiasi (|)',
     moveFilterSection: 'Sposta {name}', resetFilterOrder: 'Reimposta ordine filtri',
     nameSearch: 'Nome', nameSearchPlaceholder: 'Cerca nomi…',
     skillSearch: 'Cerca abilità passive', skillSearchPlaceholder: 'Cerca per nome o effetto…',
@@ -180,7 +175,6 @@ const COPY = {
     close: '閉じる',
     include: '含む',
     exclude: '除外',
-    filterMatch: '一致条件', filterMatchAll: 'すべて (&)', filterMatchAny: 'いずれか (|)',
     moveFilterSection: '{name}を移動', resetFilterOrder: 'フィルタの順序をリセット',
     nameSearch: '名前',
     nameSearchPlaceholder: '名前を検索…',
@@ -238,7 +232,6 @@ const COPY = {
   ko: {
     filter: '필터', filters: '필터', clear: '초기화', close: '닫기',
     include: '포함', exclude: '제외',
-    filterMatch: '일치 조건', filterMatchAll: '모두 (&)', filterMatchAny: '하나 이상 (|)',
     moveFilterSection: '{name} 이동', resetFilterOrder: '필터 순서 초기화',
     nameSearch: '이름', nameSearchPlaceholder: '이름 검색…',
     skillSearch: '패시브 스킬 검색', skillSearchPlaceholder: '패시브 이름·효과 검색…',
@@ -272,7 +265,6 @@ const COPY = {
     close: '關閉',
     include: '包含',
     exclude: '排除',
-    filterMatch: '符合條件', filterMatchAll: '全部（&）', filterMatchAny: '任一（|）',
     moveFilterSection: '移動{name}', resetFilterOrder: '重設篩選順序',
     nameSearch: '名稱',
     nameSearchPlaceholder: '搜尋名稱…',

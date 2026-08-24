@@ -185,25 +185,6 @@ color: #51727c;
 font: 600 15px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    #pairSearchModal .be-filter-match-mode {
-align-items: center;
-color: #51727c;
-display: inline-flex;
-font: 750 12px/1 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-gap: 5px;
-margin-left: auto;
-    }
-
-    #pairSearchModal .be-filter-match-mode select {
-background: #fff;
-border: 1px solid #9bc8d2;
-border-radius: 7px;
-color: #24586a;
-font: inherit;
-min-height: 30px;
-padding: 4px 7px;
-    }
-
     #pairSearchModal .be-filter-button {
 appearance: none;
 border: 1px solid #6aafc0;

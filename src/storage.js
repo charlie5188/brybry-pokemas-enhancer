@@ -24,7 +24,6 @@ try {
   if (Array.isArray(preferences.filterSectionOrder)) {
     filterSectionOrder = preferences.filterSectionOrder.filter((group) => typeof group === 'string');
   }
-  if (['and', 'or'].includes(preferences.filterMatchMode)) filterMatchMode = preferences.filterMatchMode;
 } catch (_) {
   // Storage can be unavailable in private browsing; the picker still works for this session.
 }
@@ -38,7 +37,6 @@ function savePickerPreferences() {
       view: viewMode,
       spoilerProtection: spoilerProtectionEnabled,
       lastSafePairId,
-      filterMatchMode,
       openFilterAccordions: [...openFilterAccordions],
       closedFilterAccordions: [...closedFilterAccordions],
       filterSectionOrder,
