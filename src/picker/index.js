@@ -48,6 +48,10 @@ function groupIncludedFilterEntries(entries) {
   return groups;
 }
 
+function shouldParenthesizeIncludedFilterGroup(groupEntries, totalTerms) {
+  return groupEntries.length > 1 && totalTerms > 1;
+}
+
 function roleCombination(baseRole, exRole) {
   const order = ROLE_FAMILIES.map((family) => family.value);
   return [roleFamily(baseRole), roleFamily(exRole)]
@@ -68,19 +72,78 @@ function pairIconUrl(trainer) {
   return new URL(`./data/icons/trainers/${trainerUid}-${dexNumber}_${actorVariant}${shinySuffix}.png`, location.href).href;
 }
 
-function pairFallbackIconUrls(trainer) {
+function pairFallbackIcons(trainer) {
   const trainerBase = trainerBaseById.get(String(trainer?.trainerBaseId));
   const monster = monsterById.get(String(trainer?.monsterId));
   const monsterBase = monsterBaseById.get(String(monster?.monsterBaseId));
-  return [
-    trainerBase?.actorId
+  return {
+    trainer: trainerBase?.actorId
       ? new URL(`./data/actor/Trainer/${trainerBase.actorId}/${trainerBase.actorId}_1024.png`, location.href).href
       : '',
-    monsterBase?.actorId
+    pokemon: monsterBase?.actorId
       ? new URL(`./data/actor/Monster/${monsterBase.actorId}/${monsterBase.actorId}_256.png`, location.href).href
       : '',
-    new URL('./data/icons/trainers/unknown.png', location.href).href,
-  ].filter(Boolean);
+    unknown: new URL('./data/icons/trainers/unknown.png', location.href).href,
+  };
+}
+
+function appendUnknownPairImage(container, iconUrl) {
+  if (!container.querySelector('.be-pair-avatar')) {
+    const unknown = document.createElement('img');
+    unknown.className = 'be-pair-avatar';
+    unknown.loading = 'lazy';
+    unknown.decoding = 'async';
+    unknown.src = iconUrl || new URL('./data/icons/trainers/unknown.png', location.href).href;
+    unknown.alt = '';
+    container.append(unknown);
+  }
+}
+
+function appendPairFallbackImages(container, fallbackIcons = {}) {
+  const characterIcons = [
+    ['trainer', fallbackIcons.trainer],
+    ['pokemon', fallbackIcons.pokemon],
+  ].filter(([, iconUrl]) => iconUrl);
+  if (!characterIcons.length) return appendUnknownPairImage(container, fallbackIcons.unknown);
+
+  // Keep the pair relationship recognizable even when Brybry has no combined thumbnail yet.
+  container.classList.add('pair-images--fallback');
+  characterIcons.forEach(([character, iconUrl]) => {
+    const icon = document.createElement('img');
+    icon.className = `be-pair-avatar be-pair-avatar--fallback be-pair-avatar--fallback-${character}`;
+    icon.loading = 'lazy';
+    icon.decoding = 'async';
+    icon.src = iconUrl;
+    icon.alt = '';
+    icon.addEventListener('error', () => {
+      icon.remove();
+      appendUnknownPairImage(container, fallbackIcons.unknown);
+    }, { once: true });
+    container.append(icon);
+  });
+}
+
+function ensureFloatingPairFallback() {
+  const container = document.getElementById('fabPairIcons');
+  const pairId = currentPairId();
+  if (!container || !pairId) return;
+  if (container.dataset.beFallbackPairId === pairId && container.querySelector('.be-pair-avatar--fallback')) return;
+
+  const image = container.querySelector('img');
+  const imagePath = image ? new URL(image.src, location.href).pathname : '';
+  if (!imagePath.endsWith('/data/icons/trainers/unknown.png')) {
+    container.classList.remove('be-fab-pair-fallback', 'pair-images--fallback');
+    delete container.dataset.beFallbackPairId;
+    return;
+  }
+
+  const trainer = trainerById.get(pairId);
+  if (!trainer) return;
+  // Match the picker fallback so the same sync pair has one visual identity in both entry points.
+  container.dataset.beFallbackPairId = pairId;
+  container.classList.add('be-fab-pair-fallback');
+  container.replaceChildren();
+  appendPairFallbackImages(container, pairFallbackIcons(trainer));
 }
 
 function typeMark(locale, trainer) {
@@ -219,12 +282,18 @@ function renderActiveFilterTags() {
     tag.addEventListener('click', () => removeActiveFilter(entry));
     fragment.append(tag);
   };
-  groupIncludedFilterEntries(included).forEach((groupEntries, groupIndex) => {
+  const includedGroups = groupIncludedFilterEntries(included);
+  const totalTerms = includedGroups.length + excluded.length;
+  includedGroups.forEach((groupEntries, groupIndex) => {
     if (groupIndex) appendOperator('&');
+    // Parentheses expose the picker's actual OR-within-AND grouping when mixed operators are visible.
+    const parenthesize = shouldParenthesizeIncludedFilterGroup(groupEntries, totalTerms);
+    if (parenthesize) appendOperator('(');
     groupEntries.forEach((entry, entryIndex) => {
       if (entryIndex) appendOperator('|');
       appendTag(entry);
     });
+    if (parenthesize) appendOperator(')');
   });
   excluded.forEach((entry, index) => {
     if (included.length || index) appendOperator('&');
@@ -486,7 +555,7 @@ function currentPairs(includeUnreleased = false) {
         teamSkillTags,
         moveTypes: pairDamagingMoveTypes(option.value),
         iconUrl: pairIconUrl(trainer),
-        fallbackIconUrls: pairFallbackIconUrls(trainer),
+        fallbackIcons: pairFallbackIcons(trainer),
         exRole,
         exRoleFamily: exRole === null ? '' : roleFamily(exRole),
         roleCombination: exRole === null ? '' : roleCombination(trainer?.role, exRole),
@@ -1563,31 +1632,31 @@ function renderPairs() {
 
     const images = document.createElement('div');
     images.className = 'pair-images';
-    const iconUrls = [...new Set([
-      pair.iconUrl || pairImageById.get(pair.id),
-      ...(pair.fallbackIconUrls || []),
+    const pairIconUrls = [...new Set([
+      pair.iconUrl,
+      pairImageById.get(pair.id),
     ].filter(Boolean))];
-    if (iconUrls.length) {
+    const fallbackIcons = pair.fallbackIcons || {};
+    if (pairIconUrls.length) {
       const icon = document.createElement('img');
       icon.className = 'be-pair-avatar';
       icon.loading = 'lazy';
       icon.decoding = 'async';
       let fallbackIndex = 0;
-      icon.src = iconUrls[fallbackIndex];
+      icon.src = pairIconUrls[fallbackIndex];
       icon.alt = '';
       icon.addEventListener('error', () => {
         fallbackIndex += 1;
-        if (iconUrls[fallbackIndex]) icon.src = iconUrls[fallbackIndex];
+        if (pairIconUrls[fallbackIndex]) {
+          icon.src = pairIconUrls[fallbackIndex];
+          return;
+        }
+        icon.remove();
+        appendPairFallbackImages(images, fallbackIcons);
       });
       images.append(icon);
     } else {
-      const icon = document.createElement('img');
-      icon.className = 'be-pair-avatar';
-      icon.loading = 'lazy';
-      icon.decoding = 'async';
-      icon.src = new URL('./data/icons/trainers/unknown.png', location.href).href;
-      icon.alt = '';
-      images.append(icon);
+      appendPairFallbackImages(images, fallbackIcons);
     }
 
     const info = document.createElement('div');

@@ -1058,6 +1058,47 @@ outline: 1px solid rgba(0, 0, 0, .1);
 outline-offset: -1px;
     }
 
+    #pairSearchModal #pairSearchResults .pair-images--fallback,
+    #openPairSearchBtn #fabPairIcons.be-fab-pair-fallback {
+background: linear-gradient(135deg, #f5fafb, #e8f3f6);
+height: 75px;
+overflow: hidden;
+position: relative;
+width: 75px;
+outline: 1px solid rgba(0, 0, 0, .1);
+outline-offset: -1px;
+    }
+
+    #openPairSearchBtn #fabPairIcons.be-fab-pair-fallback {
+border-radius: 50%;
+box-shadow: inset 0 0 0 1px rgba(18, 56, 125, .16);
+flex: 0 0 75px;
+    }
+
+    #pairSearchModal #pairSearchResults .be-pair-avatar--fallback,
+    #openPairSearchBtn #fabPairIcons.be-fab-pair-fallback .be-pair-avatar--fallback {
+border-radius: 0;
+bottom: 0;
+height: 75px;
+object-fit: contain;
+outline: 0;
+position: absolute;
+width: 47px;
+    }
+
+    #pairSearchModal #pairSearchResults .be-pair-avatar--fallback-trainer,
+    #openPairSearchBtn #fabPairIcons.be-fab-pair-fallback .be-pair-avatar--fallback-trainer {
+left: 0;
+object-fit: cover;
+object-position: center bottom;
+    }
+
+    #pairSearchModal #pairSearchResults .be-pair-avatar--fallback-pokemon,
+    #openPairSearchBtn #fabPairIcons.be-fab-pair-fallback .be-pair-avatar--fallback-pokemon {
+object-position: right bottom;
+right: 0;
+    }
+
     #pairSearchModal #pairSearchResults[data-be-view="icons"] {
 align-content: start;
 display: grid;

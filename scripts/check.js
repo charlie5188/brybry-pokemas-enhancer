@@ -198,9 +198,12 @@ const pickerSource = await readFile(path.join(projectRoot, 'src/picker/index.js'
 assert.doesNotMatch(pickerSource, /filterMatchMode|be-filter-match-mode/, 'The removed global match-mode setting must not return.');
 assert.match(
   pickerSource,
-  /groupIncludedFilterEntries\(included\)[\s\S]{0,240}appendOperator\('&'\)[\s\S]{0,180}appendOperator\('\|'\)/,
-  'Active filters must show AND between groups and OR inside a group.',
+  /groupIncludedFilterEntries\(included\)[\s\S]{0,360}appendOperator\('&'\)[\s\S]{0,260}appendOperator\('\('\)[\s\S]{0,260}appendOperator\('\|'\)[\s\S]{0,260}appendOperator\('\)'\)/,
+  'Active filters must show AND between groups, OR inside a group, and parentheses around mixed operations.',
 );
+assert.match(pickerSource, /appendPairFallbackImages\(images, fallbackIcons\)/, 'Missing pair icons must fall back to a trainer and Pokemon composition.');
+assert.match(pickerSource, /imagePath\.endsWith\('\/data\/icons\/trainers\/unknown\.png'\)/, 'The floating picker action must detect Brybry\'s unknown pair placeholder.');
+assert.match(pickerSource, /appendPairFallbackImages\(container, pairFallbackIcons\(trainer\)\)/, 'The floating picker action must reuse the trainer and Pokemon fallback.');
 
 const pickerLogicContext = {};
 new vm.Script(`
@@ -254,7 +257,15 @@ new vm.Script(`
   globalThis.pairMatchesForCheck = (pair) => pairMatches(pair, '', 'en');
   globalThis.groupEntriesForCheck = (entries) => groupIncludedFilterEntries(entries)
     .map((group) => group.map((entry) => entry.value));
+  globalThis.shouldParenthesizeForCheck = (groupSize, totalTerms) => shouldParenthesizeIncludedFilterGroup(
+    Array.from({ length: groupSize }),
+    totalTerms,
+  );
 `, { filename: 'picker-logic-check.js' }).runInNewContext(pickerLogicContext);
+
+assert.equal(pickerLogicContext.shouldParenthesizeForCheck(2, 2), true, 'OR groups joined to another term must be parenthesized.');
+assert.equal(pickerLogicContext.shouldParenthesizeForCheck(2, 1), false, 'A standalone OR group must not add unnecessary parentheses.');
+assert.equal(pickerLogicContext.shouldParenthesizeForCheck(1, 2), false, 'A single-value term must not be parenthesized.');
 
 const pairForFilterLogicCheck = {
   name: 'Test Pair',
@@ -646,6 +657,11 @@ const storageSource = await readFile(path.join(projectRoot, 'src/storage.js'), '
 assert.match(storageSource, /openFilterAccordions: \[\.\.\.openFilterAccordions\]/, 'Open accordion preferences must persist.');
 assert.match(storageSource, /closedFilterAccordions: \[\.\.\.closedFilterAccordions\]/, 'Closed accordion preferences must persist.');
 const stylesSource = await readFile(path.join(projectRoot, 'src/styles.css'), 'utf8');
+assert.match(stylesSource, /\.pair-images--fallback[\s\S]{0,240}position:\s*relative/, 'Composite pair fallbacks must share one thumbnail frame.');
+assert.match(stylesSource, /#openPairSearchBtn #fabPairIcons\.be-fab-pair-fallback/, 'The floating picker action must style its composite fallback.');
+assert.match(stylesSource, /#openPairSearchBtn #fabPairIcons\.be-fab-pair-fallback[\s\S]{0,160}border-radius:\s*50%/, 'The floating fallback must use an intentional circular frame inside the pill action.');
+assert.match(stylesSource, /\.be-pair-avatar--fallback-trainer[\s\S]{0,120}object-fit:\s*cover/, 'Trainer fallback art must use the available thumbnail height instead of rendering undersized.');
+assert.match(stylesSource, /\.be-pair-avatar--fallback-pokemon[\s\S]{0,100}right:\s*0/, 'Pokemon fallback art must remain visible beside the trainer.');
 assert.match(stylesSource, /\.be-filter-anchor/, 'The Circle region anchor must have dedicated styling.');
 assert.match(stylesSource, /be-filter-jump-highlight/, 'The Region jump target must receive visible feedback.');
 const spoilerProtectionSource = await readFile(path.join(projectRoot, 'src/spoiler-protection.js'), 'utf8');

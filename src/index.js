@@ -9,6 +9,7 @@ function queueRefresh() {
     setupResponsiveGrid();
     setupGridBuildMemory();
     setupSectionOrdering();
+    ensureFloatingPairFallback();
     ensurePicker();
     ensureSettingsControl();
     updateSpoilerSensitiveSections();
