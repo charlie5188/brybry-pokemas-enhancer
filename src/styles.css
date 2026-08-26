@@ -216,6 +216,61 @@ background: #27758b;
 border-color: #27758b;
     }
 
+    #pairSearchModal .be-filter-options {
+margin-left: auto;
+position: relative;
+    }
+
+    #pairSearchModal .be-filter-options > summary { list-style: none; }
+    #pairSearchModal .be-filter-options > summary::-webkit-details-marker { display: none; }
+
+    #pairSearchModal .be-filter-options-button {
+align-items: center;
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 7px;
+color: #6b858d;
+cursor: pointer;
+display: flex;
+height: 32px;
+justify-content: center;
+width: 32px;
+    }
+
+    #pairSearchModal .be-filter-options-button:hover,
+    #pairSearchModal .be-filter-options[open] .be-filter-options-button { background: rgba(44, 104, 120, .08); color: #24586a; }
+    #pairSearchModal .be-filter-options-button:focus-visible { outline: 3px solid rgba(54, 126, 201, .45); outline-offset: 2px; }
+    #pairSearchModal .be-filter-options-button svg { fill: currentColor; height: 20px; width: 20px; }
+
+    #pairSearchModal .be-filter-options-menu {
+background: #fff;
+border: 1px solid rgba(44, 104, 120, .18);
+border-radius: 9px;
+box-shadow: 0 8px 24px rgba(20, 45, 52, .16);
+min-width: 200px;
+padding: 5px;
+position: absolute;
+right: 0;
+top: calc(100% + 4px);
+z-index: 12;
+    }
+
+    #pairSearchModal .be-reset-filter-order {
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 6px;
+color: #315f6c;
+cursor: pointer;
+font: 650 13px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+padding: 9px 10px;
+text-align: left;
+width: 100%;
+    }
+    #pairSearchModal .be-reset-filter-order:hover { background: rgba(44, 104, 120, .08); color: #24586a; }
+    #pairSearchModal .be-reset-filter-order:focus-visible { box-shadow: inset 0 0 0 2px rgba(39, 117, 139, .55); outline: 0; }
+
     #pairSearchModal :is(
       .be-filter-button,
       .be-clear-button,
@@ -704,20 +759,6 @@ width: 22px;
     #pairSearchModal details.be-filter-section--dragging { opacity: .45; }
     #pairSearchModal details.be-filter-section--drop-target { box-shadow: inset 0 3px 0 #25849d; }
 
-    #pairSearchModal .be-reset-filter-order {
-align-self: flex-start;
-background: transparent;
-border: 0;
-color: #527883;
-cursor: pointer;
-font: 650 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-margin: 10px 0 2px;
-padding: 5px 2px;
-text-decoration: underline;
-text-underline-offset: 2px;
-    }
-    #pairSearchModal .be-reset-filter-order:hover { color: #24586a; }
-    #pairSearchModal .be-reset-filter-order:focus-visible { border-radius: 4px; box-shadow: 0 0 0 2px rgba(39, 117, 139, .55); outline: 0; }
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:hover { background: rgba(44, 104, 120, .055); }
     #pairSearchModal details.be-filter-section > summary.be-accordion-trigger:focus-visible {
 box-shadow: inset 0 0 0 2px rgba(39, 117, 139, .55);

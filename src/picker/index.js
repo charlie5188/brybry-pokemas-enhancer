@@ -1481,16 +1481,6 @@ function filterPanel(skillCategorySections) {
     otherSection,
   );
   applyFilterSectionOrder(panel);
-  const resetOrder = document.createElement('button');
-  resetOrder.className = 'be-reset-filter-order';
-  resetOrder.type = 'button';
-  resetOrder.textContent = text().resetFilterOrder;
-  resetOrder.addEventListener('click', () => {
-    filterSectionOrder = [];
-    applyFilterSectionOrder(panel);
-    savePickerPreferences();
-  });
-  panel.append(resetOrder);
   bindFilterSectionSorting(panel);
   return panel;
 }
@@ -1719,7 +1709,28 @@ function ensurePicker() {
   activeFilterTags.setAttribute('aria-label', text().filters);
   activeFilterTags.hidden = true;
   activeFilterTags.append(clearButton);
-  tools.append(count, filterButton, activeFilterTags);
+  const filterOptions = document.createElement('details');
+  filterOptions.className = 'be-filter-options';
+  const filterOptionsButton = document.createElement('summary');
+  filterOptionsButton.className = 'be-filter-options-button';
+  filterOptionsButton.setAttribute('aria-label', text().filterOptions);
+  filterOptionsButton.title = text().filterOptions;
+  filterOptionsButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>';
+  const filterOptionsMenu = document.createElement('div');
+  filterOptionsMenu.className = 'be-filter-options-menu';
+  const resetOrder = document.createElement('button');
+  resetOrder.className = 'be-reset-filter-order';
+  resetOrder.type = 'button';
+  resetOrder.textContent = text().resetFilterOrder;
+  resetOrder.addEventListener('click', () => {
+    filterSectionOrder = [];
+    applyFilterSectionOrder(panel);
+    savePickerPreferences();
+    filterOptions.open = false;
+  });
+  filterOptionsMenu.append(resetOrder);
+  filterOptions.append(filterOptionsButton, filterOptionsMenu);
+  tools.append(count, filterButton, filterOptions, activeFilterTags);
 
   const toolbar = resultsToolbar();
   const skillSearch = skillSearchField();
