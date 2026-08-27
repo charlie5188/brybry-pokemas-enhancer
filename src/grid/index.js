@@ -178,6 +178,7 @@ function visibleGridTooltip() {
 
 function appendPowerMultiplier(tooltip, multiplier) {
   if (!tooltip || !multiplier || tooltip.querySelector('.be-power-multiplier')) return;
+  if (tooltipIncludesPercentage(tooltip, multiplier.value)) return;
   const template = multiplier.kind === 'cap' ? text().multiplierCap : text().multiplier;
   if (!template) return;
   const line = document.createElement('span');
@@ -186,6 +187,12 @@ function appendPowerMultiplier(tooltip, multiplier) {
   const effect = tooltip.children[1];
   if (effect) effect.append(line);
   else tooltip.append(line);
+}
+
+function tooltipIncludesPercentage(tooltip, value) {
+  if (!tooltip || !Number.isFinite(Number(value))) return false;
+  const normalized = normalizeGridLabel(tooltip.textContent);
+  return new RegExp(`(?:^|\\D)${Number(value)}\\s*%(?:$|\\D)`).test(normalized);
 }
 
 function appendAdditionalEffectChanceMultiplier(tooltip, multiplier) {
@@ -239,11 +246,36 @@ function appendDamageReduction(tooltip, moveInfo) {
     ? moveInfo.damageReduction
     : damageReductionForPassiveId(moveInfo?.passiveId, description);
   if (!tooltip || !Number.isFinite(reduction) || tooltip.querySelector('.be-damage-reduction')) return;
+  if (tooltipIncludesPercentage(tooltip, reduction)) return;
   const template = text().damageReduction;
   if (!template) return;
   const line = document.createElement('span');
   line.className = 'be-damage-reduction';
   line.textContent = template.replace('{value}', String(reduction));
+  tooltip.append(line);
+}
+
+function appendHealingBoost(tooltip, moveInfo) {
+  const value = moveInfo?.healingBoost;
+  if (!tooltip || !Number.isFinite(value) || tooltip.querySelector('.be-healing-boost')) return;
+  if (tooltipIncludesPercentage(tooltip, value)) return;
+  const template = text().healingBoost;
+  if (!template) return;
+  const line = document.createElement('span');
+  line.className = 'be-healing-boost';
+  line.textContent = template.replace('{value}', String(value));
+  tooltip.append(line);
+}
+
+function appendStatusEffectReduction(tooltip, moveInfo) {
+  const value = moveInfo?.statusEffectReduction;
+  if (!tooltip || !Number.isFinite(value) || tooltip.querySelector('.be-status-effect-reduction')) return;
+  if (tooltipIncludesPercentage(tooltip, value)) return;
+  const template = text().statusEffectReduction;
+  if (!template) return;
+  const line = document.createElement('span');
+  line.className = 'be-status-effect-reduction';
+  line.textContent = template.replace('{value}', String(value));
   tooltip.append(line);
 }
 
@@ -316,6 +348,8 @@ function appendGridTooltipDetails(tile, moveInfo) {
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
   appendAdditionalEffectChanceMultiplier(tooltip, moveInfo?.additionalEffectChanceMultiplier);
   appendDamageReduction(tooltip, moveInfo);
+  appendHealingBoost(tooltip, moveInfo);
+  appendStatusEffectReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo);
   repositionGridTooltip(tooltip, tile);

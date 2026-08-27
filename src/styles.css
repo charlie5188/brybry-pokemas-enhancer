@@ -89,6 +89,8 @@ margin-bottom: 2px;
     .tooltip .be-power-multiplier,
     .tooltip .be-additional-effect-chance-multiplier,
     .tooltip .be-damage-reduction,
+    .tooltip .be-healing-boost,
+    .tooltip .be-status-effect-reduction,
     .tooltip .be-field-duration {
 background: rgba(105, 190, 218, .14);
 border: 1px solid rgba(145, 214, 235, .28);

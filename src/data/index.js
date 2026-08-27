@@ -314,6 +314,8 @@ async function loadTrainerData() {
       powerMultiplier: powerMultiplierForPassiveId(ability.passiveId),
       additionalEffectChanceMultiplier: additionalEffectChanceMultiplierForPassiveId(ability.passiveId),
       damageReduction: damageReductionForPassiveId(ability.passiveId),
+      healingBoost: healingBoostForPassiveId(ability.passiveId),
+      statusEffectReduction: statusEffectReductionForPassiveId(ability.passiveId),
     }]];
   }));
   gridUpdateDatesByTrainerId = new Map();

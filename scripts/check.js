@@ -848,7 +848,7 @@ const gridSource = await readFile(path.join(projectRoot, 'src/grid/index.js'), '
 const multiplierSource = await readFile(path.join(projectRoot, 'src/data/power-multipliers.js'), 'utf8');
 const multiplierContext = {};
 vm.createContext(multiplierContext);
-vm.runInContext(`${multiplierSource}\nthis.powerMultiplierForCheck = powerMultiplierForPassiveId; this.additionalEffectChanceMultiplierForCheck = additionalEffectChanceMultiplierForPassiveId;`, multiplierContext);
+vm.runInContext(`${multiplierSource}\nthis.powerMultiplierForCheck = powerMultiplierForPassiveId; this.additionalEffectChanceMultiplierForCheck = additionalEffectChanceMultiplierForPassiveId; this.damageReductionForCheck = damageReductionForPassiveId; this.healingBoostForCheck = healingBoostForPassiveId; this.statusEffectReductionForCheck = statusEffectReductionForPassiveId;`, multiplierContext);
 assert.deepEqual(
   { ...multiplierContext.powerMultiplierForCheck(16010601) },
   { kind: 'cap', value: 100 },
@@ -875,9 +875,14 @@ assert.deepEqual(
   'Grid conditional power-up families must expose their numbered multiplier.',
 );
 assert.deepEqual(
+  { ...multiplierContext.powerMultiplierForCheck(13088005) },
+  { kind: 'fixed', value: 50 },
+  'Dark Zone Pokémon- and Sync-Move power boosts must expose their numbered multiplier.',
+);
+assert.deepEqual(
   { ...multiplierContext.powerMultiplierForCheck(13011005) },
-  { kind: 'cap', value: 50 },
-  'Full-HP power boosts must expose their verified maximum.',
+  { kind: 'cap', value: 25 },
+  'HP Advantage 5 must expose its verified +25% maximum at full HP.',
 );
 assert.deepEqual(
   { ...multiplierContext.powerMultiplierForCheck(13013604) },
@@ -899,6 +904,20 @@ assert.deepEqual(
   { kind: 'fixed', value: 100 },
   'Explicit two-times power effects must not derive +10% from the ID suffix.',
 );
+for (const [passiveId, value, label] of [
+  [13018703, 30, 'Flying Zone move power'],
+  [13083203, 30, 'Ice Zone move power'],
+  [13086202, 20, 'rainy team move power'],
+  [16019609, 90, 'Ice Zone Sync Move power'],
+  [16031909, 90, 'Defense-lowered target Sync Move power'],
+  [16032003, 30, 'Poison Zone team Sync Move power'],
+]) {
+  assert.deepEqual(
+    { ...multiplierContext.powerMultiplierForCheck(passiveId) },
+    { kind: 'fixed', value },
+    `${label} must expose its numbered multiplier.`,
+  );
+}
 assert.equal(
   multiplierContext.additionalEffectChanceMultiplierForCheck(22010101),
   2,
@@ -939,6 +958,31 @@ assert.equal(
   null,
   'Unexpected Benefit must not be presented as a generic chance multiplier because it also changes stat-drop ranks.',
 );
+assert.equal(
+  multiplierContext.damageReductionForCheck(24011101),
+  30,
+  'Psychic Guard and the other single-user Type Guards must expose their verified 30% reduction.',
+);
+assert.equal(
+  multiplierContext.damageReductionForCheck(24012001),
+  30,
+  'Group Type Guards must expose the same verified 30% reduction for every protected ally.',
+);
+assert.equal(
+  multiplierContext.damageReductionForCheck(13022102),
+  20,
+  'Numbered conditional damage-reduction skills must derive 10% per rank.',
+);
+assert.equal(
+  multiplierContext.damageReductionForCheck(13025102),
+  null,
+  'Adjacent non-reduction passive families must not be presented as damage reduction.',
+);
+assert.equal(multiplierContext.healingBoostForCheck(11010201), 10, 'Master Healer 1 must expose its hidden +10% healing boost.');
+assert.equal(multiplierContext.healingBoostForCheck(11010206), 60, 'Master Healer must derive a hidden +10% healing boost per rank.');
+assert.equal(multiplierContext.healingBoostForCheck(11010104), null, 'First Aid already exposes its percentage in the official description.');
+assert.equal(multiplierContext.statusEffectReductionForCheck(17020409), 90, 'Lessen Burn 9 must expose its hidden 90% mitigation.');
+assert.equal(multiplierContext.statusEffectReductionForCheck(18040604), null, 'Ordinary activation-chance skills must not receive a redundant effect-reduction value.');
 assert.equal(multiplierContext.powerMultiplierForCheck(99999999), null, 'Unknown effects must not guess a multiplier.');
 const gridContext = {
   SYNC_POWER_TILE_LABELS: {
@@ -952,7 +996,7 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage;`, gridContext);
 assert.equal(
   gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
   'T技:威力+25(強) !',
@@ -971,6 +1015,12 @@ assert.equal(gridContext.displayTileNameForCheck(regularTile, regularTile.datase
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: { level: '4' } }), 4);
 assert.equal(gridContext.requiredMoveLevelForCheck({ dataset: {} }), 1, 'Tiles without data-level must default to move level 1.');
 assert.equal(gridContext.moveLevelIconUrlForCheck(5), 'https://pomasters.github.io/SyncPairsTracker/images/5.png');
+assert.equal(
+  gridContext.tooltipIncludesPercentageForCheck({ textContent: 'Has a chance (40％) of activating.' }, 40),
+  true,
+  'Official percentages must suppress redundant enhancer details, including full-width punctuation.',
+);
+assert.equal(gridContext.tooltipIncludesPercentageForCheck({ textContent: 'Powers up the user’s moves.' }, 40), false);
 assert.deepEqual(
   [1, 2, 3, 4, 5].map(gridContext.maxEnergyCapForMoveLevelForCheck),
   [62, 64, 66, 68, 70],
@@ -1027,6 +1077,12 @@ assert.match(gridSource, /appendFieldDuration\(tooltip, moveInfo\)/, 'Grid toolt
 assert.match(stylesSource, /\.be-field-duration/, 'Field-duration tooltip details must have dedicated styling.');
 assert.match(gridSource, /appendAdditionalEffectChanceMultiplier\(tooltip, moveInfo\?\.additionalEffectChanceMultiplier\)/, 'Grid tooltips must append additional-effect chance multipliers.');
 assert.match(stylesSource, /\.be-additional-effect-chance-multiplier/, 'Additional-effect chance multipliers must have dedicated tooltip styling.');
+assert.match(gridSource, /appendHealingBoost\(tooltip, moveInfo\)/, 'Grid tooltips must append hidden healing boosts.');
+assert.match(gridSource, /appendStatusEffectReduction\(tooltip, moveInfo\)/, 'Grid tooltips must append hidden status-effect mitigation.');
+assert.match(stylesSource, /\.be-healing-boost/, 'Hidden healing boosts must use the shared tooltip styling.');
+assert.match(stylesSource, /\.be-status-effect-reduction/, 'Hidden status-effect mitigation must use the shared tooltip styling.');
+assert.match(dataIndexSource, /healingBoost: healingBoostForPassiveId\(ability\.passiveId\)/, 'Grid metadata must retain hidden healing boosts.');
+assert.match(dataIndexSource, /statusEffectReduction: statusEffectReductionForPassiveId\(ability\.passiveId\)/, 'Grid metadata must retain hidden status-effect mitigation.');
 assert.match(dataIndexSource, /moveUses: Number\(move\?\.uses\)/, 'Grid move metadata must retain finite move uses.');
 assert.match(
   dataIndexSource,

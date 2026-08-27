@@ -9,12 +9,13 @@ const FIXED_POWER_MULTIPLIER_FAMILIES = new Set([
   130118, 130122, 130127, 130128, 130137, 130148, 130158,
   130160, 130161, 130162, 130163, 130164, 130165, 130168,
   130169, 130170, 130173, 130174, 130175, 130177, 130178,
-  130180, 130181, 130182, 130183, 130184, 130185, 130188,
+  130180, 130181, 130182, 130183, 130184, 130185, 130187,
+  130188,
   130194, 130197, 130198, 130199,
   130801, 130802, 130803, 130804, 130806, 130807, 130808,
   130809, 130810, 130814, 130815, 130819, 130820, 130822,
   130824, 130828, 130835, 130837, 130842, 130843, 130845,
-  130848, 130849, 130852, 130856,
+  130832, 130848, 130849, 130852, 130856, 130862, 130880,
   160103, 160104, 160108, 160109, 160110, 160111, 160112,
   160117, 160118, 160120, 160121, 160123, 160126, 160129,
   160130, 160131, 160132, 160133, 160134, 160135, 160140,
@@ -24,12 +25,12 @@ const FIXED_POWER_MULTIPLIER_FAMILIES = new Set([
   160167, 160168, 160169, 160170, 160171, 160173, 160174,
   160175, 160176, 160177, 160178, 160179, 160180, 160181,
   160182, 160183, 160186, 160187, 160193, 160194, 160197,
-  160198, 160199, 160302, 160305, 160307, 160308, 160313,
-  160315, 160316, 160318,
+  160196, 160198, 160199, 160302, 160305, 160307, 160308,
+  160313, 160315, 160316, 160318, 160319, 160320,
 ]);
 
 // These use an HP percentage rather than a conventional stat rank. Their
-// maximums are 10% per level at full HP and 5% per level at minimum HP.
+// maximums are 5% per level at either extreme of the HP range.
 const HIGH_HP_POWER_MULTIPLIER_FAMILIES = new Set([130110]);
 const LOW_HP_POWER_MULTIPLIER_FAMILIES = new Set([130136]);
 const MOVE_GAUGE_POWER_MULTIPLIER_FAMILIES = new Set([130105]);
@@ -91,7 +92,7 @@ function powerMultiplierForPassiveId(passiveId) {
   }
   if (HIGH_HP_POWER_MULTIPLIER_FAMILIES.has(family)) {
     const level = id % 10;
-    return level > 0 ? { kind: 'cap', value: level * 10 } : null;
+    return level > 0 ? { kind: 'cap', value: level * 5 } : null;
   }
   if (LOW_HP_POWER_MULTIPLIER_FAMILIES.has(family)) {
     const level = id % 10;
@@ -109,13 +110,37 @@ function powerMultiplierForPassiveId(passiveId) {
   return null;
 }
 
-// Type Guard skills use stable passive families. The normal version reduces
-// damage by 10%, while the group version ("Guard G") reduces it by 30%.
+function healingBoostForPassiveId(passiveId) {
+  const id = Number(passiveId);
+  if (Math.floor(id / 100) !== 110102) return null;
+  const rank = Math.abs(id) % 100;
+  return rank > 0 && rank <= 9 ? rank * 10 : null;
+}
+
+function statusEffectReductionForPassiveId(passiveId) {
+  const id = Number(passiveId);
+  const family = Math.floor(id / 100);
+  if (family < 170201 || family > 170208) return null;
+  const rank = Math.abs(id) % 100;
+  return rank > 0 && rank <= 9 ? rank * 10 : null;
+}
+
+// Type Guard skills use stable passive families. Both the single-user and
+// group versions reduce qualifying damage by 30%; the G suffix changes who is
+// protected, not the percentage applied to each protected sync pair.
 function damageReductionForPassiveId(passiveId, englishDescription = '') {
   const id = Number(passiveId);
-  const family = Math.floor(id / 10);
-  if (family >= 240101 && family <= 240118) return 10;
+  const family = Math.floor(id / 100);
+  if (family >= 240101 && family <= 240118) return 30;
   if (family >= 240120 && family <= 240129) return 30;
+
+  // Numbered incoming- and recoil-damage reduction skills use 10% per rank.
+  // Keep the upper bound explicit because the adjacent 130251 family is a
+  // Sync Move power boost, not damage reduction.
+  if (family >= 130201 && family <= 130250) {
+    const rank = Math.abs(id) % 10;
+    return rank > 0 ? rank * 10 : null;
+  }
 
   // Most conditional reduction families state their verified rate in the
   // resolved description (for example, "10% per rank"). Use the passive's
