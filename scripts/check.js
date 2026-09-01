@@ -1104,8 +1104,13 @@ assert.match(
   /skillTemplate\.includes\('P技'\)/,
   'Generic passives that explicitly target Pokemon moves must resolve every Pokemon move.',
 );
+assert.match(
+  dataIndexSource,
+  /gridAbilitySkillTemplate\(ability\)\.includes\(' 技回数回復'\)/,
+  'Generic move-use recovery passives must resolve the whole move set.',
+);
 const relatedMoveResolverSource = dataIndexSource.match(
-  /function relatedMoveIdsForAbilityPanel\(panel, ability\) \{[\s\S]*?\n\}\n\nfunction buildPairSkillIndex/,
+  /function gridAbilitySkillTemplate\(ability\) \{[\s\S]*?\n\}\n\nfunction buildPairSkillIndex/,
 )?.[0]?.replace(/\nfunction buildPairSkillIndex$/, '');
 if (!relatedMoveResolverSource) throw new Error('Related-move resolver source is missing.');
 const relatedMoveContext = {
@@ -1133,6 +1138,14 @@ assert.deepEqual(
   ['6216', '8216', '6217'],
   'A generic P-move passive must resolve every Pokemon move of the pair.',
 );
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = '初B技後 技回数回復{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['6216', '8216', '6217', '13670'],
+  'A generic move-use recovery passive must resolve every move slot.',
+);
 assert.deepEqual(
   [...relatedMoveContext.relatedMoveIdsForCheck(
     { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 6216 },
@@ -1142,9 +1155,15 @@ assert.deepEqual(
 );
 assert.match(
   gridSource,
-  /relatedMove\.moveUses > 0 \? copy\.moveUses\.replace\('\{value\}', String\(relatedMove\.moveUses\)\) : ''/,
+  /copy\.moveUses\.replace\('\{value\}', String\(relatedMove\.moveUses\)\)/,
   'Related move tooltips must display finite move uses.',
 );
+assert.match(
+  gridSource,
+  /relatedMoves\.filter\(\(relatedMove\) => relatedMove\.moveUses > 0\)/,
+  'Whole-move-set recovery tooltips must omit moves with unlimited uses.',
+);
+assert.match(i18nSource, /affectedMoves: '受影響的次數限制招式'/, 'Affected limited-use move labels must be localized.');
 assert.match(
   gridSource,
   /name\.textContent = \[copy\.relatedMove\.replace\('\{name\}', moveName\), \.\.\.stats\]\.join/,

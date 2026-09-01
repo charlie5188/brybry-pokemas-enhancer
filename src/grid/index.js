@@ -317,6 +317,25 @@ function appendRelatedMoveDescription(tooltip, moveInfo) {
     ? window.getMoveDescr
     : (typeof getMoveDescr === 'function' ? getMoveDescr : null);
   const copy = text();
+  if (moveInfo.targetsWholeMoveSet) {
+    const limitedMoves = relatedMoves.filter((relatedMove) => relatedMove.moveUses > 0);
+    if (!limitedMoves.length) return;
+    const block = document.createElement('p');
+    block.className = 'be-affected-moves';
+    const heading = document.createElement('strong');
+    heading.textContent = copy.affectedMoves;
+    block.append(heading);
+    limitedMoves.forEach((relatedMove) => {
+      const moveName = normalizeGridLabel(
+        moveNameByLocale[language()].get(relatedMove.moveId) || relatedMove.moveId,
+      ).replace(/\s+/g, ' ').trim();
+      const row = document.createElement('span');
+      row.textContent = `${moveName} · ${copy.moveUses.replace('{value}', String(relatedMove.moveUses))}`;
+      block.append(row);
+    });
+    tooltip.append(block);
+    return;
+  }
   relatedMoves.forEach((relatedMove) => {
     const description = moveDescriptionResolver?.(Number(relatedMove.moveId));
     const moveName = moveNameByLocale[language()].get(relatedMove.moveId) || relatedMove.moveId;

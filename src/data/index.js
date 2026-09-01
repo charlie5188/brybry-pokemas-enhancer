@@ -34,15 +34,22 @@ function addMoveEntry(index, trainerId, moveId, availableDate = 0) {
   index.set(String(trainerId), pairMoves);
 }
 
+function gridAbilitySkillTemplate(ability) {
+  const passiveId = Number(ability?.passiveId);
+  return POMATOOLS_SKILL_ABBR.ja?.[String(Math.floor(passiveId / 10))] || '';
+}
+
+function abilityTargetsWholeMoveSet(ability) {
+  return gridAbilitySkillTemplate(ability).includes(' 技回数回復');
+}
+
 function relatedMoveIdsForAbilityPanel(panel, ability) {
   const directMoveId = Number(ability?.moveId);
   if (directMoveId > 0) return [String(directMoveId)];
 
-  // Some generic passive-grid abilities do not store a moveId. When their
-  // passive explicitly names P技 or T技, resolve the relevant moves from the
-  // pair's move data instead of guessing a fixed move slot.
-  const passiveId = Number(ability?.passiveId);
-  const skillTemplate = POMATOOLS_SKILL_ABBR.ja?.[String(Math.floor(passiveId / 10))];
+  // Some generic passive-grid abilities do not store a moveId. Resolve the
+  // relevant slots from the pair's move data instead of guessing one slot.
+  const skillTemplate = gridAbilitySkillTemplate(ability);
   if (!skillTemplate) return [];
 
   const trainer = trainerById.get(String(panel?.trainerId));
@@ -51,9 +58,14 @@ function relatedMoveIdsForAbilityPanel(panel, ability) {
     .filter((moveId) => moveById.has(moveId));
   const targetsTrainerMove = skillTemplate.includes('T技');
   const targetsPokemonMove = skillTemplate.includes('P技');
+  // Generic MP-recovery passives such as 「初B技後 技回数回復」 affect the
+  // whole move set; tooltip presentation later filters this to limited-use moves.
+  const targetsAllMoves = abilityTargetsWholeMoveSet(ability);
   return moveIds.filter((moveId) => {
     const user = moveById.get(moveId)?.user;
-    return (targetsTrainerMove && user === 'Trainer') || (targetsPokemonMove && user === 'Pokemon');
+    return targetsAllMoves
+      || (targetsTrainerMove && user === 'Trainer')
+      || (targetsPokemonMove && user === 'Pokemon');
   });
 }
 
@@ -307,6 +319,7 @@ async function loadTrainerData() {
     return [[String(panel.cellId), {
       ...relatedMove,
       relatedMoves,
+      targetsWholeMoveSet: abilityTargetsWholeMoveSet(ability),
       passiveId: Number(ability.passiveId),
       abilityType: Number(ability.type),
       abilityValue: Number(ability.value),
