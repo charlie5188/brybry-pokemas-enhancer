@@ -193,6 +193,36 @@ function filterButtonLabel() {
   return `${text().filter}${summary ? ` (${summary})` : ''}`;
 }
 
+// These option labels are intentionally compact inside their titled sections, but
+// become ambiguous when copied into the shared active-filter row.
+const ACTIVE_FILTER_CONTEXT_KEYS = {
+  type: 'type',
+  moveType: 'damagingMoveType',
+  role: 'role',
+  weakness: 'weakness',
+  exRole: 'exRole',
+  roleCombination: 'roleCombination',
+};
+
+function activeFilterLabel(group, label, copy = text()) {
+  const context = copy[ACTIVE_FILTER_CONTEXT_KEYS[group]];
+  return context ? `${context}: ${label}` : label;
+}
+
+function activeSkillCategoryLabel(value, locale) {
+  const category = SKILL_FILTER_CATEGORIES.find((candidate) => candidate.value === value);
+  const label = category?.labels[locale] || category?.labels.en || value;
+  if (!category?.detailOf) return label;
+
+  const parent = SKILL_FILTER_CATEGORIES.find((candidate) => candidate.value === category.detailOf);
+  const parentLabel = parent?.labels[locale] || parent?.labels.en;
+  if (!parentLabel || label.toLocaleLowerCase().includes(parentLabel.toLocaleLowerCase())) return label;
+
+  // EX detail labels already carry an EX prefix; the parent supplies that context here.
+  const conciseLabel = /^EX\s*/i.test(parentLabel) ? label.replace(/^EX\s*/i, '') : label;
+  return `${parentLabel}: ${conciseLabel}`;
+}
+
 function activeFilterEntries() {
   const locale = language();
   const entries = [];
@@ -217,22 +247,18 @@ function activeFilterEntries() {
     other: selectedOther,
   }).forEach(([group, values]) => {
     values.forEach((value) => entries.push({
-      group, value, state: 'include', label: chipLabel(group, value), logicGroup: filterLogicGroup(group, value),
+      group, value, state: 'include', label: activeFilterLabel(group, chipLabel(group, value)), logicGroup: filterLogicGroup(group, value),
     }));
     excludedFilters.get(group)?.forEach((value) => {
-      entries.push({ group, value, state: 'exclude', label: chipLabel(group, value) });
+      entries.push({ group, value, state: 'exclude', label: activeFilterLabel(group, chipLabel(group, value)) });
     });
   });
 
-  const categoryLabel = (value) => {
-    const category = SKILL_FILTER_CATEGORIES.find((candidate) => candidate.value === value);
-    return category?.labels[locale] || category?.labels.en || value;
-  };
   selectedSkillCategories.forEach((value) => entries.push({
-    group: 'skillCategory', value, state: 'include', label: categoryLabel(value), logicGroup: skillCategoryLogicGroup(value),
+    group: 'skillCategory', value, state: 'include', label: activeSkillCategoryLabel(value, locale), logicGroup: skillCategoryLogicGroup(value),
   }));
   excludedSkillCategories.forEach((value) => entries.push({
-    group: 'skillCategory', value, state: 'exclude', label: categoryLabel(value),
+    group: 'skillCategory', value, state: 'exclude', label: activeSkillCategoryLabel(value, locale),
   }));
   selectedSkillIds.forEach((value) => entries.push({
     group: 'skill', value, state: 'include', label: passiveSkillDetails(value, locale)?.name || value, logicGroup: 'skill',

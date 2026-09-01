@@ -209,7 +209,8 @@ const pickerLogicContext = {};
 new vm.Script(`
   const ROLE_FAMILIES = [];
   const SKILL_FILTER_CATEGORIES = [
-    { value: 'weather' }, { value: 'zone' }, { value: 'sunnyWeather', detailOf: 'weather' },
+    { value: 'weather', labels: { en: 'Weather', ja: '天気' } }, { value: 'zone' },
+    { value: 'sunnyWeather', detailOf: 'weather', labels: { en: 'Sunny', ja: '晴れ' } },
     { value: 'statUp' }, { value: 'status' }, { value: 'masterPassive' },
   ];
   let selectedTypes = new Set();
@@ -261,11 +262,33 @@ new vm.Script(`
     Array.from({ length: groupSize }),
     totalTerms,
   );
+  globalThis.activeFilterLabelForCheck = activeFilterLabel;
+  globalThis.activeSkillCategoryLabelForCheck = activeSkillCategoryLabel;
 `, { filename: 'picker-logic-check.js' }).runInNewContext(pickerLogicContext);
 
 assert.equal(pickerLogicContext.shouldParenthesizeForCheck(2, 2), true, 'OR groups joined to another term must be parenthesized.');
 assert.equal(pickerLogicContext.shouldParenthesizeForCheck(2, 1), false, 'A standalone OR group must not add unnecessary parentheses.');
 assert.equal(pickerLogicContext.shouldParenthesizeForCheck(1, 2), false, 'A single-value term must not be parenthesized.');
+assert.equal(
+  pickerLogicContext.activeFilterLabelForCheck('exRole', 'Support', { exRole: 'EX role' }),
+  'EX role: Support',
+  'EX role tags must preserve their filter context outside the accordion.',
+);
+assert.equal(
+  pickerLogicContext.activeFilterLabelForCheck('weakness', 'Fire', { weakness: 'Weakness' }),
+  'Weakness: Fire',
+  'Type-like tags must identify which type dimension they filter.',
+);
+assert.equal(
+  pickerLogicContext.activeFilterLabelForCheck('region', 'Kanto', { region: 'Region' }),
+  'Kanto',
+  'Self-explanatory tags must stay concise.',
+);
+assert.equal(
+  pickerLogicContext.activeSkillCategoryLabelForCheck('sunnyWeather', 'ja'),
+  '天気: 晴れ',
+  'Skill-detail tags must retain the parent category that gives their compact label meaning.',
+);
 
 const pairForFilterLogicCheck = {
   name: 'Test Pair',
