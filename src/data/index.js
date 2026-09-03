@@ -40,12 +40,36 @@ function gridAbilitySkillTemplate(ability) {
 }
 
 function abilityTargetsWholeMoveSet(ability) {
-  return gridAbilitySkillTemplate(ability).includes(' 技回数回復');
+  if (Number(ability?.moveId) > 0) return false;
+  const skillTemplate = gridAbilitySkillTemplate(ability);
+  // In 「P技後 回数回復」, P技 is the trigger; the recovered target is the
+  // generic 「自分の技」 from the full description, so every move slot must be
+  // considered before the tooltip removes moves without limited uses.
+  return skillTemplate.includes(' 技回数回復')
+    || skillTemplate.includes('P技後 回数回復');
+}
+
+function abilityRecoversMoveUses(ability) {
+  return gridAbilitySkillTemplate(ability).includes('回数回復');
+}
+
+function recoveryMoveTargetScope(ability) {
+  if (!abilityRecoversMoveUses(ability)) return '';
+  if (abilityTargetsWholeMoveSet(ability)) return 'all';
+  const skillTemplate = gridAbilitySkillTemplate(ability);
+  if (/P変化技\s*回数回復/.test(skillTemplate)) return 'pokemon-status';
+  if (/P技\s*回数回復/.test(skillTemplate)) return 'pokemon';
+  if (/T技\s*回数回復/.test(skillTemplate)) return 'trainer';
+  if (/S技\s*回数回復/.test(skillTemplate)) return 'syncro';
+  return '';
 }
 
 function relatedMoveIdsForAbilityPanel(panel, ability) {
   const directMoveId = Number(ability?.moveId);
-  if (directMoveId > 0) return [String(directMoveId)];
+  const recoveryScope = recoveryMoveTargetScope(ability);
+  // Category-wide recovery abilities can carry the triggering move here. Their
+  // target scope from the passive text must take priority over that moveId.
+  if (directMoveId > 0 && !recoveryScope) return [String(directMoveId)];
 
   // Some generic passive-grid abilities do not store a moveId. Resolve the
   // relevant slots from the pair's move data instead of guessing one slot.
@@ -60,11 +84,16 @@ function relatedMoveIdsForAbilityPanel(panel, ability) {
   const targetsPokemonMove = skillTemplate.includes('P技');
   // Generic MP-recovery passives such as 「初B技後 技回数回復」 affect the
   // whole move set; tooltip presentation later filters this to limited-use moves.
-  const targetsAllMoves = abilityTargetsWholeMoveSet(ability);
+  const targetsAllMoves = recoveryScope === 'all';
   return moveIds.filter((moveId) => {
-    const user = moveById.get(moveId)?.user;
-    return targetsAllMoves
-      || (targetsTrainerMove && user === 'Trainer')
+    const move = moveById.get(moveId);
+    const user = move?.user;
+    if (targetsAllMoves) return true;
+    if (recoveryScope === 'pokemon-status') return user === 'Pokemon' && move?.category === 'Status';
+    if (recoveryScope === 'pokemon') return user === 'Pokemon';
+    if (recoveryScope === 'trainer') return user === 'Trainer';
+    if (recoveryScope === 'syncro') return move?.group === 'Buddy';
+    return (targetsTrainerMove && user === 'Trainer')
       || (targetsPokemonMove && user === 'Pokemon');
   });
 }
@@ -320,6 +349,7 @@ async function loadTrainerData() {
       ...relatedMove,
       relatedMoves,
       targetsWholeMoveSet: abilityTargetsWholeMoveSet(ability),
+      recoversMoveUses: abilityRecoversMoveUses(ability),
       passiveId: Number(ability.passiveId),
       abilityType: Number(ability.type),
       abilityValue: Number(ability.value),

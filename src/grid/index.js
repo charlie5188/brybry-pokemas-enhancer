@@ -306,11 +306,21 @@ function appendRequiredMoveLevel(tooltip, tile) {
   else tooltip.prepend(line);
 }
 
+function relatedMovesForTooltip(moveInfo) {
+  const relatedMoves = moveInfo?.relatedMoves?.length ? moveInfo.relatedMoves : [moveInfo];
+  return moveInfo?.recoversMoveUses
+    ? relatedMoves.filter((relatedMove) => relatedMove.moveUses > 0)
+    : relatedMoves;
+}
+
 function appendRelatedMoveDescription(tooltip, moveInfo) {
   if (!tooltip || !moveInfo || moveInfo.abilityType === 11
     || tooltip.querySelector('.be-related-move')) return;
 
-  const relatedMoves = moveInfo.relatedMoves?.length ? moveInfo.relatedMoves : [moveInfo];
+  // MP-recovery effects can resolve a category or an entire move set. Only
+  // limited-use moves can benefit, so unlimited moves must never be presented
+  // as affected even when they are part of the resolved scope.
+  const relatedMoves = relatedMovesForTooltip(moveInfo);
   if (!relatedMoves.some((relatedMove) => relatedMove.moveId)) return;
 
   const moveDescriptionResolver = typeof window.getMoveDescr === 'function'
@@ -318,14 +328,12 @@ function appendRelatedMoveDescription(tooltip, moveInfo) {
     : (typeof getMoveDescr === 'function' ? getMoveDescr : null);
   const copy = text();
   if (moveInfo.targetsWholeMoveSet) {
-    const limitedMoves = relatedMoves.filter((relatedMove) => relatedMove.moveUses > 0);
-    if (!limitedMoves.length) return;
     const block = document.createElement('p');
     block.className = 'be-affected-moves';
     const heading = document.createElement('strong');
     heading.textContent = copy.affectedMoves;
     block.append(heading);
-    limitedMoves.forEach((relatedMove) => {
+    relatedMoves.forEach((relatedMove) => {
       const moveName = normalizeGridLabel(
         moveNameByLocale[language()].get(relatedMove.moveId) || relatedMove.moveId,
       ).replace(/\s+/g, ' ').trim();

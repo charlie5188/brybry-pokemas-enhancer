@@ -1019,7 +1019,7 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage; this.relatedMovesForTooltipForCheck = relatedMovesForTooltip;`, gridContext);
 assert.equal(
   gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
   'T技:威力+25(強) !',
@@ -1044,6 +1044,28 @@ assert.equal(
   'Official percentages must suppress redundant enhancer details, including full-width punctuation.',
 );
 assert.equal(gridContext.tooltipIncludesPercentageForCheck({ textContent: 'Powers up the user’s moves.' }, 40), false);
+assert.deepEqual(
+  [...gridContext.relatedMovesForTooltipForCheck({
+    recoversMoveUses: true,
+    relatedMoves: [
+      { moveId: '84', moveUses: 0 },
+      { moveId: '12450', moveUses: 2 },
+    ],
+  })].map((move) => move.moveId),
+  ['12450'],
+  'Move-use recovery tooltips must omit unlimited moves from every recovered scope.',
+);
+assert.deepEqual(
+  [...gridContext.relatedMovesForTooltipForCheck({
+    recoversMoveUses: false,
+    relatedMoves: [
+      { moveId: '84', moveUses: 0 },
+      { moveId: '12450', moveUses: 2 },
+    ],
+  })].map((move) => move.moveId),
+  ['84', '12450'],
+  'Non-recovery tooltips must preserve related unlimited moves.',
+);
 assert.deepEqual(
   [1, 2, 3, 4, 5].map(gridContext.maxEnergyCapForMoveLevelForCheck),
   [62, 64, 66, 68, 70],
@@ -1129,8 +1151,23 @@ assert.match(
 );
 assert.match(
   dataIndexSource,
-  /gridAbilitySkillTemplate\(ability\)\.includes\(' 技回数回復'\)/,
+  /skillTemplate\.includes\(' 技回数回復'\)/,
   'Generic move-use recovery passives must resolve the whole move set.',
+);
+assert.match(
+  dataIndexSource,
+  /skillTemplate\.includes\('P技後 回数回復'\)/,
+  'Pokemon-move-triggered generic recovery must resolve the whole move set.',
+);
+assert.match(
+  dataIndexSource,
+  /function abilityRecoversMoveUses\(ability\)/,
+  'Grid metadata must identify every move-use recovery effect.',
+);
+assert.match(
+  dataIndexSource,
+  /function recoveryMoveTargetScope\(ability\)/,
+  'Category-wide move-use recovery must distinguish its target scope from its triggering move.',
 );
 const relatedMoveResolverSource = dataIndexSource.match(
   /function gridAbilitySkillTemplate\(ability\) \{[\s\S]*?\n\}\n\nfunction buildPairSkillIndex/,
@@ -1140,8 +1177,10 @@ const relatedMoveContext = {
   POMATOOLS_SKILL_ABBR: { ja: { 1902950: 'T技後 場に ゲージ加速{{value}}' } },
   trainerById: new Map([['10367000000', { move1Id: 6216, move2Id: 8216, move3Id: 6217, move4Id: 13670 }]]),
   moveById: new Map([
-    ['6216', { user: 'Pokemon' }], ['8216', { user: 'Pokemon' }],
-    ['6217', { user: 'Pokemon' }], ['13670', { user: 'Trainer' }],
+    ['6216', { user: 'Pokemon', category: 'Special', group: 'Regular' }],
+    ['8216', { user: 'Pokemon', category: 'Status', group: 'Regular' }],
+    ['6217', { user: 'Pokemon', category: 'Special', group: 'Buddy' }],
+    ['13670', { user: 'Trainer', category: 'Status', group: 'Regular' }],
   ]),
 };
 vm.createContext(relatedMoveContext);
@@ -1169,6 +1208,39 @@ assert.deepEqual(
   ['6216', '8216', '6217', '13670'],
   'A generic move-use recovery passive must resolve every move slot.',
 );
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = 'P技後 回数回復{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['6216', '8216', '6217', '13670'],
+  'Pokemon-move-triggered generic recovery must include limited Trainer moves in its candidate scope.',
+);
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = '技後 P技回数回復{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 6216 },
+  )],
+  ['6216', '8216', '6217'],
+  'Category-wide Pokemon-move recovery must not mistake its triggering moveId for the only target.',
+);
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = '初B技後 P変化技 回数回復{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['8216'],
+  'Pokemon status-move recovery must resolve only status moves in its target category.',
+);
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = '初B技後 S技 回数回復{{value}}';
+assert.deepEqual(
+  [...relatedMoveContext.relatedMoveIdsForCheck(
+    { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
+  )],
+  ['6217'],
+  'Syncro move-use recovery must resolve only Buddy moves.',
+);
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = 'T技後 場に ゲージ加速{{value}}';
 assert.deepEqual(
   [...relatedMoveContext.relatedMoveIdsForCheck(
     { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 6216 },
@@ -1183,8 +1255,8 @@ assert.match(
 );
 assert.match(
   gridSource,
-  /relatedMoves\.filter\(\(relatedMove\) => relatedMove\.moveUses > 0\)/,
-  'Whole-move-set recovery tooltips must omit moves with unlimited uses.',
+  /moveInfo\?\.recoversMoveUses[\s\S]*relatedMoves\.filter\(\(relatedMove\) => relatedMove\.moveUses > 0\)/,
+  'Every move-use recovery tooltip must omit moves with unlimited uses.',
 );
 assert.match(i18nSource, /affectedMoves: '受影響的次數限制招式'/, 'Affected limited-use move labels must be localized.');
 assert.match(
