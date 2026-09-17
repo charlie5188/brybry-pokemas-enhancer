@@ -205,6 +205,68 @@ assert.match(pickerSource, /appendPairFallbackImages\(images, fallbackIcons\)/, 
 assert.match(pickerSource, /imagePath\.endsWith\('\/data\/icons\/trainers\/unknown\.png'\)/, 'The floating picker action must detect Brybry\'s unknown pair placeholder.');
 assert.match(pickerSource, /appendPairFallbackImages\(container, pairFallbackIcons\(trainer\)\)/, 'The floating picker action must reuse the trainer and Pokemon fallback.');
 
+const sectionOrderingGridSource = await readFile(path.join(projectRoot, 'src/grid/index.js'), 'utf8');
+const sectionOrderingDocumentListeners = new Map();
+const sectionOrderingWindowListeners = new Map();
+const statsHeadingForCheck = { tagName: 'H2' };
+const gridSectionForCheck = { parentElement: null, nextElementSibling: null };
+const gridHomeForCheck = {
+  append(node) {
+    node.parentElement = this;
+    node.nextElementSibling = null;
+  },
+};
+const activePairContentForCheck = {
+  children: [statsHeadingForCheck],
+  insertBefore(node, heading) {
+    assert.equal(heading, statsHeadingForCheck);
+    node.parentElement = this;
+    node.nextElementSibling = heading;
+    this.children = [node, heading];
+  },
+};
+const sectionOrderingContext = {
+  document: {
+    documentElement: { dataset: {} },
+    getElementById(id) {
+      if (id === 'syncGridDiv') return gridSectionForCheck;
+      if (id === 'contentDiv') return gridHomeForCheck;
+      return null;
+    },
+    querySelectorAll(selector) {
+      return selector === '.tabContent' ? [activePairContentForCheck] : [];
+    },
+    addEventListener(type, callback, capture) {
+      sectionOrderingDocumentListeners.set(type, { callback, capture });
+    },
+  },
+  window: {
+    addEventListener(type, callback, capture) {
+      sectionOrderingWindowListeners.set(type, { callback, capture });
+    },
+  },
+  getComputedStyle: () => ({ display: 'block' }),
+  requestAnimationFrame: (callback) => callback(),
+};
+vm.createContext(sectionOrderingContext);
+vm.runInContext(
+  `${sectionOrderingGridSource}\nthis.setupSectionOrderingForCheck = setupSectionOrdering; this.moveSyncGridBeforeStatsForCheck = moveSyncGridBeforeStats;`,
+  sectionOrderingContext,
+);
+sectionOrderingContext.setupSectionOrderingForCheck();
+assert.equal(gridSectionForCheck.parentElement, activePairContentForCheck, 'The Grid must initially move before Stats.');
+const pairResultClickListener = sectionOrderingDocumentListeners.get('click');
+assert.equal(pairResultClickListener?.capture, true, 'Pair-result navigation must be intercepted before Brybry rebuilds the pair.');
+pairResultClickListener.callback({
+  target: { closest: (selector) => (selector === '#pairSearchResults > li' ? {} : null) },
+});
+assert.equal(gridSectionForCheck.parentElement, gridHomeForCheck, 'A picker result click must return the shared Grid to its stable host.');
+sectionOrderingContext.moveSyncGridBeforeStatsForCheck();
+const historyListener = sectionOrderingWindowListeners.get('popstate');
+assert.equal(historyListener?.capture, true, 'History navigation must be intercepted before Brybry rebuilds the pair.');
+historyListener.callback();
+assert.equal(gridSectionForCheck.parentElement, gridHomeForCheck, 'History navigation must return the shared Grid to its stable host.');
+
 const pickerLogicContext = {};
 new vm.Script(`
   const ROLE_FAMILIES = [];

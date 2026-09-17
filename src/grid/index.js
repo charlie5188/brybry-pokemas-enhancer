@@ -558,13 +558,16 @@ function setupSectionOrdering() {
     // Brybry replaces the active pair content during a selection change. Move
     // the shared Grid back to its stable host before that replacement happens,
     // then the mutation refresh will place it before the new Stats section.
+    // Its picker and browser-history paths rebuild the pair directly without
+    // dispatching a select change, so cover those navigation paths as well.
     document.addEventListener('change', (event) => {
       if (event.target.id === 'syncPairSelect') restoreSyncGridHome();
     }, true);
     document.addEventListener('click', (event) => {
-      if (!event.target.closest('.tabLinks')) return;
-      requestAnimationFrame(moveSyncGridBeforeStats);
+      if (event.target.closest?.('#pairSearchResults > li')) restoreSyncGridHome();
+      if (event.target.closest?.('.tabLinks')) requestAnimationFrame(moveSyncGridBeforeStats);
     }, true);
+    window.addEventListener('popstate', restoreSyncGridHome, true);
   }
   moveSyncGridBeforeStats();
 }
