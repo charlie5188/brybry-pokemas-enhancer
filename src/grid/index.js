@@ -306,21 +306,47 @@ function appendRequiredMoveLevel(tooltip, tile) {
   else tooltip.prepend(line);
 }
 
-function relatedMovesForTooltip(moveInfo) {
-  const relatedMoves = moveInfo?.relatedMoves?.length ? moveInfo.relatedMoves : [moveInfo];
+function normalizedMoveReference(value) {
+  return normalizeGridLabel(value)
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[\s'"‘’“”「」『』:：・･]/g, '');
+}
+
+function movesReferencedByTileName(tile, moveInfo) {
+  const reference = normalizedMoveReference(tile?.dataset?.tileName);
+  if (!reference) return [];
+  const locale = language();
+  const matches = (moveInfo?.moveCandidates || []).map((move) => ({
+    move,
+    name: normalizedMoveReference(moveNameByLocale[locale]?.get(move.moveId)),
+  })).filter(({ name }) => name.length >= 2 && reference.includes(name));
+  if (!matches.length) return [];
+
+  // Prefer the most specific move name when one candidate name contains
+  // another. This avoids adding unrelated move details for short names.
+  const longestName = Math.max(...matches.map(({ name }) => name.length));
+  return matches.filter(({ name }) => name.length === longestName).map(({ move }) => move);
+}
+
+function relatedMovesForTooltip(moveInfo, tile) {
+  const explicitMoves = moveInfo?.relatedMoves?.filter((move) => move.moveId) || [];
+  const relatedMoves = explicitMoves.length
+    ? explicitMoves
+    : movesReferencedByTileName(tile, moveInfo);
   return moveInfo?.recoversMoveUses
     ? relatedMoves.filter((relatedMove) => relatedMove.moveUses > 0)
     : relatedMoves;
 }
 
-function appendRelatedMoveDescription(tooltip, moveInfo) {
+function appendRelatedMoveDescription(tooltip, moveInfo, tile) {
   if (!tooltip || !moveInfo || moveInfo.abilityType === 11
     || tooltip.querySelector('.be-related-move')) return;
 
   // MP-recovery effects can resolve a category or an entire move set. Only
   // limited-use moves can benefit, so unlimited moves must never be presented
   // as affected even when they are part of the resolved scope.
-  const relatedMoves = relatedMovesForTooltip(moveInfo);
+  const relatedMoves = relatedMovesForTooltip(moveInfo, tile);
   if (!relatedMoves.some((relatedMove) => relatedMove.moveId)) return;
 
   const moveDescriptionResolver = typeof window.getMoveDescr === 'function'
@@ -378,7 +404,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   appendHealingBoost(tooltip, moveInfo);
   appendStatusEffectReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
-  appendRelatedMoveDescription(tooltip, moveInfo);
+  appendRelatedMoveDescription(tooltip, moveInfo, tile);
   repositionGridTooltip(tooltip, tile);
 }
 

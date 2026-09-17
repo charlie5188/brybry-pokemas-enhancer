@@ -64,6 +64,23 @@ function recoveryMoveTargetScope(ability) {
   return '';
 }
 
+function moveIdsForTrainer(trainerId) {
+  const trainer = trainerById.get(String(trainerId));
+  return [...new Set([1, 2, 3, 4]
+    .map((slot) => String(trainer?.[`move${slot}Id`] || ''))
+    .filter((moveId) => moveById.has(moveId)))];
+}
+
+function moveTooltipInfo(moveId) {
+  const move = moveById.get(String(moveId));
+  return {
+    moveId: String(moveId),
+    movePower: Number(move?.power),
+    moveAccuracy: Number(move?.accuracy),
+    moveUses: Number(move?.uses),
+  };
+}
+
 function relatedMoveIdsForAbilityPanel(panel, ability) {
   const directMoveId = Number(ability?.moveId);
   const recoveryScope = recoveryMoveTargetScope(ability);
@@ -76,10 +93,7 @@ function relatedMoveIdsForAbilityPanel(panel, ability) {
   const skillTemplate = gridAbilitySkillTemplate(ability);
   if (!skillTemplate) return [];
 
-  const trainer = trainerById.get(String(panel?.trainerId));
-  const moveIds = [1, 2, 3, 4]
-    .map((slot) => String(trainer?.[`move${slot}Id`] || ''))
-    .filter((moveId) => moveById.has(moveId));
+  const moveIds = moveIdsForTrainer(panel?.trainerId);
   const targetsTrainerMove = skillTemplate.includes('T技');
   const targetsPokemonMove = skillTemplate.includes('P技');
   // Generic MP-recovery passives such as 「初B技後 技回数回復」 affect the
@@ -335,19 +349,16 @@ async function loadTrainerData() {
   moveInfoByCellId = new Map((abilityPanels.entries || []).flatMap((panel) => {
     const ability = abilityById.get(String(panel.abilityId));
     if (!ability) return [];
-    const relatedMoves = relatedMoveIdsForAbilityPanel(panel, ability).map((moveId) => {
-      const move = moveById.get(moveId);
-      return {
-        moveId,
-        movePower: Number(move?.power),
-        moveAccuracy: Number(move?.accuracy),
-        moveUses: Number(move?.uses),
-      };
-    });
+    const moveCandidates = moveIdsForTrainer(panel.trainerId).map(moveTooltipInfo);
+    const relatedMoves = relatedMoveIdsForAbilityPanel(panel, ability).map(moveTooltipInfo);
     const [relatedMove = {}] = relatedMoves;
     return [[String(panel.cellId), {
       ...relatedMove,
       relatedMoves,
+      // Some passive-only Grid abilities omit moveId even though their
+      // localized title names the affected move. Keep the pair's real move
+      // slots so the tooltip can resolve that reference without a static list.
+      moveCandidates,
       targetsWholeMoveSet: abilityTargetsWholeMoveSet(ability),
       recoversMoveUses: abilityRecoversMoveUses(ability),
       passiveId: Number(ability.passiveId),

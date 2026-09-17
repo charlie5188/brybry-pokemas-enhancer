@@ -1076,6 +1076,13 @@ const gridContext = {
   },
   moveInfoByCellId: new Map(),
   tileAbbreviationByCellId: new Map(),
+  moveNameByLocale: { ja: new Map([
+    ['8201', 'カントーの分析'],
+    ['8211', 'シンオウの結束'],
+    ['8216', 'カロスの分析'],
+    ['8225', 'パルデアの分析'],
+    ['19001', 'ミニキズぐすりＧ'],
+  ]) },
   language: () => 'ja',
   requestAnimationFrame: () => {},
 };
@@ -1128,6 +1135,29 @@ assert.deepEqual(
   ['84', '12450'],
   'Non-recovery tooltips must preserve related unlimited moves.',
 );
+const namedRecoveryCandidates = [
+  { moveId: '8201', moveUses: 1 },
+  { moveId: '8211', moveUses: 2 },
+  { moveId: '8216', moveUses: 1 },
+  { moveId: '8225', moveUses: 1 },
+  { moveId: '19001', moveUses: 2 },
+];
+[
+  ['初カントーの分析回数０時技回数回復1', '8201'],
+  ['初シンオウの結束回数０時技回数回復1', '8211'],
+  ['初カロスの分析回数０時技回数回復1', '8216'],
+  ['初パルデアの分析回数０時技回数回復1', '8225'],
+  ['初ミニキズぐすりＧ回数０時技回数回復1', '19001'],
+].forEach(([tileName, expectedMoveId]) => {
+  assert.deepEqual(
+    [...gridContext.relatedMovesForTooltipForCheck(
+      { moveCandidates: namedRecoveryCandidates },
+      { dataset: { tileName } },
+    )].map((move) => move.moveId),
+    [expectedMoveId],
+    `${tileName} must show the affected move in its tooltip.`,
+  );
+});
 assert.deepEqual(
   [1, 2, 3, 4, 5].map(gridContext.maxEnergyCapForMoveLevelForCheck),
   [62, 64, 66, 68, 70],
