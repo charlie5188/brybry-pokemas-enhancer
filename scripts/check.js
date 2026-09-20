@@ -77,6 +77,28 @@ for (const defaultValue of [
   if (!stateSource.includes(defaultValue)) throw new Error(`Default behavior changed: ${defaultValue}`);
 }
 
+const settingsStorageSource = await readFile(path.join(projectRoot, 'src/storage.js'), 'utf8');
+for (const preference of [
+  'gridBuildMemory',
+  'zeroEnergyReset',
+  'gridLabels',
+  'detailedGridTooltips',
+  'responsiveGrid',
+]) {
+  assert.match(settingsStorageSource, new RegExp(`preferences\\.${preference} !== false`), `${preference} must preserve the current enabled-by-default behavior.`);
+  assert.match(settingsStorageSource, new RegExp(`${preference}: `), `${preference} must be saved with picker preferences.`);
+}
+const settingsSource = await readFile(path.join(projectRoot, 'src/spoiler-protection.js'), 'utf8');
+for (const setting of [
+  'gridBuildMemory',
+  'zeroEnergyReset',
+  'gridLabels',
+  'detailedGridTooltips',
+  'responsiveGrid',
+]) {
+  assert.match(settingsSource, new RegExp(`copy\\.${setting}`), `${setting} must be exposed in the settings menu.`);
+}
+
 const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'ja', 'ko', 'zh'];
 const localeSource = await readFile(path.join(projectRoot, 'src/i18n.js'), 'utf8');
 for (const locale of supportedLocales) {

@@ -1252,6 +1252,8 @@ padding: 16px;
 position: absolute;
 right: 8px;
 top: calc(100% + 8px);
+max-height: calc(100vh - 84px);
+overflow-y: auto;
 width: min(300px, calc(100vw - 24px));
 z-index: 110;
     }
@@ -1262,6 +1264,16 @@ font: 800 15px/1.2 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 letter-spacing: -.01em;
 margin: 0 0 12px;
     }
+    .be-settings-section {
+border-top: 1px solid #dbe6e9;
+color: #607b83;
+font: 800 11px/1.25 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+letter-spacing: .06em;
+margin: 16px 0 9px;
+padding-top: 13px;
+text-transform: uppercase;
+    }
+    .be-settings-heading + .be-settings-section { border-top: 0; margin-top: 0; padding-top: 0; }
 
     .be-toggle-row {
 align-items: center;
@@ -1333,6 +1345,22 @@ width: 20px;
     .be-toggle-row input:checked + .be-switch { background: #27758b; }
     .be-toggle-row input:checked + .be-switch::after { transform: translateX(20px); }
     .be-toggle-row input:focus-visible + .be-switch { outline: 3px solid rgba(54, 126, 201, .35); outline-offset: 2px; }
+    .be-settings-action {
+appearance: none;
+background: transparent;
+border: 0;
+border-radius: 5px;
+color: #176b83;
+cursor: pointer;
+display: block;
+font: 700 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+margin: 0;
+padding: 7px 0;
+text-align: left;
+width: 100%;
+    }
+    .be-settings-action:hover { color: #0c4f66; text-decoration: underline; }
+    .be-settings-action:focus-visible { outline: 3px solid #71b7c9; outline-offset: 2px; }
 
     .be-spoiler-banner {
 align-items: center;

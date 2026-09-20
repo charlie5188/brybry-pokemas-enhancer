@@ -79,6 +79,42 @@ function updateSpoilerSensitiveSections() {
   if (lastUpdateSection) lastUpdateSection.hidden = spoilerProtectionEnabled;
 }
 
+function createSettingsSection(title) {
+  const heading = document.createElement('h3');
+  heading.className = 'be-settings-section';
+  heading.textContent = title;
+  return heading;
+}
+
+function createSettingsToggle(title, description, checked, onChange) {
+  const row = document.createElement('label');
+  row.className = 'be-toggle-row';
+  const copy = document.createElement('span');
+  copy.className = 'be-toggle-copy';
+  const label = document.createElement('strong');
+  label.textContent = title;
+  const detail = document.createElement('small');
+  detail.textContent = description;
+  copy.append(label, detail);
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = checked;
+  const switchVisual = document.createElement('span');
+  switchVisual.className = 'be-switch';
+  switchVisual.setAttribute('aria-hidden', 'true');
+  row.append(copy, checkbox, switchVisual);
+  checkbox.addEventListener('change', () => onChange(checkbox.checked));
+  return { row, checkbox };
+}
+
+function removeLocalValue(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (_) {
+    // The active page remains usable when storage is unavailable.
+  }
+}
+
 function ensureSettingsControl() {
   const header = document.getElementById('headerBody');
   if (!header || document.getElementById('brybry-enhancer-settings')) return;
@@ -103,22 +139,106 @@ function ensureSettingsControl() {
   const heading = document.createElement('h2');
   heading.className = 'be-settings-heading';
   heading.textContent = ENHANCER_NAME;
-  const toggleRow = document.createElement('label');
-  toggleRow.className = 'be-toggle-row';
-  const toggleCopy = document.createElement('span');
-  toggleCopy.className = 'be-toggle-copy';
-  const toggleTitle = document.createElement('strong');
-  toggleTitle.textContent = copy.spoilerProtection;
-  const toggleDescription = document.createElement('small');
-  toggleDescription.textContent = copy.spoilerDescription;
-  toggleCopy.append(toggleTitle, toggleDescription);
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.checked = spoilerProtectionEnabled;
-  const switchVisual = document.createElement('span');
-  switchVisual.className = 'be-switch';
-  switchVisual.setAttribute('aria-hidden', 'true');
-  toggleRow.append(toggleCopy, checkbox, switchVisual);
+  const contentSection = createSettingsSection(copy.contentSettings);
+  const spoilerToggle = createSettingsToggle(
+    copy.spoilerProtection,
+    copy.spoilerDescription,
+    spoilerProtectionEnabled,
+    async (enabled) => {
+      spoilerProtectionEnabled = enabled;
+      savePickerPreferences();
+      updateSpoilerSensitiveSections();
+      if (spoilerProtectionEnabled && !(await preflightSpoilerProtection())) return;
+      refreshPicker();
+    },
+  );
+  const gridSection = createSettingsSection(copy.gridSettings);
+  const buildMemoryToggle = createSettingsToggle(
+    copy.gridBuildMemory,
+    copy.gridBuildMemoryDescription,
+    gridBuildMemoryEnabled,
+    (enabled) => {
+      gridBuildMemoryEnabled = enabled;
+      savePickerPreferences();
+      queueRefresh();
+    },
+  );
+  const zeroEnergyToggle = createSettingsToggle(
+    copy.zeroEnergyReset,
+    copy.zeroEnergyResetDescription,
+    zeroEnergyResetEnabled,
+    (enabled) => {
+      zeroEnergyResetEnabled = enabled;
+      savePickerPreferences();
+    },
+  );
+  const labelsToggle = createSettingsToggle(
+    copy.gridLabels,
+    copy.gridLabelsDescription,
+    gridLabelsEnabled,
+    (enabled) => {
+      gridLabelsEnabled = enabled;
+      savePickerPreferences();
+      queueRefresh();
+    },
+  );
+  const tooltipToggle = createSettingsToggle(
+    copy.detailedGridTooltips,
+    copy.detailedGridTooltipsDescription,
+    detailedGridTooltipsEnabled,
+    (enabled) => {
+      detailedGridTooltipsEnabled = enabled;
+      savePickerPreferences();
+    },
+  );
+  const responsiveToggle = createSettingsToggle(
+    copy.responsiveGrid,
+    copy.responsiveGridDescription,
+    responsiveGridEnabled,
+    (enabled) => {
+      responsiveGridEnabled = enabled;
+      savePickerPreferences();
+      queueRefresh();
+    },
+  );
+  const dataSection = createSettingsSection(copy.localData);
+  const clearBuilds = document.createElement('button');
+  clearBuilds.className = 'be-settings-action';
+  clearBuilds.type = 'button';
+  clearBuilds.textContent = copy.clearSavedBuilds;
+  clearBuilds.addEventListener('click', () => {
+    if (window.confirm(copy.clearSavedBuildsConfirm)) removeLocalValue(GRID_PREFERENCES_KEY);
+  });
+  const clearPreferences = document.createElement('button');
+  clearPreferences.className = 'be-settings-action';
+  clearPreferences.type = 'button';
+  clearPreferences.textContent = copy.resetPreferences;
+  clearPreferences.addEventListener('click', () => {
+    if (!window.confirm(copy.resetPreferencesConfirm)) return;
+    removeLocalValue(PICKER_PREFERENCES_KEY);
+    spoilerProtectionEnabled = false;
+    gridBuildMemoryEnabled = true;
+    zeroEnergyResetEnabled = true;
+    gridLabelsEnabled = true;
+    detailedGridTooltipsEnabled = true;
+    responsiveGridEnabled = true;
+    lastSafePairId = '';
+    sortCriterion = 'updated';
+    sortDirection = 'desc';
+    viewMode = 'icons';
+    openFilterAccordions = new Set();
+    closedFilterAccordions = new Set();
+    filterSectionOrder = [];
+    spoilerToggle.checkbox.checked = spoilerProtectionEnabled;
+    buildMemoryToggle.checkbox.checked = gridBuildMemoryEnabled;
+    zeroEnergyToggle.checkbox.checked = zeroEnergyResetEnabled;
+    labelsToggle.checkbox.checked = gridLabelsEnabled;
+    tooltipToggle.checkbox.checked = detailedGridTooltipsEnabled;
+    responsiveToggle.checkbox.checked = responsiveGridEnabled;
+    updateSpoilerSensitiveSections();
+    queueRefresh();
+    refreshPicker();
+  });
   const contributeLink = document.createElement('a');
   contributeLink.className = 'be-settings-item';
   contributeLink.href = PROJECT_GITHUB_URL;
@@ -132,7 +252,22 @@ function ensureSettingsControl() {
   const versionValue = document.createElement('strong');
   versionValue.textContent = `v${ENHANCER_VERSION}`;
   version.append(versionLabel, versionValue);
-  popover.append(heading, toggleRow, contributeLink, version);
+  popover.append(
+    heading,
+    contentSection,
+    spoilerToggle.row,
+    gridSection,
+    buildMemoryToggle.row,
+    zeroEnergyToggle.row,
+    labelsToggle.row,
+    tooltipToggle.row,
+    responsiveToggle.row,
+    dataSection,
+    clearBuilds,
+    clearPreferences,
+    contributeLink,
+    version,
+  );
   wrapper.append(button, popover);
   header.append(wrapper);
 
@@ -148,12 +283,5 @@ function ensureSettingsControl() {
   document.addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') setOpen(false);
-  });
-  checkbox.addEventListener('change', async () => {
-    spoilerProtectionEnabled = checkbox.checked;
-    savePickerPreferences();
-    updateSpoilerSensitiveSections();
-    if (spoilerProtectionEnabled && !(await preflightSpoilerProtection())) return;
-    refreshPicker();
   });
 }

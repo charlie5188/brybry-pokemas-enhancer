@@ -14,6 +14,11 @@ try {
   // that implicit value once, then remember every explicit view choice normally.
   if (preferences.version >= 2 && ['list', 'icons'].includes(preferences.view)) viewMode = preferences.view;
   spoilerProtectionEnabled = preferences.spoilerProtection === true;
+  gridBuildMemoryEnabled = preferences.gridBuildMemory !== false;
+  zeroEnergyResetEnabled = preferences.zeroEnergyReset !== false;
+  gridLabelsEnabled = preferences.gridLabels !== false;
+  detailedGridTooltipsEnabled = preferences.detailedGridTooltips !== false;
+  responsiveGridEnabled = preferences.responsiveGrid !== false;
   if (typeof preferences.lastSafePairId === 'string') lastSafePairId = preferences.lastSafePairId;
   if (Array.isArray(preferences.openFilterAccordions)) {
     openFilterAccordions = new Set(preferences.openFilterAccordions.filter((group) => typeof group === 'string'));
@@ -36,6 +41,11 @@ function savePickerPreferences() {
       sortDirection,
       view: viewMode,
       spoilerProtection: spoilerProtectionEnabled,
+      gridBuildMemory: gridBuildMemoryEnabled,
+      zeroEnergyReset: zeroEnergyResetEnabled,
+      gridLabels: gridLabelsEnabled,
+      detailedGridTooltips: detailedGridTooltipsEnabled,
+      responsiveGrid: responsiveGridEnabled,
       lastSafePairId,
       openFilterAccordions: [...openFilterAccordions],
       closedFilterAccordions: [...closedFilterAccordions],
@@ -76,7 +86,7 @@ function currentMaxEnergyCap() {
 }
 
 function saveCurrentGridBuild(grid = observedMemoryGrid) {
-  if (restoringGridBuild || !grid?.isConnected) return;
+  if (!gridBuildMemoryEnabled || restoringGridBuild || !grid?.isConnected) return;
   const pairId = currentPairId();
   if (!pairId) return;
   const builds = readSavedGridBuilds();
@@ -110,6 +120,7 @@ function selectRememberedGridCell(cell, grid) {
 }
 
 function selectZeroEnergyGridCells(grid) {
+  if (!zeroEnergyResetEnabled) return;
   grid?.querySelectorAll('g[data-cell-id][data-energy="0"]:not([selected])').forEach((cell) => {
     selectRememberedGridCell(cell, grid);
   });
@@ -122,7 +133,9 @@ function setupZeroEnergyReset(grid) {
   resetButton.addEventListener('click', () => {
     // Brybry clears its selection in the same click event. Run afterward so
     // free tiles remain selected in the fresh build without spending Energy.
-    setTimeout(() => selectZeroEnergyGridCells(grid));
+    setTimeout(() => {
+      if (gridBuildMemoryEnabled) selectZeroEnergyGridCells(grid);
+    });
   });
 }
 
@@ -137,6 +150,12 @@ function restoreGridControls(remembered) {
 }
 
 function setupGridBuildMemory() {
+  if (!gridBuildMemoryEnabled) {
+    gridMemoryObserver?.disconnect();
+    gridMemoryObserver = null;
+    observedMemoryGrid = null;
+    return;
+  }
   const grid = document.getElementById('grid');
   if (!grid || grid === observedMemoryGrid || !grid.querySelector('g[data-cell-id]')) return;
 

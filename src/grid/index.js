@@ -128,6 +128,10 @@ function fitSpanToWidth(span, maxWidth) {
 }
 
 function addTileLabels() {
+  if (!gridLabelsEnabled) {
+    document.querySelectorAll(`.${TILE_LABEL_CLASS}`).forEach((label) => label.remove());
+    return;
+  }
   document.querySelectorAll('g[data-cell-id]').forEach((tile) => {
     if (tile.querySelector(`.${TILE_LABEL_CLASS}`)) return;
 
@@ -395,6 +399,7 @@ function appendRelatedMoveDescription(tooltip, moveInfo, tile) {
 }
 
 function appendGridTooltipDetails(tile, moveInfo) {
+  if (!detailedGridTooltipsEnabled) return;
   const tooltip = visibleGridTooltip();
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
@@ -483,6 +488,7 @@ function setupMoveLevelAvailability() {
 }
 
 function resizeGrid() {
+  if (!responsiveGridEnabled) return;
   const svg = document.querySelector('#gridDiv > svg');
   const gridDiv = svg?.parentElement;
   const wrapper = gridDiv?.parentElement;
@@ -536,6 +542,20 @@ function setupResponsiveGrid() {
   const wrapper = gridDiv?.parentElement;
   const picker = wrapper?.parentElement;
   if (!gridDiv || !wrapper || !picker) return;
+
+  if (!responsiveGridEnabled) {
+    gridResizeObserver?.disconnect();
+    gridResizeObserver = null;
+    responsiveGrid = null;
+    wrapper.classList.remove('be-grid-wrapper');
+    picker.classList.remove('be-grid-picker');
+    const svg = document.querySelector('#gridDiv > svg');
+    svg?.style.removeProperty('transform');
+    if (svg) svg.style.transformOrigin = '';
+    gridDiv.style.removeProperty('width');
+    gridDiv.style.removeProperty('height');
+    return;
+  }
 
   wrapper.classList.add('be-grid-wrapper');
   picker.classList.add('be-grid-picker');
