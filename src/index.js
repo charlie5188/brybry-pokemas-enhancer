@@ -3,6 +3,7 @@ function queueRefresh() {
   refreshQueued = true;
   requestAnimationFrame(() => {
     refreshQueued = false;
+    guardPairRenderer();
     addTileLabels();
     setupMoveTooltips();
     setupMoveLevelAvailability();
@@ -37,6 +38,11 @@ async function bootstrap() {
   // popstate handler replaces the pair content synchronously, so registering
   // afterward would leave the shared Grid inside the discarded old content.
   setupSectionOrdering();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', guardPairRenderer, { once: true });
+  } else {
+    guardPairRenderer();
+  }
   if (!(await preflightSpoilerProtection())) return;
   if (document.readyState === 'loading') {
     await new Promise((resolve) => document.addEventListener('DOMContentLoaded', resolve, { once: true }));

@@ -209,7 +209,7 @@ const sectionOrderingGridSource = await readFile(path.join(projectRoot, 'src/gri
 const indexSource = await readFile(path.join(projectRoot, 'src/index.js'), 'utf8');
 assert.match(
   indexSource,
-  /async function bootstrap\(\) \{\s+\/\/[^\n]*\n(?:\s*\/\/[^\n]*\n)*\s*setupSectionOrdering\(\);\s+if \(!\(await preflightSpoilerProtection\(\)\)\) return;/,
+  /async function bootstrap\(\) \{[\s\S]*?setupSectionOrdering\(\);[\s\S]*?if \(!\(await preflightSpoilerProtection\(\)\)\) return;/,
   'Section ordering must be installed before asynchronous startup so its popstate handler runs before Brybry replaces pair content.',
 );
 const sectionOrderingDocumentListeners = new Map();
@@ -256,7 +256,7 @@ const sectionOrderingContext = {
 };
 vm.createContext(sectionOrderingContext);
 vm.runInContext(
-  `${sectionOrderingGridSource}\nthis.setupSectionOrderingForCheck = setupSectionOrdering; this.moveSyncGridBeforeStatsForCheck = moveSyncGridBeforeStats;`,
+  `${sectionOrderingGridSource}\nthis.setupSectionOrderingForCheck = setupSectionOrdering; this.moveSyncGridBeforeStatsForCheck = moveSyncGridBeforeStats; this.guardPairRendererForCheck = guardPairRenderer;`,
   sectionOrderingContext,
 );
 sectionOrderingContext.setupSectionOrderingForCheck();
@@ -272,6 +272,13 @@ const historyListener = sectionOrderingWindowListeners.get('popstate');
 assert.equal(historyListener?.capture, true, 'History navigation must be intercepted before Brybry rebuilds the pair.');
 historyListener.callback();
 assert.equal(gridSectionForCheck.parentElement, gridHomeForCheck, 'History navigation must return the shared Grid to its stable host.');
+sectionOrderingContext.moveSyncGridBeforeStatsForCheck();
+let guardedRendererCalls = 0;
+sectionOrderingContext.window.setPairInfos = () => { guardedRendererCalls += 1; };
+sectionOrderingContext.guardPairRendererForCheck();
+sectionOrderingContext.window.setPairInfos('next-pair');
+assert.equal(guardedRendererCalls, 1, 'The guarded pair renderer must preserve Brybry\'s original render call.');
+assert.equal(gridSectionForCheck.parentElement, gridHomeForCheck, 'Every direct pair render must return the Grid to its stable host before Brybry clears pair content.');
 
 const pickerLogicContext = {};
 new vm.Script(`

@@ -3842,6 +3842,16 @@ text-align: center;
     if (!gridSection || !content || gridSection.parentElement === content) return;
     content.append(gridSection);
   }
+  function guardPairRenderer() {
+    const pairRenderer = window.setPairInfos;
+    if (typeof pairRenderer !== "function" || pairRenderer.beGridGuard) return;
+    function guardedPairRenderer(...args) {
+      restoreSyncGridHome();
+      return pairRenderer.apply(this, args);
+    }
+    guardedPairRenderer.beGridGuard = true;
+    window.setPairInfos = guardedPairRenderer;
+  }
   function setupSectionOrdering() {
     const root = document.documentElement;
     if (!root) return;
@@ -6632,6 +6642,7 @@ text-align: center;
     refreshQueued = true;
     requestAnimationFrame(() => {
       refreshQueued = false;
+      guardPairRenderer();
       addTileLabels();
       setupMoveTooltips();
       setupMoveLevelAvailability();
@@ -6660,6 +6671,11 @@ text-align: center;
   }
   async function bootstrap() {
     setupSectionOrdering();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", guardPairRenderer, { once: true });
+    } else {
+      guardPairRenderer();
+    }
     if (!await preflightSpoilerProtection()) return;
     if (document.readyState === "loading") {
       await new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));

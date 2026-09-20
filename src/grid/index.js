@@ -578,6 +578,22 @@ function restoreSyncGridHome() {
   content.append(gridSection);
 }
 
+function guardPairRenderer() {
+  const pairRenderer = window.setPairInfos;
+  if (typeof pairRenderer !== 'function' || pairRenderer.beGridGuard) return;
+
+  function guardedPairRenderer(...args) {
+    // Brybry empties #syncPairDiv synchronously in setPairInfos(). The Grid is
+    // temporarily placed inside that element, so it must be returned home
+    // before every pair render—not just before selected navigation events.
+    restoreSyncGridHome();
+    return pairRenderer.apply(this, args);
+  }
+
+  guardedPairRenderer.beGridGuard = true;
+  window.setPairInfos = guardedPairRenderer;
+}
+
 function setupSectionOrdering() {
   const root = document.documentElement;
   if (!root) return;
