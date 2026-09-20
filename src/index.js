@@ -33,6 +33,10 @@ async function init() {
 }
 
 async function bootstrap() {
+  // This must run while the userscript is injected at document-start. Brybry's
+  // popstate handler replaces the pair content synchronously, so registering
+  // afterward would leave the shared Grid inside the discarded old content.
+  setupSectionOrdering();
   if (!(await preflightSpoilerProtection())) return;
   if (document.readyState === 'loading') {
     await new Promise((resolve) => document.addEventListener('DOMContentLoaded', resolve, { once: true }));

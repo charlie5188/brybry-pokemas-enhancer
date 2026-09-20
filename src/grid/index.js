@@ -579,8 +579,10 @@ function restoreSyncGridHome() {
 }
 
 function setupSectionOrdering() {
-  if (!document.documentElement.dataset.beSectionOrdering) {
-    document.documentElement.dataset.beSectionOrdering = 'true';
+  const root = document.documentElement;
+  if (!root) return;
+  if (!root.dataset.beSectionOrdering) {
+    root.dataset.beSectionOrdering = 'true';
     // Brybry replaces the active pair content during a selection change. Move
     // the shared Grid back to its stable host before that replacement happens,
     // then the mutation refresh will place it before the new Stats section.

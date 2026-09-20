@@ -206,6 +206,12 @@ assert.match(pickerSource, /imagePath\.endsWith\('\/data\/icons\/trainers\/unkno
 assert.match(pickerSource, /appendPairFallbackImages\(container, pairFallbackIcons\(trainer\)\)/, 'The floating picker action must reuse the trainer and Pokemon fallback.');
 
 const sectionOrderingGridSource = await readFile(path.join(projectRoot, 'src/grid/index.js'), 'utf8');
+const indexSource = await readFile(path.join(projectRoot, 'src/index.js'), 'utf8');
+assert.match(
+  indexSource,
+  /async function bootstrap\(\) \{\s+\/\/[^\n]*\n(?:\s*\/\/[^\n]*\n)*\s*setupSectionOrdering\(\);\s+if \(!\(await preflightSpoilerProtection\(\)\)\) return;/,
+  'Section ordering must be installed before asynchronous startup so its popstate handler runs before Brybry replaces pair content.',
+);
 const sectionOrderingDocumentListeners = new Map();
 const sectionOrderingWindowListeners = new Map();
 const statsHeadingForCheck = { tagName: 'H2' };
