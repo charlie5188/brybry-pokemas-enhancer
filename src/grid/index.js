@@ -368,7 +368,11 @@ function appendRelatedMoveDescription(tooltip, moveInfo, tile) {
         moveNameByLocale[language()].get(relatedMove.moveId) || relatedMove.moveId,
       ).replace(/\s+/g, ' ').trim();
       const row = document.createElement('span');
-      row.textContent = `${moveName} · ${copy.moveUses.replace('{value}', String(relatedMove.moveUses))}`;
+      const stats = [
+        relatedMove.moveGaugeCost > 0 ? copy.moveGaugeCost.replace('{value}', String(relatedMove.moveGaugeCost)) : '',
+        copy.moveUses.replace('{value}', String(relatedMove.moveUses)),
+      ].filter(Boolean);
+      row.textContent = [moveName, ...stats].join(' · ');
       block.append(row);
     });
     tooltip.append(block);
@@ -380,6 +384,7 @@ function appendRelatedMoveDescription(tooltip, moveInfo, tile) {
     const stats = [
       relatedMove.movePower > 0 ? copy.movePower.replace('{value}', String(relatedMove.movePower)) : '',
       relatedMove.moveAccuracy > 0 ? copy.moveAccuracy.replace('{value}', String(relatedMove.moveAccuracy)) : '',
+      relatedMove.moveGaugeCost > 0 ? copy.moveGaugeCost.replace('{value}', String(relatedMove.moveGaugeCost)) : '',
       relatedMove.moveUses > 0 ? copy.moveUses.replace('{value}', String(relatedMove.moveUses)) : '',
     ].filter(Boolean);
 
@@ -607,11 +612,32 @@ function guardPairRenderer() {
     // temporarily placed inside that element, so it must be returned home
     // before every pair render—not just before selected navigation events.
     restoreSyncGridHome();
-    return pairRenderer.apply(this, args);
+    const result = pairRenderer.apply(this, args);
+    selectFinalBattleForm(args[0]);
+    return result;
   }
 
   guardedPairRenderer.beGridGuard = true;
   window.setPairInfos = guardedPairRenderer;
+}
+
+function selectFinalBattleForm(pairId) {
+  if (!finalBattleFormEnabled || !pairId || typeof window.switchTab !== 'function') return;
+  const url = new URL(location.href);
+  // A shared link or a manual choice takes precedence over the default.
+  if (url.searchParams.get('pair') === String(pairId)
+      && ['monsterId', 'baseId', 'formId'].every((key) => url.searchParams.has(key))) return;
+  const tabs = Array.from(document.querySelectorAll('#syncPairDiv .tab > .tabLinks'));
+  const active = tabs.find((tab) => tab.classList.contains('active'));
+  const baseMatch = active?.id.match(/^btn-(\d+)-(\d+)-(\d+)$/);
+  if (!baseMatch) return;
+  // Evolution tabs have different monster IDs. A single tab alongside the
+  // final monster's base tab is its one unambiguous battle variation.
+  const variations = tabs.filter((tab) => tab !== active && tab.id.startsWith(`btn-${baseMatch[1]}-`));
+  if (variations.length !== 1) return;
+  const match = variations[0].id.match(/^btn-(\d+)-(\d+)-(\d+)$/);
+  if (!match) return;
+  window.switchTab(match[1], match[2], match[3], false);
 }
 
 function setupSectionOrdering() {

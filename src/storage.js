@@ -19,6 +19,7 @@ try {
   gridLabelsEnabled = preferences.gridLabels !== false;
   detailedGridTooltipsEnabled = preferences.detailedGridTooltips !== false;
   responsiveGridEnabled = preferences.responsiveGrid !== false;
+  finalBattleFormEnabled = preferences.finalBattleForm !== false;
   if (typeof preferences.lastSafePairId === 'string') lastSafePairId = preferences.lastSafePairId;
   if (Array.isArray(preferences.openFilterAccordions)) {
     openFilterAccordions = new Set(preferences.openFilterAccordions.filter((group) => typeof group === 'string'));
@@ -46,6 +47,7 @@ function savePickerPreferences() {
       gridLabels: gridLabelsEnabled,
       detailedGridTooltips: detailedGridTooltipsEnabled,
       responsiveGrid: responsiveGridEnabled,
+      finalBattleForm: finalBattleFormEnabled,
       lastSafePairId,
       openFilterAccordions: [...openFilterAccordions],
       closedFilterAccordions: [...closedFilterAccordions],

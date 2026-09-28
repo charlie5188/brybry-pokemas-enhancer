@@ -77,6 +77,7 @@ function moveTooltipInfo(moveId) {
     moveId: String(moveId),
     movePower: Number(move?.power),
     moveAccuracy: Number(move?.accuracy),
+    moveGaugeCost: Number(move?.gaugeDrain),
     moveUses: Number(move?.uses),
   };
 }

@@ -153,6 +153,15 @@ function ensureSettingsControl() {
     },
   );
   const gridSection = createSettingsSection(copy.gridSettings);
+  const finalFormToggle = createSettingsToggle(
+    copy.finalBattleForm,
+    copy.finalBattleFormDescription,
+    finalBattleFormEnabled,
+    (enabled) => {
+      finalBattleFormEnabled = enabled;
+      savePickerPreferences();
+    },
+  );
   const buildMemoryToggle = createSettingsToggle(
     copy.gridBuildMemory,
     copy.gridBuildMemoryDescription,
@@ -222,6 +231,7 @@ function ensureSettingsControl() {
     gridLabelsEnabled = true;
     detailedGridTooltipsEnabled = true;
     responsiveGridEnabled = true;
+    finalBattleFormEnabled = true;
     lastSafePairId = '';
     sortCriterion = 'updated';
     sortDirection = 'desc';
@@ -235,6 +245,7 @@ function ensureSettingsControl() {
     labelsToggle.checkbox.checked = gridLabelsEnabled;
     tooltipToggle.checkbox.checked = detailedGridTooltipsEnabled;
     responsiveToggle.checkbox.checked = responsiveGridEnabled;
+    finalFormToggle.checkbox.checked = finalBattleFormEnabled;
     updateSpoilerSensitiveSections();
     queueRefresh();
     refreshPicker();
@@ -256,6 +267,7 @@ function ensureSettingsControl() {
     heading,
     contentSection,
     spoilerToggle.row,
+    finalFormToggle.row,
     gridSection,
     buildMemoryToggle.row,
     zeroEnergyToggle.row,

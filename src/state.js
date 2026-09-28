@@ -68,6 +68,7 @@ let zeroEnergyResetEnabled = true;
 let gridLabelsEnabled = true;
 let detailedGridTooltipsEnabled = true;
 let responsiveGridEnabled = true;
+let finalBattleFormEnabled = true;
 let lastSafePairId = '';
 let openFilterAccordions = new Set();
 let closedFilterAccordions = new Set();

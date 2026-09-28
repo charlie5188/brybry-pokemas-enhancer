@@ -84,6 +84,7 @@ for (const preference of [
   'gridLabels',
   'detailedGridTooltips',
   'responsiveGrid',
+  'finalBattleForm',
 ]) {
   assert.match(settingsStorageSource, new RegExp(`preferences\\.${preference} !== false`), `${preference} must preserve the current enabled-by-default behavior.`);
   assert.match(settingsStorageSource, new RegExp(`${preference}: `), `${preference} must be saved with picker preferences.`);
@@ -95,6 +96,7 @@ for (const setting of [
   'gridLabels',
   'detailedGridTooltips',
   'responsiveGrid',
+  'finalBattleForm',
 ]) {
   assert.match(settingsSource, new RegExp(`copy\\.${setting}`), `${setting} must be exposed in the settings menu.`);
 }
@@ -275,10 +277,12 @@ const sectionOrderingContext = {
   },
   getComputedStyle: () => ({ display: 'block' }),
   requestAnimationFrame: (callback) => callback(),
+  finalBattleFormEnabled: false,
+  URL,
 };
 vm.createContext(sectionOrderingContext);
 vm.runInContext(
-  `${sectionOrderingGridSource}\nthis.setupSectionOrderingForCheck = setupSectionOrdering; this.moveSyncGridBeforeStatsForCheck = moveSyncGridBeforeStats; this.guardPairRendererForCheck = guardPairRenderer;`,
+  `${sectionOrderingGridSource}\nthis.setupSectionOrderingForCheck = setupSectionOrdering; this.moveSyncGridBeforeStatsForCheck = moveSyncGridBeforeStats; this.guardPairRendererForCheck = guardPairRenderer; this.selectFinalBattleFormForCheck = selectFinalBattleForm;`,
   sectionOrderingContext,
 );
 sectionOrderingContext.setupSectionOrderingForCheck();
@@ -301,6 +305,28 @@ sectionOrderingContext.guardPairRendererForCheck();
 sectionOrderingContext.window.setPairInfos('next-pair');
 assert.equal(guardedRendererCalls, 1, 'The guarded pair renderer must preserve Brybry\'s original render call.');
 assert.equal(gridSectionForCheck.parentElement, gridHomeForCheck, 'Every direct pair render must return the Grid to its stable host before Brybry clears pair content.');
+const selectedFormsForCheck = [];
+sectionOrderingContext.finalBattleFormEnabled = true;
+sectionOrderingContext.location = { href: 'https://pokemon.brybry.ch/masters/duo.html?pair=42' };
+sectionOrderingContext.window.switchTab = (...args) => selectedFormsForCheck.push(args);
+sectionOrderingContext.document.querySelectorAll = () => [
+  { id: 'btn-100-10-0', classList: { contains: () => true } },
+  { id: 'btn-100-20-0', classList: { contains: () => false } },
+];
+sectionOrderingContext.selectFinalBattleFormForCheck('42');
+assert.equal(selectedFormsForCheck.length, 1, 'One clear battle variation must open automatically.');
+assert.equal(selectedFormsForCheck[0][1], '20', 'The variation tab must be selected even when formId is zero.');
+sectionOrderingContext.location.href += '&monsterId=100&baseId=10&formId=0';
+sectionOrderingContext.selectFinalBattleFormForCheck('42');
+assert.equal(selectedFormsForCheck.length, 1, 'An explicit linked form must take precedence.');
+sectionOrderingContext.location.href = 'https://pokemon.brybry.ch/masters/duo.html?pair=42';
+sectionOrderingContext.document.querySelectorAll = () => [
+  { id: 'btn-100-10-0', classList: { contains: () => true } },
+  { id: 'btn-100-20-0', classList: { contains: () => false } },
+  { id: 'btn-100-30-0', classList: { contains: () => false } },
+];
+sectionOrderingContext.selectFinalBattleFormForCheck('42');
+assert.equal(selectedFormsForCheck.length, 1, 'Ambiguous battle variations must keep the base form.');
 
 const pickerLogicContext = {};
 new vm.Script(`
@@ -1256,6 +1282,7 @@ assert.match(stylesSource, /\.be-status-effect-reduction/, 'Hidden status-effect
 assert.match(dataIndexSource, /healingBoost: healingBoostForPassiveId\(ability\.passiveId\)/, 'Grid metadata must retain hidden healing boosts.');
 assert.match(dataIndexSource, /statusEffectReduction: statusEffectReductionForPassiveId\(ability\.passiveId\)/, 'Grid metadata must retain hidden status-effect mitigation.');
 assert.match(dataIndexSource, /moveUses: Number\(move\?\.uses\)/, 'Grid move metadata must retain finite move uses.');
+assert.match(dataIndexSource, /moveGaugeCost: Number\(move\?\.gaugeDrain\)/, 'Grid move metadata must retain Move.json gauge cost.');
 assert.match(
   dataIndexSource,
   /function relatedMoveIdsForAbilityPanel\(panel, ability\)/,
@@ -1380,6 +1407,12 @@ assert.match(
   /copy\.moveUses\.replace\('\{value\}', String\(relatedMove\.moveUses\)\)/,
   'Related move tooltips must display finite move uses.',
 );
+assert.match(
+  gridSource,
+  /relatedMove\.moveAccuracy > 0[\s\S]*relatedMove\.moveGaugeCost > 0[\s\S]*relatedMove\.moveUses > 0/,
+  'Related move gauge cost must follow accuracy and precede finite uses.',
+);
+assert.match(i18nSource, /moveGaugeCost: '招式計量槽 \{value\}'/, 'Move gauge cost must have localized tooltip copy.');
 assert.match(
   gridSource,
   /moveInfo\?\.recoversMoveUses[\s\S]*relatedMoves\.filter\(\(relatedMove\) => relatedMove\.moveUses > 0\)/,
