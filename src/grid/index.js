@@ -193,8 +193,20 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
+function grantsNextSuperEffectiveBoost(moveInfo, tile) {
+  if (!moveInfo?.passiveId) return false;
+  const japanese = passiveSkillDetails(moveInfo.passiveId, 'ja');
+  const english = passiveSkillDetails(moveInfo.passiveId, 'en');
+  const name = normalizeGridLabel(japanese?.name || english?.name || tile?.dataset?.tileName)
+    .normalize('NFKC');
+  return /次回抜群威力(?:上昇|↑)/.test(name)
+    || /次回抜群威力(?:上昇状態|↑状態)にする/.test(normalizeGridLabel(japanese?.description).normalize('NFKC'))
+    || /applies? (?:the )?supereffective\s*(?:↑|up)?\s*next effect/i.test(english?.description || '');
+}
+
 function powerBoostMoveScope(moveInfo, tile) {
   if (!moveInfo?.passiveId) return [];
+  if (grantsNextSuperEffectiveBoost(moveInfo, tile)) return ['pokemon', 'sync', 'max'];
   const japanese = passiveSkillDetails(moveInfo.passiveId, 'ja');
   const english = passiveSkillDetails(moveInfo.passiveId, 'en');
   const name = normalizeGridLabel(japanese?.name || english?.name || tile?.dataset?.tileName)
@@ -247,10 +259,13 @@ function appendPowerBoostMoveScope(tooltip, moveInfo, tile) {
   if (!scope.length) return;
   const copy = text();
   const labels = scope.map((kind) => copy.powerBoostMoveLabels?.[kind]).filter(Boolean);
-  if (!labels.length || !copy.powerBoostAppliesTo) return;
+  const template = grantsNextSuperEffectiveBoost(moveInfo, tile)
+    ? copy.powerBoostNextSuperEffective
+    : copy.powerBoostAppliesTo;
+  if (!labels.length || !template) return;
   const line = document.createElement('span');
   line.className = 'be-power-boost-scope';
-  line.textContent = copy.powerBoostAppliesTo.replace('{moves}', labels.join(' · '));
+  line.textContent = template.replace('{moves}', labels.join(' · '));
   tooltip.append(line);
 }
 

@@ -1162,11 +1162,17 @@ const powerScopeFixtures = new Map([
   [4, { name: 'Ｐ技Ｂ技威力上昇３', description: 'ポケモンのわざとバディーズわざの威力をあげる' }],
   [5, { name: '初Ｂ技後威力上昇３', description: '初めてバディーズわざを使ったあと技の威力をあげる' }],
   [6, { name: 'ＥＦ時技ゲージ加速２', description: 'フィールドがエレキフィールドのときはわざゲージが早くたまる' }],
+  [11, { name: '抜群時威力上昇３', description: '効果抜群のときに技の威力をあげる' }],
+  [12, { name: 'Ｂ技抜群時威力上昇３', description: '効果抜群のときにバディーズわざの威力をあげる' }],
+  [13, { name: 'Ｐ技Ｂ技抜群時威力↑３', description: '効果抜群のときにポケモンのわざとバディーズわざの威力をあげる' }],
+  [14, { name: '登場時次回抜群威力上昇', description: '登場したとき自分を次回抜群威力上昇状態にする' }],
 ]);
 gridContext.passiveSkillDetails = (id, locale) => locale === 'ja' ? powerScopeFixtures.get(id) : null;
 for (const [id, expected] of [
   [1, ['pokemon']], [2, ['sync']], [3, ['pokemon', 'sync', 'max']],
   [4, ['pokemon', 'sync']], [5, ['pokemon']], [6, []],
+  [11, ['pokemon']], [12, ['sync']], [13, ['pokemon', 'sync']],
+  [14, ['pokemon', 'sync', 'max']],
 ]) {
   assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: id }, { dataset: {} })], expected,
     'Grid power notes must distinguish regular moves, Sync Moves and the critical-hit exception.');
@@ -1174,12 +1180,15 @@ for (const [id, expected] of [
 gridContext.passiveSkillDetails = (id, locale) => locale === 'en' ? new Map([
   [7, { name: 'Power Induction 3', description: 'Powers up the user’s moves when the terrain is Electric Terrain.' }],
   [10, { name: 'Maximum Super Powered 1', description: 'Powers up the user’s moves that are super effective. Powers up the user’s sync move that is super effective. Powers up the user’s max moves that are super effective.' }],
+  [15, { name: 'Super Preparation 9', description: 'Applies the Supereffective ↑ Next effect to the user when its move is successful.' }],
 ]).get(id) : null;
 assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 7 }, { dataset: {} })], ['pokemon']);
 assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 8 }, { dataset: { tileName: 'ＥＦ時Ｂ技威力上昇５' } })], ['sync']);
 assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 9 }, { dataset: { tileName: 'Ｐ技Ｂ技ＢＤ技威力上昇３' } })], ['pokemon', 'sync', 'max']);
 assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 10 }, { dataset: {} })], ['pokemon', 'sync', 'max'],
   'Multi-sentence power skills must retain every affected move class.');
+assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 15 }, { dataset: {} })], ['pokemon', 'sync', 'max'],
+  'The Supereffective Up Next state must include Pokémon, Sync and Max Moves.');
 assert.equal(
   gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
   'T技:威力+25(強) !',
