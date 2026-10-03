@@ -15,7 +15,7 @@ const COPY = {
     damagingMoveType: 'Damaging move type',
     loading: 'Updating results…',
     multiplier: 'Multiplier: +{value}%', multiplierCap: 'Multiplier cap: +{value}%', additionalEffectChanceMultiplier: 'Additional-effect chance multiplier: ×{value}',
-    powerBoostAppliesTo: 'Applies to: {moves}', powerBoostMoveLabels: { pokemon: 'Pokémon / Buddy Moves (P/S)', sync: 'Sync Moves (B)', max: 'Max Moves (BD)' },
+    powerBoostAppliesTo: 'Applies to: {moves}', powerBoostMoveLabels: { pokemon: 'Pokémon moves (including Buddy Moves)', sync: 'Sync Moves', max: 'Max Moves' },
     damageReduction: 'Damage reduction: {value}%',
     remainingDamageMultiplier: 'Damage taken: ×{value}',
     recoilDamageMultiplier: 'Recoil damage: ×{value}',

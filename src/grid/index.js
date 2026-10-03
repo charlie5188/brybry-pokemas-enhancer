@@ -207,21 +207,24 @@ function powerBoostMoveScope(moveInfo, tile) {
 
   // The effect text identifies the move class more reliably than a title:
   // a title can mention a sync move only as the condition (e.g. "after a sync move").
-  const hasJapanesePowerEffect = /威力.{0,20}(?:あげる|上げる|あがる|上がる|アップ|上昇)/.test(description);
-  const hasEnglishPowerEffect = /(?:powers? up|boosts?|raises?|increases?)[^.]{0,80}(?:power|damage|moves?)|(?:power|damage)[^.]{0,80}(?:boosts?|raises?|increases?)/i
-    .test(englishDescription);
-  if (hasJapanesePowerEffect || hasEnglishPowerEffect) {
-    const source = hasJapanesePowerEffect
-      ? description.split(/(?:とき|あと|後)(?:は|に|だけ)?/).at(-1)
-      : englishDescription.match(/(?:powers? up|boosts?|raises?|increases?)([^.]*)/i)?.[1] || '';
-    const sync = /バディーズわざ|B技|sync moves?/i.test(source);
-    const max = /バディーズダイマックスわざ|BD技|ダイマックスわざ|max moves?/i.test(source);
-    const regularMoveText = source
-      .replace(/バディーズダイマックスわざ|ダイマックスわざ|バディーズわざ|BD技|B技|(?:sync|max) moves?/gi, '');
-    const pokemon = /ポケモンのわざ|P技|(?:技|わざ)(?:の)?威力|(?:pokemon|pokémon|buddy) moves?|\bmoves?\b/i
-      .test(regularMoveText);
-    const scope = [pokemon && 'pokemon', sync && 'sync', max && 'max'].filter(Boolean);
-    if (scope.length) return scope;
+  const japaneseClauses = description.split(/[。.!?]/)
+    .filter((clause) => /威力.{0,20}(?:あげる|上げる|あがる|上がる|アップ|上昇)/.test(clause))
+    .map((clause) => clause.split(/(?:とき|あと|後)(?:は|に|だけ)?/).at(-1));
+  const englishClauses = englishDescription.split(/[.!?]/)
+    .filter((clause) => /(?:powers? up|boosts?|raises?|increases?)[^.]*(?:power|damage|moves?)/i.test(clause))
+    .map((clause) => clause.match(/(?:powers? up|boosts?|raises?|increases?)(.*)/i)?.[1] || '');
+  const clauses = japaneseClauses.length ? japaneseClauses : englishClauses;
+  if (clauses.length) {
+    const scope = new Set();
+    clauses.forEach((source) => {
+      if (/バディーズわざ|B技|sync moves?/i.test(source)) scope.add('sync');
+      if (/バディーズダイマックスわざ|BD技|ダイマックスわざ|max moves?/i.test(source)) scope.add('max');
+      const regularMoveText = source
+        .replace(/バディーズダイマックスわざ|ダイマックスわざ|バディーズわざ|BD技|B技|(?:sync|max) moves?/gi, '');
+      if (/ポケモンのわざ|P技|(?:技|わざ)(?:の)?威力|(?:pokemon|pokémon|buddy) moves?|\bmoves?\b/i
+        .test(regularMoveText)) scope.add('pokemon');
+    });
+    if (scope.size) return ['pokemon', 'sync', 'max'].filter((kind) => scope.has(kind));
   }
 
   // The Grid title is available even while localized passive text is loading.
