@@ -82,6 +82,31 @@ function moveTooltipInfo(moveId) {
   };
 }
 
+function triggerMoveIdsForAbilityPanel(panel, ability) {
+  const template = gridAbilitySkillTemplate(ability).normalize('NFKC');
+  const trigger = template.match(/(P変化技|P物理技|P特殊技|P技|T技|S技|B技|回数技|技)使用時/);
+  if (!trigger) return [];
+  if (trigger[1] === 'B技') {
+    const trainer = trainerById.get(String(panel?.trainerId));
+    const syncMoveId = String(monsterById.get(String(trainer?.monsterId))?.syncMoveId || '');
+    return moveById.has(syncMoveId) ? [syncMoveId] : [];
+  }
+  return moveIdsForTrainer(panel?.trainerId).filter((moveId) => {
+    const move = moveById.get(moveId);
+    if (!move) return false;
+    switch (trigger[1]) {
+      case 'P変化技': return move.user === 'Pokemon' && move.category === 'Status';
+      case 'P物理技': return move.user === 'Pokemon' && move.category === 'Physical';
+      case 'P特殊技': return move.user === 'Pokemon' && move.category === 'Special';
+      case 'P技': return move.user === 'Pokemon';
+      case 'T技': return move.user === 'Trainer';
+      case 'S技': return move.group === 'Buddy';
+      case '回数技': return move.group !== 'Sync' && Number(move.uses) > 0;
+      default: return move.group !== 'Sync';
+    }
+  });
+}
+
 function relatedMoveIdsForAbilityPanel(panel, ability) {
   const directMoveId = Number(ability?.moveId);
   const recoveryScope = recoveryMoveTargetScope(ability);
@@ -352,10 +377,12 @@ async function loadTrainerData() {
     if (!ability) return [];
     const moveCandidates = moveIdsForTrainer(panel.trainerId).map(moveTooltipInfo);
     const relatedMoves = relatedMoveIdsForAbilityPanel(panel, ability).map(moveTooltipInfo);
+    const triggerMoves = triggerMoveIdsForAbilityPanel(panel, ability).map(moveTooltipInfo);
     const [relatedMove = {}] = relatedMoves;
     return [[String(panel.cellId), {
       ...relatedMove,
       relatedMoves,
+      triggerMoves,
       // Some passive-only Grid abilities omit moveId even though their
       // localized title names the affected move. Keep the pair's real move
       // slots so the tooltip can resolve that reference without a static list.

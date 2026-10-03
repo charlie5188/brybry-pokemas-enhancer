@@ -343,6 +343,21 @@ function relatedMovesForTooltip(moveInfo, tile) {
     : relatedMoves;
 }
 
+function appendTriggerMoves(tooltip, moveInfo) {
+  if (!tooltip || !moveInfo?.triggerMoves?.length || tooltip.querySelector('.be-trigger-moves')) return;
+  const names = moveInfo.triggerMoves.map((move) => moveNameByLocale[language()]?.get(move.moveId))
+    .filter(Boolean).map((name) => normalizeGridLabel(name).replace(/\s+/g, ' ').trim());
+  if (!names.length) return;
+  const block = document.createElement('p');
+  block.className = 'be-trigger-moves';
+  const heading = document.createElement('strong');
+  heading.textContent = text().triggerMoves;
+  const list = document.createElement('span');
+  list.textContent = [...new Set(names)].join(' · ');
+  block.append(heading, list);
+  tooltip.append(block);
+}
+
 function appendRelatedMoveDescription(tooltip, moveInfo, tile) {
   if (!tooltip || !moveInfo || moveInfo.abilityType === 11
     || tooltip.querySelector('.be-related-move')) return;
@@ -414,6 +429,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   appendHealingBoost(tooltip, moveInfo);
   appendStatusEffectReduction(tooltip, moveInfo);
   appendFieldDuration(tooltip, moveInfo);
+  appendTriggerMoves(tooltip, moveInfo);
   appendRelatedMoveDescription(tooltip, moveInfo, tile);
   repositionGridTooltip(tooltip, tile);
 }

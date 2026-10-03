@@ -1329,16 +1329,38 @@ const relatedMoveResolverSource = dataIndexSource.match(
 if (!relatedMoveResolverSource) throw new Error('Related-move resolver source is missing.');
 const relatedMoveContext = {
   POMATOOLS_SKILL_ABBR: { ja: { 1902950: 'T技後 場に ゲージ加速{{value}}' } },
-  trainerById: new Map([['10367000000', { move1Id: 6216, move2Id: 8216, move3Id: 6217, move4Id: 13670 }]]),
+  trainerById: new Map([['10367000000', { monsterId: '3000', move1Id: 6216, move2Id: 8216, move3Id: 6217, move4Id: 13670 }]]),
+  monsterById: new Map([['3000', { syncMoveId: 5000 }]]),
   moveById: new Map([
-    ['6216', { user: 'Pokemon', category: 'Special', group: 'Regular' }],
-    ['8216', { user: 'Pokemon', category: 'Status', group: 'Regular' }],
-    ['6217', { user: 'Pokemon', category: 'Special', group: 'Buddy' }],
-    ['13670', { user: 'Trainer', category: 'Status', group: 'Regular' }],
+    ['5000', { user: 'Pokemon', category: 'Special', group: 'Sync', uses: 0 }],
+    ['6216', { user: 'Pokemon', category: 'Special', group: 'Regular', uses: 0 }],
+    ['8216', { user: 'Pokemon', category: 'Status', group: 'Regular', uses: 2 }],
+    ['6217', { user: 'Pokemon', category: 'Special', group: 'Buddy', uses: 1 }],
+    ['13670', { user: 'Trainer', category: 'Status', group: 'Regular', uses: 2 }],
   ]),
 };
 vm.createContext(relatedMoveContext);
-vm.runInContext(`${relatedMoveResolverSource}\nthis.relatedMoveIdsForCheck = relatedMoveIdsForAbilityPanel;`, relatedMoveContext);
+vm.runInContext(`${relatedMoveResolverSource}\nthis.relatedMoveIdsForCheck = relatedMoveIdsForAbilityPanel; this.triggerMoveIdsForCheck = triggerMoveIdsForAbilityPanel;`, relatedMoveContext);
+for (const [template, expected] of [
+  ['Ｐ変化技使用時 ゲージ↑1', ['8216']],
+  ['P物理技使用時 ゲージ↑1', []],
+  ['P特殊技使用時 ゲージ↑1', ['6216', '6217']],
+  ['P技使用時 ゲージ↑1', ['6216', '8216', '6217']],
+  ['T技使用時 ゲージ↑1', ['13670']],
+  ['初B技使用時 B技↑1', ['5000']],
+  ['回数技使用時 ゲージ↑1', ['8216', '6217', '13670']],
+  ['初B技後 P変化技 回数回復', []],
+]) {
+  relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = template;
+  assert.deepEqual(
+    [...relatedMoveContext.triggerMoveIdsForCheck(
+      { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 6216 },
+    )],
+    expected,
+    `Trigger moves must match the actual move category for ${template}, regardless of ability.moveId.`,
+  );
+}
+relatedMoveContext.POMATOOLS_SKILL_ABBR.ja[1902950] = 'T技後 場に ゲージ加速{{value}}';
 assert.deepEqual(
   [...relatedMoveContext.relatedMoveIdsForCheck(
     { trainerId: '10367000000' }, { passiveId: 19029509, moveId: 0 },
