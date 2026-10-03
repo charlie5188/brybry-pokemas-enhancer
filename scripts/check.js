@@ -1154,7 +1154,29 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage; this.appendDamageReductionForCheck = appendDamageReduction; this.relatedMovesForTooltipForCheck = relatedMovesForTooltip;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage; this.appendDamageReductionForCheck = appendDamageReduction; this.relatedMovesForTooltipForCheck = relatedMovesForTooltip; this.powerBoostMoveScopeForCheck = powerBoostMoveScope;`, gridContext);
+const powerScopeFixtures = new Map([
+  [1, { name: 'ＥＦ時威力上昇３', description: 'フィールドがエレキフィールドのときは技の威力をあげる' }],
+  [2, { name: 'ＥＦ時Ｂ技威力上昇５', description: 'フィールドがエレキフィールドのときはバディーズわざの威力をあげる' }],
+  [3, { name: '急所時威力上昇２', description: '急所に当たったときに技の威力をあげる' }],
+  [4, { name: 'Ｐ技Ｂ技威力上昇３', description: 'ポケモンのわざとバディーズわざの威力をあげる' }],
+  [5, { name: '初Ｂ技後威力上昇３', description: '初めてバディーズわざを使ったあと技の威力をあげる' }],
+  [6, { name: 'ＥＦ時技ゲージ加速２', description: 'フィールドがエレキフィールドのときはわざゲージが早くたまる' }],
+]);
+gridContext.passiveSkillDetails = (id, locale) => locale === 'ja' ? powerScopeFixtures.get(id) : null;
+for (const [id, expected] of [
+  [1, ['pokemon']], [2, ['sync']], [3, ['pokemon', 'sync', 'max']],
+  [4, ['pokemon', 'sync']], [5, ['pokemon']], [6, []],
+]) {
+  assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: id }, { dataset: {} })], expected,
+    'Grid power notes must distinguish regular moves, Sync Moves and the critical-hit exception.');
+}
+gridContext.passiveSkillDetails = (id, locale) => locale === 'en' && id === 7
+  ? { name: 'Electric Terrain Power 3', description: 'Powers up the user’s moves when the terrain is Electric Terrain.' }
+  : null;
+assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 7 }, { dataset: {} })], ['pokemon']);
+assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 8 }, { dataset: { tileName: 'ＥＦ時Ｂ技威力上昇５' } })], ['sync']);
+assert.deepEqual([...gridContext.powerBoostMoveScopeForCheck({ passiveId: 9 }, { dataset: { tileName: 'Ｐ技Ｂ技ＢＤ技威力上昇３' } })], ['pokemon', 'sync', 'max']);
 assert.equal(
   gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
   'T技:威力+25(強) !',

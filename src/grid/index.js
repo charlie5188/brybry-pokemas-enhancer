@@ -193,6 +193,64 @@ function appendPowerMultiplier(tooltip, multiplier) {
   else tooltip.append(line);
 }
 
+function powerBoostMoveScope(moveInfo, tile) {
+  if (!moveInfo?.passiveId) return [];
+  const japanese = passiveSkillDetails(moveInfo.passiveId, 'ja');
+  const english = passiveSkillDetails(moveInfo.passiveId, 'en');
+  const name = normalizeGridLabel(japanese?.name || english?.name || tile?.dataset?.tileName)
+    .normalize('NFKC');
+  const description = normalizeGridLabel(japanese?.description || '').normalize('NFKC');
+  const englishDescription = String(english?.description || '');
+  const criticalStrike = /急所時(?:技)?威力(?:上昇|↑)/.test(name)
+    || /^Critical Strike(?:\s|\d|$)/i.test(name);
+  if (criticalStrike) return ['pokemon', 'sync', 'max'];
+
+  // The effect text identifies the move class more reliably than a title:
+  // a title can mention a sync move only as the condition (e.g. "after a sync move").
+  const hasJapanesePowerEffect = /威力.{0,20}(?:あげる|上げる|あがる|上がる|アップ|上昇)/.test(description);
+  const hasEnglishPowerEffect = /(?:powers? up|boosts?|raises?|increases?)[^.]{0,80}(?:power|damage|moves?)|(?:power|damage)[^.]{0,80}(?:boosts?|raises?|increases?)/i
+    .test(englishDescription);
+  if (hasJapanesePowerEffect || hasEnglishPowerEffect) {
+    const source = hasJapanesePowerEffect
+      ? description.split(/(?:とき|あと|後)(?:は|に|だけ)?/).at(-1)
+      : englishDescription.match(/(?:powers? up|boosts?|raises?|increases?)([^.]*)/i)?.[1] || '';
+    const sync = /バディーズわざ|B技|sync moves?/i.test(source);
+    const max = /バディーズダイマックスわざ|BD技|ダイマックスわざ|max moves?/i.test(source);
+    const regularMoveText = source
+      .replace(/バディーズダイマックスわざ|ダイマックスわざ|バディーズわざ|BD技|B技|(?:sync|max) moves?/gi, '');
+    const pokemon = /ポケモンのわざ|P技|(?:技|わざ)(?:の)?威力|(?:pokemon|pokémon|buddy) moves?|\bmoves?\b/i
+      .test(regularMoveText);
+    const scope = [pokemon && 'pokemon', sync && 'sync', max && 'max'].filter(Boolean);
+    if (scope.length) return scope;
+  }
+
+  // The Grid title is available even while localized passive text is loading.
+  if (!/(?:威力(?:上昇|↑|アップ)|(?:Power|Strike))/i.test(name)) return [];
+  if (/(?:P技|ポケモン技).*(?:B技|バディーズ技)/i.test(name)) {
+    return /(?:BD技|ダイマックス技)/i.test(name)
+      ? ['pokemon', 'sync', 'max']
+      : ['pokemon', 'sync'];
+  }
+  if (/(?:B技|バディーズ技).*(?:BD技|ダイマックス技)/i.test(name)) return ['sync', 'max'];
+  if (/(?:BD技|ダイマックス技)/i.test(name)) return ['max'];
+  if (/(?:B技|バディーズ技|Sync Move)/i.test(name) && !/(?:後|後に|After)/i.test(name)) return ['sync'];
+  if (/(?:威力(?:上昇|↑|アップ)|Power)/i.test(name)) return ['pokemon'];
+  return [];
+}
+
+function appendPowerBoostMoveScope(tooltip, moveInfo, tile) {
+  if (!tooltip || tooltip.querySelector('.be-power-boost-scope')) return;
+  const scope = powerBoostMoveScope(moveInfo, tile);
+  if (!scope.length) return;
+  const copy = text();
+  const labels = scope.map((kind) => copy.powerBoostMoveLabels?.[kind]).filter(Boolean);
+  if (!labels.length || !copy.powerBoostAppliesTo) return;
+  const line = document.createElement('span');
+  line.className = 'be-power-boost-scope';
+  line.textContent = copy.powerBoostAppliesTo.replace('{moves}', labels.join(' · '));
+  tooltip.append(line);
+}
+
 function tooltipIncludesPercentage(tooltip, value) {
   if (!tooltip || !Number.isFinite(Number(value))) return false;
   const normalized = normalizeGridLabel(tooltip.textContent);
@@ -440,6 +498,7 @@ function appendGridTooltipDetails(tile, moveInfo) {
   if (!tooltip) return;
   appendRequiredMoveLevel(tooltip, tile);
   appendPowerMultiplier(tooltip, moveInfo?.powerMultiplier);
+  appendPowerBoostMoveScope(tooltip, moveInfo, tile);
   appendAdditionalEffectChanceMultiplier(tooltip, moveInfo?.additionalEffectChanceMultiplier);
   appendDamageReduction(tooltip, moveInfo);
   appendHealingBoost(tooltip, moveInfo);

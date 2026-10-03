@@ -105,6 +105,7 @@ padding: 1px 0;
     }
 
     .tooltip .be-power-multiplier,
+    .tooltip .be-power-boost-scope,
     .tooltip .be-additional-effect-chance-multiplier,
     .tooltip .be-damage-reduction,
     .tooltip .be-healing-boost,
