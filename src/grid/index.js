@@ -250,12 +250,28 @@ function appendDamageReduction(tooltip, moveInfo) {
     ? moveInfo.damageReduction
     : damageReductionForPassiveId(moveInfo?.passiveId, description);
   if (!tooltip || !Number.isFinite(reduction) || tooltip.querySelector('.be-damage-reduction')) return;
-  if (tooltipIncludesPercentage(tooltip, reduction)) return;
-  const template = text().damageReduction;
-  if (!template) return;
+  if (reduction < 0 || reduction > 100) return;
+  const copy = text();
+  const isRecoilReduction = Math.floor(Number(moveInfo?.passiveId) / 100) === 130204;
+  const multiplierTemplate = isRecoilReduction
+    ? copy.recoilDamageMultiplier
+    : copy.remainingDamageMultiplier;
+  if (!copy.damageReduction || !multiplierTemplate) return;
+  const multiplier = Number(((100 - reduction) / 100).toFixed(2));
+  const details = [];
+  if (!tooltipIncludesPercentage(tooltip, reduction)) {
+    details.push(copy.damageReduction.replace('{value}', String(reduction)));
+  }
+  details.push(multiplierTemplate.replace('{value}', String(multiplier)));
   const line = document.createElement('span');
   line.className = 'be-damage-reduction';
-  line.textContent = template.replace('{value}', String(reduction));
+  line.textContent = details.join(' · ');
+  if (isRecoilReduction && copy.recoilStacking) {
+    const note = document.createElement('span');
+    note.className = 'be-recoil-stacking';
+    note.textContent = copy.recoilStacking;
+    line.append(note);
+  }
   tooltip.append(line);
 }
 

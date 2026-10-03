@@ -132,6 +132,12 @@ background: rgba(239, 184, 75, .13);
 border-color: rgba(244, 198, 106, .3);
     }
 
+    .tooltip .be-recoil-stacking {
+display: block;
+font-weight: 500;
+margin-top: 4px;
+    }
+
     .tooltip .be-required-move-level-icon {
 display: block;
 height: 24px;

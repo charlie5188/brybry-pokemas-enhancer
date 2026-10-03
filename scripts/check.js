@@ -1120,6 +1120,11 @@ assert.equal(
   'Numbered conditional damage-reduction skills must derive 10% per rank.',
 );
 assert.equal(
+  multiplierContext.damageReductionForCheck(13020409),
+  90,
+  'Lessen Recoil 9 must reduce recoil damage by 90%.',
+);
+assert.equal(
   multiplierContext.damageReductionForCheck(13025102),
   null,
   'Adjacent non-reduction passive families must not be presented as damage reduction.',
@@ -1149,7 +1154,7 @@ const gridContext = {
 };
 vm.createContext(gridContext);
 gridContext.MOVE_LEVEL_ICON_BASE = 'https://pomasters.github.io/SyncPairsTracker/images/';
-vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage; this.relatedMovesForTooltipForCheck = relatedMovesForTooltip;`, gridContext);
+vm.runInContext(`${gridSource}\nthis.normalizeGridLabelForCheck = normalizeGridLabel; this.syncPowerTileLabelForCheck = syncPowerTileLabel; this.displayTileNameForCheck = displayTileName; this.requiredMoveLevelForCheck = requiredMoveLevel; this.moveLevelIconUrlForCheck = moveLevelIconUrl; this.fieldDurationInfoForCheck = fieldDurationInfo; this.maxEnergyCapForMoveLevelForCheck = maxEnergyCapForMoveLevel; this.tooltipIncludesPercentageForCheck = tooltipIncludesPercentage; this.appendDamageReductionForCheck = appendDamageReduction; this.relatedMovesForTooltipForCheck = relatedMovesForTooltip;`, gridContext);
 assert.equal(
   gridContext.normalizeGridLabelForCheck('Ｔ技：威力＋２５（強）　!'),
   'T技:威力+25(強) !',
@@ -1174,6 +1179,39 @@ assert.equal(
   'Official percentages must suppress redundant enhancer details, including full-width punctuation.',
 );
 assert.equal(gridContext.tooltipIncludesPercentageForCheck({ textContent: 'Powers up the user’s moves.' }, 40), false);
+gridContext.passiveSkillDetails = () => null;
+gridContext.text = () => ({
+  damageReduction: 'ダメージ軽減: {value}%',
+  remainingDamageMultiplier: '受けるダメージ: ×{value}',
+  recoilDamageMultiplier: '反動ダメージ: ×{value}',
+  recoilStacking: '重複時は倍率を掛け合わせる（9＋5：0.1×0.5＝0.05倍、合計95%軽減）。',
+});
+gridContext.document = {
+  createElement: () => ({
+    className: '', textContent: '', children: [],
+    append(child) { this.children.push(child); },
+  }),
+};
+for (const [original, passiveId, reduction, expected] of [
+  ['反動ダメージ軽減９', 13020409, 90, 'ダメージ軽減: 90% · 反動ダメージ: ×0.1'],
+  ['反動ダメージを90%軽減する', 13020409, 90, '反動ダメージ: ×0.1'],
+  ['被ダメージ軽減２', 13022102, 20, 'ダメージ軽減: 20% · 受けるダメージ: ×0.8'],
+]) {
+  const lines = [];
+  const tooltip = {
+    textContent: original,
+    querySelector: () => null,
+    append: (line) => lines.push(line),
+  };
+  gridContext.appendDamageReductionForCheck(tooltip, { passiveId, damageReduction: reduction });
+  assert.equal(lines[0]?.textContent, expected, 'Damage reduction tooltips must name the affected damage and show its multiplier.');
+  assert.equal(
+    lines[0]?.children[0]?.textContent,
+    passiveId === 13020409 ? gridContext.text().recoilStacking : undefined,
+    'Only recoil reduction tooltips must explain multiplicative stacking.',
+  );
+}
+assert.match(stylesSource, /\.be-recoil-stacking/, 'Recoil stacking instructions must have tooltip styling.');
 assert.deepEqual(
   [...gridContext.relatedMovesForTooltipForCheck({
     recoversMoveUses: true,
